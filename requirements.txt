@@ -3,7 +3,8 @@ pandas
 numpy
 scikit-learn
 xgboost
-shap==0.44.1
 matplotlib
 seaborn
 joblib
+shap==0.44.1
+numba==0.58.1
