@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import joblib
 import numpy as np
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # ==============================
 # Load Artifacts
@@ -25,13 +26,30 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("Customer Risk Intelligence Dashboard")
+st.title("Customer Risk Intelligence Platform")
 
-# Sidebar navigation
 page = st.sidebar.selectbox(
     "Navigation",
     ["Risk Dashboard", "Transaction Explorer", "Live Prediction"]
 )
+
+# ==============================
+# Risk Tier Classification
+# ==============================
+
+def risk_tier(prob):
+
+    if prob < 0.3:
+        return "Low Risk"
+
+    elif prob < 0.7:
+        return "Medium Risk"
+
+    else:
+        return "High Risk"
+
+
+data["risk_tier"] = data["risk_probability"].apply(risk_tier)
 
 # ==============================
 # Risk Dashboard
@@ -39,24 +57,84 @@ page = st.sidebar.selectbox(
 
 if page == "Risk Dashboard":
 
-    st.header("Risk Distribution")
+    st.header("System Risk Overview")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     avg_risk = data["risk_probability"].mean()
-    high_risk = (data["risk_probability"] > HYBRID_THRESHOLD).sum()
+    high_risk = (data["risk_tier"] == "High Risk").sum()
     total = len(data)
 
-    col1.metric("Average Risk Probability", f"{avg_risk:.3f}")
+    automation_rate = (
+        data["optimal_strategy"] == "AI Automation"
+    ).mean()
+
+    col1.metric("Average Risk", f"{avg_risk:.3f}")
     col2.metric("High Risk Transactions", high_risk)
-    col3.metric("Total Transactions", total)
+    col3.metric("Automation Rate", f"{automation_rate:.2%}")
+    col4.metric("Total Transactions", total)
 
-    st.subheader("Risk Probability Distribution")
-    st.bar_chart(data["risk_probability"])
+    st.divider()
 
-    st.subheader("Strategy Distribution")
+    # ==============================
+    # Risk Tier Distribution
+    # ==============================
+
+    st.subheader("Risk Tier Distribution")
+
+    tier_counts = data["risk_tier"].value_counts()
+
+    st.bar_chart(tier_counts)
+
+    # ==============================
+    # Strategy Distribution
+    # ==============================
+
+    st.subheader("Operational Strategy Allocation")
+
     strategy_counts = data["optimal_strategy"].value_counts()
+
     st.bar_chart(strategy_counts)
+
+    # ==============================
+    # Financial Exposure
+    # ==============================
+
+    if "expected_cost" in data.columns:
+
+        st.subheader("Estimated Financial Exposure")
+
+        total_cost = data["expected_cost"].sum()
+
+        st.metric(
+            "Estimated System Cost",
+            f"${total_cost:,.2f}"
+        )
+
+        cost_by_strategy = (
+            data.groupby("optimal_strategy")["expected_cost"]
+            .sum()
+        )
+
+        st.bar_chart(cost_by_strategy)
+
+    # ==============================
+    # Risk Heatmap
+    # ==============================
+
+    st.subheader("Risk Correlation Heatmap")
+
+    numeric_cols = data.select_dtypes(include=np.number)
+
+    fig, ax = plt.subplots()
+
+    sns.heatmap(
+        numeric_cols.corr(),
+        cmap="coolwarm",
+        ax=ax
+    )
+
+    st.pyplot(fig)
 
 # ==============================
 # Transaction Explorer
@@ -73,12 +151,23 @@ elif page == "Transaction Explorer":
         0.0
     )
 
-    filtered = data[data["risk_probability"] >= risk_filter]
+    strategy_filter = st.multiselect(
+        "Strategy Filter",
+        options=data["optimal_strategy"].unique(),
+        default=data["optimal_strategy"].unique()
+    )
+
+    filtered = data[
+        (data["risk_probability"] >= risk_filter)
+        &
+        (data["optimal_strategy"].isin(strategy_filter))
+    ]
 
     st.dataframe(
         filtered[
             [
                 "risk_probability",
+                "risk_tier",
                 "optimal_strategy",
                 "top_risk_drivers",
                 "decision_explanation"
@@ -101,8 +190,17 @@ else:
     sentiment_score = col1.slider("Sentiment Score", -1.0, 1.0, 0.5)
     review_length = col1.number_input("Review Length", 1, 1000, 100)
 
-    verified_purchase = col2.selectbox("Verified Purchase", [0, 1])
-    helpfulness_ratio = col2.slider("Helpfulness Ratio", 0.0, 1.0, 0.5)
+    verified_purchase = col2.selectbox(
+        "Verified Purchase",
+        [0, 1]
+    )
+
+    helpfulness_ratio = col2.slider(
+        "Helpfulness Ratio",
+        0.0,
+        1.0,
+        0.5
+    )
 
     if st.button("Predict Risk"):
 
@@ -114,11 +212,14 @@ else:
             "helpfulness_ratio": helpfulness_ratio
         }])
 
-        processed = pipeline.transform(input_df)
-        risk_prob = model.predict_proba(processed)[0][1]
+        risk_prob = model.predict_proba(input_df)[0][1]
+
+        tier = risk_tier(risk_prob)
 
         st.subheader("Prediction Result")
-        st.write(f"Risk Probability: **{risk_prob:.3f}**")
+
+        st.write(f"Fraud Risk Probability: **{risk_prob:.3f}**")
+        st.write(f"Risk Tier: **{tier}**")
 
         if risk_prob < HYBRID_THRESHOLD:
             strategy = "AI Automation"
