@@ -114,7 +114,8 @@ else:
             "helpfulness_ratio": helpfulness_ratio
         }])
 
-        risk_prob = model.predict_proba(input_df)[0][1]
+        processed = pipeline.transform(input_df)
+        risk_prob = model.predict_proba(processed)[0][1]
 
         st.subheader("Prediction Result")
         st.write(f"Risk Probability: **{risk_prob:.3f}**")
