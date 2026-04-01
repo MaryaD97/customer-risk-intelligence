@@ -124,70 +124,115 @@ def style_decisions(df):
 # ==============================
 if page == "Overview":
 
-    st.header("Decision Intelligence Overview")
+   # ==============================
+# OVERVIEW (REDESIGNED)
+# ==============================
+if page == "Overview":
 
-    if st.session_state.results is None:
-        st.warning("System status: Awaiting data upload and analysis")
-    else:
-        st.success("System status: Analysis complete")
-
-    st.subheader("How to Use This Tool")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("""
-        1. Upload your dataset  
-        2. Map your columns  
-        3. Configure cost parameters  
-        4. Run analysis  
-        """)
-
-    with col2:
-        st.markdown("""
-        5. Review decisions  
-        6. Analyze cost impact  
-        7. Export results  
-        """)
-
-    st.divider()
-
-    st.subheader("What the System Does")
+    # ==============================
+    # HERO SECTION
+    # ==============================
+    st.markdown("## 🚀 Decision Intelligence for Fraud Operations")
 
     st.markdown("""
-    Predicts fraud risk and assigns the most cost-efficient handling strategy:
-
-    - AI Automation → low-risk  
-    - Human Review → high-risk  
-    - Hybrid → medium-risk  
-
-    All decisions minimize expected financial cost.
+    **Turn fraud predictions into cost-optimized decisions — automatically.**
+    
+    Predict risk, choose the best action (AI vs Human vs Hybrid), and minimize financial loss per transaction.
     """)
 
     st.divider()
 
+    # ==============================
+    # VISUAL PIPELINE
+    # ==============================
+    st.markdown("### 🔄 How It Works")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.markdown("**📥 Data**  \nTransactions / Reviews")
+    col2.markdown("**🧠 Risk Model**  \nFraud Probability")
+    col3.markdown("**💰 Cost Engine**  \nAI vs Human vs Hybrid")
+    col4.markdown("**⚡ Decision**  \nBest Action + Cost")
+
+    st.divider()
+
+    # ==============================
+    # VALUE CARDS
+    # ==============================
+    st.markdown("### 🎯 What You Get")
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.metric("📊 Risk Scoring", "Per Transaction")
+    c2.metric("⚡ Decision Engine", "Auto Strategy")
+    c3.metric("💰 Cost Optimization", "Min Loss")
+    c4.metric("🧠 Explainability", "Why Decision")
+
+    st.divider()
+
+    # ==============================
+    # DECISION LEGEND
+    # ==============================
+    st.markdown("### 🎨 Decision Logic")
+
+    l1, l2, l3 = st.columns(3)
+
+    l1.markdown("🟢 **AI Automation**  \nLow risk → lowest cost")
+    l2.markdown("🟡 **Hybrid**  \nMedium risk → balanced")
+    l3.markdown("🔴 **Human Review**  \nHigh risk → safest")
+
+    st.divider()
+
+    # ==============================
+    # SAMPLE OUTPUT (CRITICAL)
+    # ==============================
+    st.markdown("### 📋 Example Output")
+
+    demo = pd.DataFrame({
+        "Order ID": [10231, 10232, 10233],
+        "Risk": [0.82, 0.21, 0.55],
+        "Strategy": ["Human Review", "AI Automation", "Hybrid"],
+        "Expected Cost ($)": [12.4, 1.1, 6.8],
+        "Reason": [
+            "High risk + weak signals",
+            "Low risk",
+            "Moderate risk uncertainty"
+        ]
+    })
+
+    st.dataframe(demo, use_container_width=True)
+
+    st.divider()
+
+    # ==============================
+    # HOW TO USE (SIMPLIFIED)
+    # ==============================
+    st.markdown("### ⚡ Get Started")
+
+    step1, step2, step3 = st.columns(3)
+
+    step1.markdown("**1. Upload Data**")
+    step2.markdown("**2. Configure Costs**")
+    step3.markdown("**3. Run Decision Engine**")
+
+    st.divider()
+
+    # ==============================
+    # SYSTEM STATUS / METRICS
+    # ==============================
     if st.session_state.results is None:
-
-        st.subheader("Example Output")
-
-        demo = pd.DataFrame({
-            "Risk Probability": [0.08, 0.45, 0.91],
-            "Decision": ["AI Automation", "Hybrid", "Human Review"],
-            "Expected Cost ($)": [1.2, 3.8, 7.6]
-        })
-
-        st.dataframe(demo, use_container_width=True)
-
+        st.info("No analysis yet — upload data or use demo to begin.")
     else:
-
         df = st.session_state.results
 
-        col1, col2, col3, col4 = st.columns(4)
+        st.markdown("### 📊 Latest Run Summary")
 
-        col1.metric("Transactions", f"{len(df):,}")
-        col2.metric("Total Cost", f"${df['expected_cost'].sum():,.0f}")
-        col3.metric("High Risk", f"{(df['risk_probability'] > 0.7).mean():.1%}")
-        col4.metric("Automation", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
+        m1, m2, m3, m4 = st.columns(4)
+
+        m1.metric("Transactions", f"{len(df):,}")
+        m2.metric("Total Cost", f"${df['expected_cost'].sum():,.0f}")
+        m3.metric("High Risk", f"{(df['risk_probability'] > 0.7).mean():.1%}")
+        m4.metric("Automation", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
 
         st.bar_chart(df["optimal_strategy"].value_counts())
 
