@@ -38,10 +38,11 @@ section[data-testid="stSidebar"] {
 
 /* Cards */
 .card {
-    background-color: #111827;
+    background: linear-gradient(145deg, #111827, #0B0F17);
     padding: 20px;
-    border-radius: 12px;
+    border-radius: 14px;
     border: 1px solid #1F2937;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
 /* Buttons */
@@ -135,6 +136,33 @@ def choose_strategy(row):
         "Hybrid": row["cost_hybrid"]
     }
     return min(costs, key=costs.get)
+
+import shap
+
+@st.cache_resource
+def load_explainer():
+    explainer = shap.Explainer(model)
+    return explainer
+
+explainer = load_explainer()
+
+def simulate_decisions(df, fraud_cost, review_cost):
+    df = df.copy()
+
+    df["cost_ai"] = df.apply(lambda x: cost_ai(x["risk_probability"], x["order_value"], fraud_cost), axis=1)
+    df["cost_human"] = df.apply(lambda x: cost_human(x["risk_probability"], x["order_value"], fraud_cost, review_cost), axis=1)
+    df["cost_hybrid"] = df.apply(lambda x: cost_hybrid(x["risk_probability"], x["order_value"], fraud_cost, review_cost), axis=1)
+
+    df["optimal_strategy"] = df.apply(choose_strategy, axis=1)
+    df["expected_cost"] = df[["cost_ai", "cost_human", "cost_hybrid"]].min(axis=1)
+
+    return df
+
+
+def estimate_baseline_cost(df):
+    # naive baseline: always human review
+    return df["cost_human"].sum()
+    
 
 # ==============================
 # OVERVIEW PAGE
@@ -269,53 +297,95 @@ elif page == "3. Run Analysis":
 # ==============================
 elif page == "4. Decisions":
 
-    st.title("Decision Dashboard")
+    st.title("Decision Simulator")
 
     if st.session_state.results is None:
         st.warning("Run analysis first")
     else:
-        df = st.session_state.results
+        base_df = st.session_state.results
 
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Total Cost", f"${df['expected_cost'].sum():,.0f}")
-        col2.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
-        col3.metric("High Risk", f"{(df['risk_probability'] > 0.7).mean():.1%}")
+        st.subheader("Adjust Business Costs")
+
+        col1, col2 = st.columns(2)
+
+        sim_fraud = col1.slider("Fraud Cost", 1.0, 5.0, st.session_state.config["fraud_cost"])
+        sim_review = col2.slider("Review Cost", 1.0, 20.0, st.session_state.config["review_cost"])
+
+        sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
 
         st.divider()
 
-        st.dataframe(df[[
+        # KPIs
+        total_cost = sim_df["expected_cost"].sum()
+        automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
+        high_risk = (sim_df["risk_probability"] > 0.7).mean()
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Cost", f"${total_cost:,.0f}")
+        col2.metric("Automation Rate", f"{automation_rate:.1%}")
+        col3.metric("High Risk Transactions", f"{high_risk:.1%}")
+
+        st.divider()
+
+        st.dataframe(sim_df[[
             "risk_probability",
             "risk_tier",
             "optimal_strategy",
             "expected_cost"
         ]], use_container_width=True)
 
-        st.download_button(
-            "Download Results",
-            df.to_csv(index=False),
-            "results.csv"
-        )
+        st.divider()
+
+        st.subheader("Explain a Decision")
+
+        selected_index = st.selectbox("Select Transaction", sim_df.index)
+
+        row = sim_df.loc[selected_index]
+
+        st.markdown(f"""
+        **Prediction Details**
+        - Risk Probability: {row['risk_probability']:.2f}
+        - Selected Strategy: {row['optimal_strategy']}
+        - Expected Cost: ${row['expected_cost']:.2f}
+        """)
+        
+        # SHAP Explanation
+        X_row = base_df.loc[[selected_index], feature_columns]
+        shap_values = explainer(X_row)
+        
+        st.write("Feature Impact (SHAP)")
+        st.bar_chart(pd.DataFrame({
+            "feature": feature_columns,
+            "impact": shap_values.values[0]
+        }).set_index("feature"))
 
 # ==============================
 # INSIGHTS
 # ==============================
 elif page == "5. Insights":
 
-    st.title("Insights")
+    st.title("Executive Dashboard")
 
     if st.session_state.results is None:
         st.warning("Run analysis first")
     else:
         df = st.session_state.results
 
-        st.subheader("Risk Distribution")
-        st.bar_chart(df["risk_tier"].value_counts())
+        baseline = estimate_baseline_cost(df)
+        optimized = df["expected_cost"].sum()
+        savings = baseline - optimized
+
+        st.subheader("Business Impact")
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Baseline Cost", f"${baseline:,.0f}")
+        col2.metric("Optimized Cost", f"${optimized:,.0f}")
+        col3.metric("Estimated Savings", f"${savings:,.0f}")
+
+        st.divider()
 
         st.subheader("Decision Breakdown")
         st.bar_chart(df["optimal_strategy"].value_counts())
 
-        st.subheader("Cost by Strategy")
-        st.dataframe(
-            df.groupby("optimal_strategy")["expected_cost"].sum().reset_index(),
-            use_container_width=True
-        )
+        st.subheader("Risk Distribution")
+        st.bar_chart(df["risk_tier"].value_counts())
