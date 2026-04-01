@@ -6,46 +6,72 @@ import joblib
 # ==============================
 # PAGE CONFIG
 # ==============================
-st.set_page_config(page_title="Customer Risk Intelligence", layout="wide")
+st.set_page_config(
+    page_title="Fraud Decision Engine",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # ==============================
-# DARK UI STYLING
+# GLOBAL STYLING (PREMIUM UI)
 # ==============================
 st.markdown("""
 <style>
-.main { background-color: #0E1117; color: #FAFAFA; }
-h1, h2, h3 { color: #FFFFFF; }
-
-[data-testid="metric-container"] {
-    background-color: #1C1F26;
-    border-radius: 10px;
-    padding: 15px;
-    border: 1px solid #2A2E39;
+.main {
+    background-color: #0B0F17;
+    color: #E5E7EB;
 }
 
+h1, h2, h3 {
+    color: #FFFFFF;
+    letter-spacing: -0.3px;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #0E1117;
+}
+
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Cards */
+.card {
+    background-color: #111827;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #1F2937;
+}
+
+/* Buttons */
 .stButton>button {
     background-color: #2563EB;
     color: white;
     border-radius: 8px;
     border: none;
-    padding: 8px 16px;
+    padding: 10px 18px;
+    font-weight: 500;
 }
 
-hr { border: 1px solid #2A2E39; }
+.stButton>button:hover {
+    background-color: #1D4ED8;
+}
+
+/* Metrics */
+[data-testid="metric-container"] {
+    background-color: #111827;
+    border: 1px solid #1F2937;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+/* Divider */
+hr {
+    border: 1px solid #1F2937;
+}
 </style>
 """, unsafe_allow_html=True)
-
-# ==============================
-# TITLE
-# ==============================
-st.title("Customer Risk Intelligence Platform")
-
-st.markdown("""
-Optimize fraud handling decisions using cost-based machine learning.
-
-Upload transaction data, configure business costs, and receive optimized
-decisions on whether to automate, review, or escalate transactions.
-""")
 
 # ==============================
 # LOAD MODEL
@@ -61,9 +87,6 @@ model, feature_columns = load_model()
 # ==============================
 # SESSION STATE
 # ==============================
-if "data" not in st.session_state:
-    st.session_state.data = None
-
 if "mapped_data" not in st.session_state:
     st.session_state.mapped_data = None
 
@@ -74,23 +97,27 @@ if "config" not in st.session_state:
     st.session_state.config = {"fraud_cost": 3.0, "review_cost": 4.0}
 
 # ==============================
-# NAVIGATION
+# SIDEBAR NAVIGATION
 # ==============================
+st.sidebar.title("Fraud Decision Engine")
+
 page = st.sidebar.radio(
     "Navigation",
-    ["Overview", "Upload & Map Data", "Configure", "Run Analysis", "Decisions", "Insights"]
+    [
+        "Overview",
+        "1. Upload Data",
+        "2. Set Costs",
+        "3. Run Analysis",
+        "4. Decisions",
+        "5. Insights"
+    ]
 )
 
 # ==============================
 # HELPER FUNCTIONS
 # ==============================
 def risk_tier(p):
-    if p < 0.3:
-        return "Low"
-    elif p < 0.7:
-        return "Medium"
-    else:
-        return "High"
+    return "Low" if p < 0.3 else "Medium" if p < 0.7 else "High"
 
 def cost_ai(p, amt, fraud_cost):
     return p * amt * fraud_cost * 0.3
@@ -109,176 +136,69 @@ def choose_strategy(row):
     }
     return min(costs, key=costs.get)
 
-def style_decisions(df):
-    def color(val):
-        if "AI" in val:
-            return "color: #22c55e; font-weight: 600"
-        elif "Human" in val:
-            return "color: #ef4444; font-weight: 600"
-        else:
-            return "color: #f59e0b; font-weight: 600"
-    return df.style.applymap(color, subset=["optimal_strategy"])
-
 # ==============================
-# OVERVIEW (PROFESSIONAL VERSION)
+# OVERVIEW PAGE
 # ==============================
 if page == "Overview":
 
-    # ==============================
-    # TITLE + VALUE PROPOSITION
-    # ==============================
-    st.title("Fraud Decision Intelligence")
+    st.title("Fraud Decision Engine")
 
     st.markdown("""
-    Convert transaction data into **actionable fraud decisions** using machine learning and cost optimization.
-
-    For each transaction, the system:
-    - Estimates the probability of fraud  
-    - Evaluates the financial impact of different handling strategies  
-    - Recommends the action that minimizes expected cost  
+    Automatically choose the **lowest-cost action** for every transaction by combining fraud prediction with financial impact modeling.
     """)
 
     st.divider()
 
-    # ==============================
-    # PROCESS FLOW (CLEAR + EXPLICIT)
-    # ==============================
-    st.subheader("How the System Works")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    col1.markdown("""
-    **1. Input Data**  
-    Upload transaction or review-level data including rating, sentiment, and order value.
-    """)
-
-    col2.markdown("""
-    **2. Risk Prediction**  
-    A trained model assigns a fraud probability to each transaction.
-    """)
-
-    col3.markdown("""
-    **3. Cost Evaluation**  
-    The system calculates expected cost for:
-    - Automated handling  
-    - Manual review  
-    - Hybrid approach  
-    """)
-
-    col4.markdown("""
-    **4. Decision Output**  
-    The lowest-cost strategy is selected for each transaction.
-    """)
+    # KPIs
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Fraud Loss Reduction", "Optimized")
+    col2.metric("Manual Reviews", "Minimized")
+    col3.metric("Decision Speed", "Instant")
 
     st.divider()
 
-    # ==============================
-    # OUTPUT CLARITY (WHAT USER GETS)
-    # ==============================
-    st.subheader("Output Provided")
+    # FLOW
+    st.subheader("How It Works")
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.markdown("**Upload Data**  \nTransaction-level dataset")
+    c2.markdown("**Risk Scoring**  \nPredict fraud probability")
+    c3.markdown("**Cost Simulation**  \nEvaluate decision cost")
+    c4.markdown("**Decision Output**  \nSelect optimal action")
+
+    st.divider()
+
+    # OUTPUT
+    st.subheader("What You Get")
 
     st.markdown("""
-    For each transaction, the system returns:
-
-    - **Fraud Probability** — likelihood that the transaction is fraudulent  
-    - **Recommended Action** — AI Automation, Human Review, or Hybrid  
-    - **Expected Cost** — estimated financial impact of the chosen action  
-    - **Cost Breakdown** — comparison across all strategies  
-    - **Explanation** — key factors influencing the decision  
+    - Fraud probability for each transaction  
+    - Recommended action (AI / Human / Hybrid)  
+    - Expected cost per decision  
+    - Explanation of key drivers  
     """)
 
     st.divider()
 
-    # ==============================
-    # DECISION LOGIC (CLEAR + PRECISE)
-    # ==============================
-    st.subheader("Decision Logic")
+    # CTA
+    st.subheader("Get Started")
 
-    st.markdown("""
-    The system selects the strategy with the **lowest expected financial cost**, based on fraud risk and business-defined cost parameters.
+    col1, col2, col3 = st.columns(3)
 
-    - **AI Automation**  
-      Used when predicted fraud risk is low and the expected loss from mistakes is minimal.
+    col1.markdown("**1. Upload Data**")
+    col2.markdown("**2. Set Costs**")
+    col3.markdown("**3. Run Analysis**")
 
-    - **Human Review**  
-      Used when fraud risk is high and the potential financial loss justifies manual intervention.
-
-    - **Hybrid Approach**  
-      Used when risk is uncertain, balancing automation efficiency with selective human oversight.
-
-    This ensures decisions are not based on fixed rules, but on **cost-optimized trade-offs**.
-    """)
-
-    st.divider()
-
-    # ==============================
-    # SAMPLE OUTPUT (MAKE IT TANGIBLE)
-    # ==============================
-    st.subheader("Example Output")
-
-    demo = pd.DataFrame({
-        "order_id": [10231, 10232, 10233],
-        "fraud_probability": [0.82, 0.21, 0.55],
-        "recommended_action": ["Human Review", "AI Automation", "Hybrid"],
-        "expected_cost": [12.4, 1.1, 6.8],
-        "explanation": [
-            "High predicted fraud probability and high order value",
-            "Low fraud probability",
-            "Moderate risk with uncertain signals"
-        ]
-    })
-
-    st.dataframe(demo, use_container_width=True)
-
-    st.divider()
-
-    # ==============================
-    # HOW USER USES IT (VERY CLEAR)
-    # ==============================
-    st.subheader("How to Use the Application")
-
-    step1, step2, step3 = st.columns(3)
-
-    step1.markdown("""
-    **Step 1: Upload Data**  
-    Provide a CSV file containing transaction-level data.
-    """)
-
-    step2.markdown("""
-    **Step 2: Configure Costs**  
-    Define fraud loss and review costs based on your business.
-    """)
-
-    step3.markdown("""
-    **Step 3: Run Analysis**  
-    Generate decisions and download results.
-    """)
-
-    st.divider()
-
-    # ==============================
-    # STATUS / RESULTS
-    # ==============================
     if st.session_state.results is None:
-        st.info("No analysis has been run yet.")
-    else:
-        df = st.session_state.results
-
-        st.subheader("Latest Run Summary")
-
-        col1, col2, col3, col4 = st.columns(4)
-
-        col1.metric("Total Transactions", f"{len(df):,}")
-        col2.metric("Total Expected Cost", f"${df['expected_cost'].sum():,.0f}")
-        col3.metric("High Risk Transactions", f"{(df['risk_probability'] > 0.7).mean():.1%}")
-        col4.metric("Automated Decisions", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
-
-        st.bar_chart(df["optimal_strategy"].value_counts())
+        st.info("No analysis yet. Start by uploading your data.")
 
 # ==============================
-# UPLOAD + MAP
+# UPLOAD
 # ==============================
-elif page == "Upload & Map Data":
+elif page == "1. Upload Data":
+
+    st.title("Upload Transaction Data")
 
     file = st.file_uploader("Upload CSV")
 
@@ -290,32 +210,24 @@ elif page == "Upload & Map Data":
 
         mapping = {}
         for col in feature_columns + ["order_value"]:
-            mapping[col] = st.selectbox(f"{col}", df.columns)
+            mapping[col] = st.selectbox(col, df.columns)
 
         if st.button("Confirm Mapping"):
-
             df = df.rename(columns={v: k for k, v in mapping.items()})
-
-            if "helpfulness_ratio" not in df.columns:
-                df["helpfulness_ratio"] = 0
-
-            if df["verified_purchase"].dtype == object:
-                df["verified_purchase"] = df["verified_purchase"].map({
-                    "TRUE": 1, "FALSE": 0, True: 1, False: 0
-                })
-
             st.session_state.mapped_data = df
-            st.success("Mapping complete")
+            st.success("Data ready")
 
 # ==============================
 # CONFIG
 # ==============================
-elif page == "Configure":
+elif page == "2. Set Costs":
 
-    st.subheader("Business Settings")
+    st.title("Business Cost Configuration")
 
-    fraud_cost = st.slider("Fraud Cost Multiplier", 1.0, 5.0, 3.0)
-    review_cost = st.slider("Review Cost", 1.0, 20.0, 4.0)
+    col1, col2 = st.columns(2)
+
+    fraud_cost = col1.slider("Fraud Loss Multiplier", 1.0, 5.0, 3.0)
+    review_cost = col2.slider("Manual Review Cost", 1.0, 20.0, 4.0)
 
     st.session_state.config = {
         "fraud_cost": fraud_cost,
@@ -323,12 +235,14 @@ elif page == "Configure":
     }
 
 # ==============================
-# RUN ANALYSIS
+# RUN
 # ==============================
-elif page == "Run Analysis":
+elif page == "3. Run Analysis":
+
+    st.title("Run Decision Engine")
 
     if st.session_state.mapped_data is None:
-        st.warning("Upload and map data first")
+        st.warning("Upload data first")
     else:
         if st.button("Run Analysis"):
 
@@ -347,12 +261,15 @@ elif page == "Run Analysis":
             df["risk_tier"] = df["risk_probability"].apply(risk_tier)
 
             st.session_state.results = df
+
             st.success("Analysis complete")
 
 # ==============================
 # DECISIONS
 # ==============================
-elif page == "Decisions":
+elif page == "4. Decisions":
+
+    st.title("Decision Dashboard")
 
     if st.session_state.results is None:
         st.warning("Run analysis first")
@@ -361,35 +278,30 @@ elif page == "Decisions":
 
         col1, col2, col3 = st.columns(3)
         col1.metric("Total Cost", f"${df['expected_cost'].sum():,.0f}")
-        col2.metric("Automation", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
-        col3.metric("Human Review", f"{(df['optimal_strategy'].str.contains('Human')).mean():.1%}")
+        col2.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
+        col3.metric("High Risk", f"{(df['risk_probability'] > 0.7).mean():.1%}")
 
         st.divider()
 
-        risk_filter = st.slider("Minimum Risk", 0.0, 1.0, 0.0)
-
-        filtered = df[df["risk_probability"] >= risk_filter]
-
-        cols = ["risk_probability", "risk_tier", "optimal_strategy", "expected_cost"]
-
-        if "top_risk_drivers" in df.columns:
-            cols.append("top_risk_drivers")
-
-        if "decision_explanation" in df.columns:
-            cols.append("decision_explanation")
-
-        st.dataframe(style_decisions(filtered[cols]), use_container_width=True)
+        st.dataframe(df[[
+            "risk_probability",
+            "risk_tier",
+            "optimal_strategy",
+            "expected_cost"
+        ]], use_container_width=True)
 
         st.download_button(
             "Download Results",
-            filtered.to_csv(index=False),
-            "decision_output.csv"
+            df.to_csv(index=False),
+            "results.csv"
         )
 
 # ==============================
 # INSIGHTS
 # ==============================
-elif page == "Insights":
+elif page == "5. Insights":
+
+    st.title("Insights")
 
     if st.session_state.results is None:
         st.warning("Run analysis first")
