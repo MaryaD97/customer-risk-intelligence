@@ -1,231 +1,263 @@
 import streamlit as st
 import pandas as pd
-import joblib
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+import joblib
 
 # ==============================
-# Load Artifacts
+# PAGE CONFIG
 # ==============================
+st.set_page_config(page_title="Customer Risk Intelligence", layout="wide")
 
-model = joblib.load("models/risk_model.pkl")
-feature_columns = joblib.load("models/feature_columns.pkl")
-decision_config = joblib.load("models/decision_config.pkl")
-
-data = pd.read_csv("data/decision_engine_output_subsample.csv")
-
-HYBRID_THRESHOLD = decision_config["HYBRID_THRESHOLD"]
+st.title("🧠 Customer Risk Intelligence Platform")
+st.caption("Upload your e-commerce data → get cost-optimized fraud decisions")
 
 # ==============================
-# Page Config
+# LOAD MODEL
 # ==============================
+@st.cache_resource
+def load_model():
+    model = joblib.load("models/risk_model.pkl")
+    feature_cols = joblib.load("models/feature_columns.pkl")
+    return model, feature_cols
 
-st.set_page_config(
-    page_title="Customer Risk Intelligence",
-    layout="wide"
-)
+model, feature_columns = load_model()
 
-st.title("Customer Risk Intelligence Platform")
+# ==============================
+# SESSION STATE
+# ==============================
+if "data" not in st.session_state:
+    st.session_state.data = None
 
-page = st.sidebar.selectbox(
+if "mapped_data" not in st.session_state:
+    st.session_state.mapped_data = None
+
+if "results" not in st.session_state:
+    st.session_state.results = None
+
+if "config" not in st.session_state:
+    st.session_state.config = {
+        "fraud_cost": 3.0,
+        "review_cost": 4.0
+    }
+
+# ==============================
+# SIDEBAR
+# ==============================
+page = st.sidebar.radio(
     "Navigation",
-    ["Risk Dashboard", "Transaction Explorer", "Live Prediction"]
+    ["🏠 Overview", "📂 Upload & Map Data", "⚙️ Configure", "🚀 Run Analysis", "📊 Decisions", "📈 Insights"]
 )
 
 # ==============================
-# Risk Tier Classification
+# HELPER FUNCTIONS
 # ==============================
 
-def risk_tier(prob):
-
-    if prob < 0.3:
-        return "Low Risk"
-
-    elif prob < 0.7:
-        return "Medium Risk"
-
+def risk_tier(p):
+    if p < 0.3:
+        return "🟢 Low"
+    elif p < 0.7:
+        return "🟡 Medium"
     else:
-        return "High Risk"
+        return "🔴 High"
 
 
-data["risk_tier"] = data["risk_probability"].apply(risk_tier)
+def cost_ai(p, amt, fraud_cost):
+    return p * amt * fraud_cost * 0.3
+
+
+def cost_human(p, amt, fraud_cost, review_cost):
+    return review_cost + (p * amt * fraud_cost * 0.1)
+
+
+def cost_hybrid(p, amt, fraud_cost, review_cost):
+    if p < 0.4:
+        return cost_ai(p, amt, fraud_cost)
+    else:
+        return cost_human(p, amt, fraud_cost, review_cost)
+
+
+def choose_strategy(row):
+    costs = {
+        "🟢 AI Automation": row["cost_ai"],
+        "🟡 Human Review": row["cost_human"],
+        "🟠 Hybrid": row["cost_hybrid"]
+    }
+    return min(costs, key=costs.get)
+
 
 # ==============================
-# Risk Dashboard
+# PAGE 1: UPLOAD + MAP
 # ==============================
 
-if page == "Risk Dashboard":
+if page == "📂 Upload & Map Data":
 
-    st.header("System Risk Overview")
+    st.header("Upload Your Dataset")
 
-    col1, col2, col3, col4 = st.columns(4)
+    file = st.file_uploader("Upload CSV file")
 
-    avg_risk = data["risk_probability"].mean()
-    high_risk = (data["risk_tier"] == "High Risk").sum()
-    total = len(data)
+    if file:
+        df = pd.read_csv(file)
+        st.session_state.data = df
 
-    automation_rate = (
-        data["optimal_strategy"] == "AI Automation"
-    ).mean()
+        st.subheader("Preview")
+        st.dataframe(df.head(), use_container_width=True)
 
-    col1.metric("Average Risk", f"{avg_risk:.3f}")
-    col2.metric("High Risk Transactions", high_risk)
-    col3.metric("Automation Rate", f"{automation_rate:.2%}")
-    col4.metric("Total Transactions", total)
+        st.subheader("Map Your Columns")
 
-    st.divider()
+        mapping = {}
 
-    # ==============================
-    # Risk Tier Distribution
-    # ==============================
+        for col in feature_columns + ["order_value"]:
+            mapping[col] = st.selectbox(
+                f"Select column for '{col}'",
+                options=df.columns,
+                key=col
+            )
 
-    st.subheader("Risk Tier Distribution")
+        if st.button("Confirm Mapping"):
+            mapped_df = df.rename(columns={v: k for k, v in mapping.items()})
 
-    tier_counts = data["risk_tier"].value_counts()
+            # Handle missing helpfulness_ratio
+            if "helpfulness_ratio" not in mapped_df.columns:
+                mapped_df["helpfulness_ratio"] = 0
 
-    st.bar_chart(tier_counts)
+            # Convert TRUE/FALSE → 0/1
+            if mapped_df["verified_purchase"].dtype == object:
+                mapped_df["verified_purchase"] = mapped_df["verified_purchase"].map({
+                    "TRUE": 1, "FALSE": 0, True: 1, False: 0
+                })
 
-    # ==============================
-    # Strategy Distribution
-    # ==============================
-
-    st.subheader("Operational Strategy Allocation")
-
-    strategy_counts = data["optimal_strategy"].value_counts()
-
-    st.bar_chart(strategy_counts)
-
-    # ==============================
-    # Financial Exposure
-    # ==============================
-
-    if "expected_cost" in data.columns:
-
-        st.subheader("Estimated Financial Exposure")
-
-        total_cost = data["expected_cost"].sum()
-
-        st.metric(
-            "Estimated System Cost",
-            f"${total_cost:,.2f}"
-        )
-
-        cost_by_strategy = (
-            data.groupby("optimal_strategy")["expected_cost"]
-            .sum()
-        )
-
-        st.bar_chart(cost_by_strategy)
-
-    # ==============================
-    # Risk Heatmap
-    # ==============================
-
-    st.subheader("Risk Correlation Heatmap")
-
-    numeric_cols = data.select_dtypes(include=np.number)
-
-    fig, ax = plt.subplots()
-
-    sns.heatmap(
-        numeric_cols.corr(),
-        cmap="coolwarm",
-        ax=ax
-    )
-
-    st.pyplot(fig)
+            st.session_state.mapped_data = mapped_df
+            st.success("Mapping completed successfully!")
 
 # ==============================
-# Transaction Explorer
+# PAGE 2: CONFIG
 # ==============================
 
-elif page == "Transaction Explorer":
+elif page == "⚙️ Configure":
 
-    st.header("Transaction Explorer")
+    st.header("Business Settings")
 
-    risk_filter = st.slider(
-        "Minimum Risk Probability",
-        0.0,
-        1.0,
-        0.0
-    )
+    fraud_cost = st.slider("Fraud Cost Multiplier", 1.0, 5.0, st.session_state.config["fraud_cost"])
+    review_cost = st.slider("Human Review Cost ($)", 1.0, 20.0, st.session_state.config["review_cost"])
 
-    strategy_filter = st.multiselect(
-        "Strategy Filter",
-        options=data["optimal_strategy"].unique(),
-        default=data["optimal_strategy"].unique()
-    )
+    st.session_state.config = {
+        "fraud_cost": fraud_cost,
+        "review_cost": review_cost
+    }
 
-    filtered = data[
-        (data["risk_probability"] >= risk_filter)
-        &
-        (data["optimal_strategy"].isin(strategy_filter))
-    ]
+    st.success("Settings updated")
 
-    st.dataframe(
-        filtered[
-            [
+# ==============================
+# PAGE 3: RUN ANALYSIS
+# ==============================
+
+elif page == "🚀 Run Analysis":
+
+    st.header("Run Decision Engine")
+
+    if st.session_state.mapped_data is None:
+        st.warning("Upload and map data first")
+    else:
+        if st.button("Run Analysis"):
+
+            df = st.session_state.mapped_data.copy()
+            cfg = st.session_state.config
+
+            # Predictions
+            X = df[feature_columns]
+            df["risk_probability"] = model.predict_proba(X)[:, 1]
+
+            # Costs
+            df["cost_ai"] = df.apply(lambda x: cost_ai(x["risk_probability"], x["order_value"], cfg["fraud_cost"]), axis=1)
+            df["cost_human"] = df.apply(lambda x: cost_human(x["risk_probability"], x["order_value"], cfg["fraud_cost"], cfg["review_cost"]), axis=1)
+            df["cost_hybrid"] = df.apply(lambda x: cost_hybrid(x["risk_probability"], x["order_value"], cfg["fraud_cost"], cfg["review_cost"]), axis=1)
+
+            df["optimal_strategy"] = df.apply(choose_strategy, axis=1)
+            df["expected_cost"] = df[["cost_ai", "cost_human", "cost_hybrid"]].min(axis=1)
+            df["risk_tier"] = df["risk_probability"].apply(risk_tier)
+
+            st.session_state.results = df
+
+            st.success("Analysis complete!")
+
+# ==============================
+# PAGE 4: OVERVIEW
+# ==============================
+
+elif page == "🏠 Overview":
+
+    st.header("Executive Overview")
+
+    if st.session_state.results is None:
+        st.info("Run analysis to view results")
+    else:
+        df = st.session_state.results
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Transactions", len(df))
+        col2.metric("Total Cost", f"${df['expected_cost'].sum():,.2f}")
+        col3.metric("High Risk %", f"{(df['risk_probability'] > 0.7).mean():.2%}")
+        col4.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.2%}")
+
+# ==============================
+# PAGE 5: DECISIONS
+# ==============================
+
+elif page == "📊 Decisions":
+
+    st.header("Decision Output")
+
+    if st.session_state.results is None:
+        st.warning("Run analysis first")
+    else:
+        df = st.session_state.results
+
+        risk_filter = st.slider("Minimum Risk", 0.0, 1.0, 0.0)
+
+        filtered = df[df["risk_probability"] >= risk_filter]
+
+        st.dataframe(
+            filtered[[
                 "risk_probability",
                 "risk_tier",
                 "optimal_strategy",
-                "top_risk_drivers",
-                "decision_explanation"
+                "expected_cost"
+            ]],
+            use_container_width=True
+        )
+
+# ==============================
+# PAGE 6: INSIGHTS
+# ==============================
+
+elif page == "📈 Insights":
+
+    st.header("Insights")
+
+    if st.session_state.results is None:
+        st.warning("Run analysis first")
+    else:
+        df = st.session_state.results
+
+        st.subheader("Risk Distribution")
+        st.bar_chart(df["risk_tier"].value_counts())
+
+        st.subheader("Strategy Distribution")
+        st.bar_chart(df["optimal_strategy"].value_counts())
+
+        st.subheader("Cost by Strategy")
+        st.bar_chart(df.groupby("optimal_strategy")["expected_cost"].sum())
+
+        st.subheader("Strategy Comparison")
+
+        comparison = pd.DataFrame({
+            "Strategy": ["AI Only", "Human Only", "Hybrid"],
+            "Cost": [
+                df["cost_ai"].sum(),
+                df["cost_human"].sum(),
+                df["cost_hybrid"].sum()
             ]
-        ],
-        use_container_width=True
-    )
+        })
 
-# ==============================
-# Live Prediction
-# ==============================
-
-else:
-
-    st.header("Live Risk Prediction")
-
-    col1, col2 = st.columns(2)
-
-    rating = col1.slider("Rating", 1.0, 5.0, 4.0)
-    sentiment_score = col1.slider("Sentiment Score", -1.0, 1.0, 0.5)
-    review_length = col1.number_input("Review Length", 1, 1000, 100)
-
-    verified_purchase = col2.selectbox(
-        "Verified Purchase",
-        [0, 1]
-    )
-
-    helpfulness_ratio = col2.slider(
-        "Helpfulness Ratio",
-        0.0,
-        1.0,
-        0.5
-    )
-
-    if st.button("Predict Risk"):
-
-        input_df = pd.DataFrame([{
-            "rating": rating,
-            "sentiment_score": sentiment_score,
-            "review_length": review_length,
-            "verified_purchase": verified_purchase,
-            "helpfulness_ratio": helpfulness_ratio
-        }])
-
-        risk_prob = model.predict_proba(input_df)[0][1]
-
-        tier = risk_tier(risk_prob)
-
-        st.subheader("Prediction Result")
-
-        st.write(f"Fraud Risk Probability: **{risk_prob:.3f}**")
-        st.write(f"Risk Tier: **{tier}**")
-
-        if risk_prob < HYBRID_THRESHOLD:
-            strategy = "AI Automation"
-        elif risk_prob < 0.7:
-            strategy = "Hybrid Handling"
-        else:
-            strategy = "Human Review"
-
-        st.write(f"Recommended Strategy: **{strategy}**")
+        st.dataframe(comparison, use_container_width=True)
