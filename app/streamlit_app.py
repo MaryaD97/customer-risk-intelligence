@@ -232,18 +232,150 @@ elif page == "1. Upload Data":
 
     if file:
         df = pd.read_csv(file)
+
+        st.subheader("Raw Data Preview")
         st.dataframe(df.head(), use_container_width=True)
 
-        st.subheader("Map Columns")
+        st.divider()
+
+        # ==============================
+        # SCHEMA SIGNATURE (for learning)
+        # ==============================
+        schema_signature = tuple(sorted(df.columns))
+
+        if "saved_mappings" not in st.session_state:
+            st.session_state.saved_mappings = {}
+
+        previous_mapping = st.session_state.saved_mappings.get(schema_signature, {})
+
+        # ==============================
+        # SMART COLUMN SUGGESTION
+        # ==============================
+        def suggest_column(target, columns):
+            target = target.lower()
+            for col in columns:
+                if target in col.lower():
+                    return col
+            return columns[0]
+
+        st.subheader("Column Mapping")
+
+        st.markdown("Map your dataset fields to required features")
 
         mapping = {}
-        for col in feature_columns + ["order_value"]:
-            mapping[col] = st.selectbox(col, df.columns)
 
-        if st.button("Confirm Mapping"):
-            df = df.rename(columns={v: k for k, v in mapping.items()})
-            st.session_state.mapped_data = df
-            st.success("Data ready")
+        # DRAG-LIKE UX using columns
+        left, right = st.columns(2)
+
+        for i, target_col in enumerate(feature_columns + ["order_value"]):
+
+            # Priority: previous mapping → smart suggestion
+            default_col = previous_mapping.get(
+                target_col,
+                suggest_column(target_col, df.columns)
+            )
+
+            container = left if i % 2 == 0 else right
+
+            mapping[target_col] = container.selectbox(
+                f"{target_col}",
+                df.columns,
+                index=list(df.columns).index(default_col)
+            )
+
+        st.divider()
+
+        # ==============================
+        # VALIDATION SYSTEM
+        # ==============================
+        def validate_mapping(mapping, df):
+            errors = []
+
+            # Duplicate mapping check
+            if len(set(mapping.values())) < len(mapping.values()):
+                errors.append("Duplicate columns selected for multiple fields")
+
+            # Missing required columns
+            for k, v in mapping.items():
+                if v not in df.columns:
+                    errors.append(f"Missing column: {v}")
+
+            return errors
+
+        validation_errors = validate_mapping(mapping, df)
+
+        if validation_errors:
+            st.error("⚠️ Mapping Issues Detected")
+            for err in validation_errors:
+                st.write(f"- {err}")
+        else:
+            st.success("✅ Mapping looks good")
+
+        st.divider()
+
+        # ==============================
+        # DATA CLEANING PIPELINE
+        # ==============================
+        def clean_data(df):
+
+            df = df.copy()
+
+            # Standardize column names
+            df.columns = df.columns.str.strip()
+
+            # Convert numeric columns
+            for col in feature_columns + ["order_value"]:
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col], errors="coerce")
+
+            # Missing values handling
+            missing_before = df.isna().mean().mean()
+
+            df = df.fillna(0)
+
+            # Remove infinities
+            df = df.replace([np.inf, -np.inf], 0)
+
+            missing_after = df.isna().mean().mean()
+
+            return df, missing_before, missing_after
+
+        # ==============================
+        # CONFIRM BUTTON
+        # ==============================
+        if st.button("Confirm Mapping & Clean Data"):
+
+            if validation_errors:
+                st.error("Fix mapping errors before proceeding")
+            else:
+                # Rename columns
+                df = df.rename(columns={v: k for k, v in mapping.items()})
+
+                # Keep only required columns
+                required_cols = feature_columns + ["order_value"]
+                df = df[required_cols]
+
+                # Clean data
+                df, before, after = clean_data(df)
+
+                # SAVE SCHEMA (learning)
+                st.session_state.saved_mappings[schema_signature] = mapping
+
+                st.session_state.mapped_data = df
+
+                st.success("Data mapped, validated, and cleaned successfully")
+
+                # ==============================
+                # DATA QUALITY INSIGHTS
+                # ==============================
+                st.subheader("Data Quality Report")
+
+                col1, col2 = st.columns(2)
+                col1.metric("Missing Values Before", f"{before:.2%}")
+                col2.metric("Missing Values After", f"{after:.2%}")
+
+                st.subheader("Cleaned Data Preview")
+                st.dataframe(df.head(), use_container_width=True)
 
 # ==============================
 # CONFIG
