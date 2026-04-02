@@ -100,7 +100,7 @@ if "config" not in st.session_state:
 # ==============================
 # SIDEBAR NAVIGATION
 # ==============================
-st.sidebar.title("Fraud Decision Engine")
+st.sidebar.title("Customer Risk Intelligence Platform")
 
 page = st.sidebar.radio(
     "Navigation",
@@ -169,13 +169,56 @@ def estimate_baseline_cost(df):
 # ==============================
 if page == "Overview":
 
-    st.title("Fraud Decision Engine")
+    st.title("Customer Risk Intelligence Platform")
 
     st.markdown("""
     Automatically choose the **lowest-cost action** for every transaction by combining fraud prediction with financial impact modeling.
     """)
 
     st.divider()
+
+# ==============================
+# EXECUTIVE SUMMARY (NEW)
+# ==============================
+if st.session_state.results is not None:
+    df = st.session_state.results
+
+    baseline = estimate_baseline_cost(df)
+    optimized = df["expected_cost"].sum()
+    savings = baseline - optimized
+
+    st.subheader("Executive Summary")
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Baseline Cost", f"${baseline:,.0f}")
+    col2.metric("Optimized Cost", f"${optimized:,.0f}")
+    col3.metric("Cost Savings", f"${savings:,.0f}")
+
+    st.divider()
+
+# ==============================
+# SYSTEM PIPELINE (NEW)
+# ==============================
+st.subheader("System Pipeline")
+
+st.markdown("""
+1. **Data Ingestion**  
+   Upload transaction and customer interaction data  
+
+2. **Feature Engineering**  
+   Behavioral signals derived from raw inputs  
+
+3. **Risk Modeling**  
+   Machine learning model predicts probability of risk  
+
+4. **Decision Optimization**  
+   Cost simulation evaluates possible actions  
+
+5. **Explainability Layer**  
+   Key drivers behind each decision are surfaced  
+""")
+
+st.divider()
 
     # KPIs
     col1, col2, col3 = st.columns(3)
@@ -228,6 +271,31 @@ elif page == "1. Upload Data":
 
     st.title("Upload Transaction Data")
 
+    # ==============================
+    # DATA REQUIREMENTS (NEW)
+    # ==============================
+    st.subheader("Data Requirements")
+    
+    st.markdown("""
+    Your dataset should include the following types of information:
+    
+    **Core Signals (Required)**
+    - Customer rating or satisfaction score  
+    - Review or feedback text  
+    - Purchase verification indicator  
+    - Engagement signals (e.g., helpful votes)  
+    
+    **Financial Data (Required)**
+    - Transaction value / order amount  
+    
+    **What the system does:**
+    - Derives behavioral features automatically  
+    - Predicts risk probability  
+    - Recommends cost-optimized decisions  
+    """)
+    
+    st.divider()
+
     file = st.file_uploader("Upload CSV")
 
     if file:
@@ -260,9 +328,23 @@ elif page == "1. Upload Data":
 
         st.subheader("Column Mapping")
 
+        st.caption("The system remembers your schema and will auto-map fields for similar datasets.")
+
         st.markdown("Map your dataset fields to required features")
 
         mapping = {}
+
+        # ==============================
+        # FRIENDLY FEATURE NAMES (NEW)
+        # ==============================
+        feature_labels = {
+            "rating": "Customer Score",
+            "sentiment_score": "Behavioral Signal",
+            "review_length": "Engagement Depth",
+            "helpfulness_ratio": "Peer Validation",
+            "verified_purchase": "Trust Indicator",
+            "order_value": "Transaction Value"
+        }
 
         # DRAG-LIKE UX using columns
         left, right = st.columns(2)
@@ -278,7 +360,7 @@ elif page == "1. Upload Data":
             container = left if i % 2 == 0 else right
 
             mapping[target_col] = container.selectbox(
-                f"{target_col}",
+                f"{feature_labels.get(target_col, target_col)}",
                 df.columns,
                 index=list(df.columns).index(default_col)
             )
