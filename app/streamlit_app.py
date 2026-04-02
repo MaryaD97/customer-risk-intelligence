@@ -196,29 +196,29 @@ if st.session_state.results is not None:
 
     st.divider()
 
-# ==============================
-# SYSTEM PIPELINE (NEW)
-# ==============================
-st.subheader("System Pipeline")
-
-st.markdown("""
-1. **Data Ingestion**  
-   Upload transaction and customer interaction data  
-
-2. **Feature Engineering**  
-   Behavioral signals derived from raw inputs  
-
-3. **Risk Modeling**  
-   Machine learning model predicts probability of risk  
-
-4. **Decision Optimization**  
-   Cost simulation evaluates possible actions  
-
-5. **Explainability Layer**  
-   Key drivers behind each decision are surfaced  
-""")
-
-st.divider()
+    # ==============================
+    # SYSTEM PIPELINE (NEW)
+    # ==============================
+    st.subheader("System Pipeline")
+    
+    st.markdown("""
+    1. **Data Ingestion**  
+       Upload transaction and customer interaction data  
+    
+    2. **Feature Engineering**  
+       Behavioral signals derived from raw inputs  
+    
+    3. **Risk Modeling**  
+       Machine learning model predicts probability of risk  
+    
+    4. **Decision Optimization**  
+       Cost simulation evaluates possible actions  
+    
+    5. **Explainability Layer**  
+       Key drivers behind each decision are surfaced  
+    """)
+    
+    st.divider()
 
     # KPIs
     col1, col2, col3 = st.columns(3)
