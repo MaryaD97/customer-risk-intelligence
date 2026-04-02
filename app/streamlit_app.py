@@ -177,30 +177,30 @@ if page == "Overview":
 
     st.divider()
 
-# ==============================
-# EXECUTIVE SUMMARY (NEW)
-# ==============================
-if st.session_state.results is not None:
-    df = st.session_state.results
+    # ==============================
+    # EXECUTIVE SUMMARY
+    # ==============================
+    if st.session_state.results is not None:
+        df = st.session_state.results
 
-    baseline = estimate_baseline_cost(df)
-    optimized = df["expected_cost"].sum()
-    savings = baseline - optimized
+        baseline = estimate_baseline_cost(df)
+        optimized = df["expected_cost"].sum()
+        savings = baseline - optimized
 
-    st.subheader("Executive Summary")
+        st.subheader("Executive Summary")
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Baseline Cost", f"${baseline:,.0f}")
-    col2.metric("Optimized Cost", f"${optimized:,.0f}")
-    col3.metric("Cost Savings", f"${savings:,.0f}")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Baseline Cost", f"${baseline:,.0f}")
+        col2.metric("Optimized Cost", f"${optimized:,.0f}")
+        col3.metric("Cost Savings", f"${savings:,.0f}")
 
-    st.divider()
+        st.divider()
 
     # ==============================
-    # SYSTEM PIPELINE (NEW)
+    # SYSTEM PIPELINE
     # ==============================
     st.subheader("System Pipeline")
-    
+
     st.markdown("""
     1. **Data Ingestion**  
        Upload transaction and customer interaction data  
@@ -217,7 +217,7 @@ if st.session_state.results is not None:
     5. **Explainability Layer**  
        Key drivers behind each decision are surfaced  
     """)
-    
+
     st.divider()
 
     # KPIs
