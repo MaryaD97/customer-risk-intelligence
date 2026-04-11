@@ -430,7 +430,7 @@ elif page == "3. Generate Decisions":
     if st.session_state.mapped_data is None:
         st.warning("Upload data first")
     else:
-        st.button("Generate Decisions")
+        if st.button("Generate Decisions"):
 
             df = st.session_state.mapped_data.copy()
             cfg = st.session_state.config
