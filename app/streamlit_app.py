@@ -170,6 +170,7 @@ if page == "Overview":
     st.title("Optimize fraud decisions by minimizing financial loss")
 
     st.markdown("Upload transaction data and get the **lowest-cost action for every case — instantly.**")
+    st.markdown("### Get clear decisions, reduce fraud loss, and minimize manual reviews — automatically.")
 
     st.divider()
 
@@ -185,9 +186,9 @@ if page == "Overview":
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
 
         col1, col2, col3 = st.columns(3)
-        col1.metric("💰 Estimated Savings", f"${savings:,.0f}")
-        col2.metric("📉 Loss Reduction", f"{reduction:.1%}")
-        col3.metric("⚡ Automation Rate", f"{automation:.1%}")
+        col1.metric("Estimated Savings", f"${savings:,.0f}")
+        col2.metric("Loss Reduction", f"{reduction:.1%}")
+        col3.metric("Automation Rate", f"{automation:.1%}")
 
     else:
         col1, col2, col3 = st.columns(3)
@@ -200,26 +201,39 @@ if page == "Overview":
     # ------------------------------
     # SIMPLE FLOW
     # ------------------------------
+    st.markdown("---")
+    
     st.subheader("How It Works")
 
-    c1, c2, c3, c4 = st.columns(4)
-
-    c1.markdown("**Upload Data**")
-    c2.markdown("**Detect Risk**")
-    c3.markdown("**Simulate Cost**")
-    c4.markdown("**Recommend Action**")
+    flow_cols = st.columns(7)
+    
+    flow_cols[0].markdown("**Upload Data**")
+    flow_cols[1].markdown("<div style='text-align:center;'>→</div>", unsafe_allow_html=True)
+    flow_cols[2].markdown("**Detect Risk**")
+    flow_cols[3].markdown("<div style='text-align:center;'>→</div>", unsafe_allow_html=True)
+    flow_cols[4].markdown("**Simulate Cost**")
+    flow_cols[5].markdown("<div style='text-align:center;'>→</div>", unsafe_allow_html=True)
+    flow_cols[6].markdown("**Recommend Action**")
 
     st.divider()
 
     # ------------------------------
     # OUTPUT PREVIEW
     # ------------------------------
-    st.subheader("What You Get")
+    st.markdown("---")
+    
+    st.subheader("Example Decisions")
+    st.markdown("See the recommended action and expected cost for each transaction.")
 
     preview_df = pd.DataFrame({
         "Transaction": ["#123", "#124", "#125"],
-        "Fraud Risk Score": ["High", "Medium", "Low"],
-        "Decision": ["🔍 Review", "⚖️ Conditional", "✅ Approve"],
+        "Fraud Risk Score": ["0.89", "0.52", "0.12"],
+        "Decision": ["Review", "Conditional", "Approve"],
+        "Why": [
+            "High value, low trust signal",
+            "Moderate risk pattern",
+            "Low risk profile"
+        ],
         "Expected Cost": ["$12.40", "$6.20", "$1.10"]
     })
 
@@ -231,6 +245,7 @@ if page == "Overview":
     # CTA
     # ------------------------------
     st.subheader("Get Started")
+    st.markdown("Upload your dataset and start generating optimized decisions.")
 
     col1, col2, col3 = st.columns(3)
     col1.markdown("**1. Upload Data**")
