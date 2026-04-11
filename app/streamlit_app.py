@@ -201,8 +201,6 @@ if page == "Overview":
     # ------------------------------
     # SIMPLE FLOW
     # ------------------------------
-    st.markdown("---")
-    
     st.subheader("How It Works")
 
     flow_cols = st.columns(7)
@@ -220,8 +218,6 @@ if page == "Overview":
     # ------------------------------
     # OUTPUT PREVIEW
     # ------------------------------
-    st.markdown("---")
-    
     st.subheader("Example Decisions")
     st.markdown("See the recommended action and expected cost for each transaction.")
 
