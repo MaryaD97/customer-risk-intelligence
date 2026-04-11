@@ -100,7 +100,7 @@ page = st.sidebar.radio(
         "Overview",
         "1. Upload Data",
         "2. Set Costs",
-        "3. Run Analysis",
+        "3. Generate Decisions",
         "4. Decisions",
         "5. Insights"
     ]
@@ -164,10 +164,10 @@ def estimate_baseline_cost(df):
 # ==============================
 if page == "Overview":
 
-    st.title("Customer Risk Intelligence Platform")
+    st.title("Optimize fraud decisions by minimizing financial loss")
 
     st.markdown("""
-Automatically choose the **lowest-cost action** for every transaction by combining fraud prediction with financial impact modeling.
+Upload transaction data and get the **lowest-cost action for every case — instantly.**
 """)
 
     st.divider()
@@ -199,10 +199,10 @@ Upload transaction and customer interaction data
 Behavioral signals derived from raw inputs
 
 3. **Risk Modeling**
-Machine learning model predicts probability of risk
+Machine learning model detect fraud risk instantly
 
 4. **Decision Optimization**
-Cost simulation evaluates possible actions
+Evaluate financial impact
 
 5. **Explainability Layer**
 Key drivers behind each decision are surfaced
@@ -423,14 +423,14 @@ elif page == "2. Set Costs":
 # ==============================
 # RUN
 # ==============================
-elif page == "3. Run Analysis":
+elif page == "3. Generate Decisions":
 
     st.title("Run Decision Engine")
 
     if st.session_state.mapped_data is None:
         st.warning("Upload data first")
     else:
-        if st.button("Run Analysis"):
+        st.button("Generate Decisions")
 
             df = st.session_state.mapped_data.copy()
             cfg = st.session_state.config
@@ -504,17 +504,18 @@ elif page == "4. Decisions":
 
         st.divider()
 
-        st.dataframe(
-            sim_df[
-                [
-                    "risk_probability",
-                    "risk_tier",
-                    "optimal_strategy",
-                    "expected_cost"
-                ]
-            ],
-            use_container_width=True
-        )
+        display_df = sim_df[
+    [
+        "risk_probability",
+        "risk_tier",
+        "optimal_strategy",
+        "expected_cost"
+    ]
+].rename(columns={
+    "risk_probability": "Fraud Risk Score"
+})
+
+st.dataframe(display_df, use_container_width=True)
 
         st.divider()
 
@@ -552,7 +553,7 @@ elif page == "5. Insights":
     st.title("Executive Dashboard")
 
     if st.session_state.results is None:
-        st.warning("Run analysis first")
+        st.warning("Generate decisions first")
     else:
         df = st.session_state.results
 
