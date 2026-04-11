@@ -492,33 +492,33 @@ elif page == "4. Decisions":
         sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
 
         st.divider()
-
+        
         total_cost = sim_df["expected_cost"].sum()
         automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
         high_risk = (sim_df["risk_probability"] > 0.7).mean()
-
+        
         col1, col2, col3 = st.columns(3)
         col1.metric("Total Cost", f"${total_cost:,.0f}")
         col2.metric("Automation Rate", f"{automation_rate:.1%}")
         col3.metric("High Risk Transactions", f"{high_risk:.1%}")
-
+        
         st.divider()
-
+        
         display_df = sim_df[
-    [
-        "risk_probability",
-        "risk_tier",
-        "optimal_strategy",
-        "expected_cost"
-    ]
-].rename(columns={
-    "risk_probability": "Fraud Risk Score"
-})
-
-st.dataframe(display_df, use_container_width=True)
-
+            [
+                "risk_probability",
+                "risk_tier",
+                "optimal_strategy",
+                "expected_cost"
+            ]
+        ].rename(columns={
+            "risk_probability": "Fraud Risk Score"
+        })
+        
+        st.dataframe(display_df, use_container_width=True)
+        
         st.divider()
-
+        
         st.subheader("Explain a Decision")
 
         selected_index = st.selectbox("Select Transaction", sim_df.index)
