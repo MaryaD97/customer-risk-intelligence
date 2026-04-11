@@ -164,14 +164,16 @@ def estimate_baseline_cost(df):
 # ==============================
 if page == "Overview":
 
+    # ------------------------------
+    # HERO SECTION
+    # ------------------------------
     st.title("Optimize fraud decisions by minimizing financial loss")
 
-    st.markdown("""
-Upload transaction data and get the **lowest-cost action for every case — instantly.**
-""")
+    st.markdown("Upload transaction data and get the **lowest-cost action for every case — instantly.**")
 
     st.divider()
 
+    # Show real metrics if available, else placeholders
     if st.session_state.results is not None:
 
         df = st.session_state.results
@@ -179,74 +181,64 @@ Upload transaction data and get the **lowest-cost action for every case — inst
         baseline = estimate_baseline_cost(df)
         optimized = df["expected_cost"].sum()
         savings = baseline - optimized
-
-        st.subheader("Executive Summary")
+        reduction = (savings / baseline) if baseline > 0 else 0
+        automation = (df["optimal_strategy"].str.contains("AI")).mean()
 
         col1, col2, col3 = st.columns(3)
-        col1.metric("Baseline Cost", f"${baseline:,.0f}")
-        col2.metric("Optimized Cost", f"${optimized:,.0f}")
-        col3.metric("Cost Savings", f"${savings:,.0f}")
+        col1.metric("💰 Estimated Savings", f"${savings:,.0f}")
+        col2.metric("📉 Loss Reduction", f"{reduction:.1%}")
+        col3.metric("⚡ Automation Rate", f"{automation:.1%}")
 
-        st.divider()
-
-    st.subheader("System Pipeline")
-
-    st.markdown("""
-1. **Data Ingestion**
-Upload transaction and customer interaction data
-
-2. **Feature Engineering**
-Behavioral signals derived from raw inputs
-
-3. **Risk Modeling**
-Machine learning model detect fraud risk instantly
-
-4. **Decision Optimization**
-Evaluate financial impact
-
-5. **Explainability Layer**
-Key drivers behind each decision are surfaced
-""")
+    else:
+        col1, col2, col3 = st.columns(3)
+        col1.metric("💰 Estimated Savings", "$0")
+        col2.metric("📉 Loss Reduction", "0%")
+        col3.metric("⚡ Automation Rate", "0%")
 
     st.divider()
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Fraud Loss Reduction", "Optimized")
-    col2.metric("Manual Reviews", "Minimized")
-    col3.metric("Decision Speed", "Instant")
-
-    st.divider()
-
+    # ------------------------------
+    # SIMPLE FLOW
+    # ------------------------------
     st.subheader("How It Works")
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.markdown("**Upload Data** \nTransaction-level dataset")
-    c2.markdown("**Risk Scoring** \nPredict fraud probability")
-    c3.markdown("**Cost Simulation** \nEvaluate decision cost")
-    c4.markdown("**Decision Output** \nSelect optimal action")
+
+    c1.markdown("**Upload Data**")
+    c2.markdown("**Detect Risk**")
+    c3.markdown("**Simulate Cost**")
+    c4.markdown("**Recommend Action**")
 
     st.divider()
 
+    # ------------------------------
+    # OUTPUT PREVIEW
+    # ------------------------------
     st.subheader("What You Get")
 
-    st.markdown("""
-- Fraud probability for each transaction
-- Recommended action (AI / Human / Hybrid)
-- Expected cost per decision
-- Explanation of key drivers
-""")
+    preview_df = pd.DataFrame({
+        "Transaction": ["#123", "#124", "#125"],
+        "Fraud Risk Score": ["High", "Medium", "Low"],
+        "Decision": ["🔍 Review", "⚖️ Conditional", "✅ Approve"],
+        "Expected Cost": ["$12.40", "$6.20", "$1.10"]
+    })
+
+    st.dataframe(preview_df, use_container_width=True)
 
     st.divider()
 
+    # ------------------------------
+    # CTA
+    # ------------------------------
     st.subheader("Get Started")
 
     col1, col2, col3 = st.columns(3)
     col1.markdown("**1. Upload Data**")
     col2.markdown("**2. Set Costs**")
-    col3.markdown("**3. Run Analysis**")
+    col3.markdown("**3. Generate Decisions**")
 
     if st.session_state.results is None:
-        st.info("No analysis yet. Start by uploading your data.")
+        st.info("Start by uploading your transaction data to generate decisions.")
 
 # ==============================
 # UPLOAD
