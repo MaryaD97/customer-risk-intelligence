@@ -256,27 +256,24 @@ if page == "Overview":
 # ==============================
 elif page == "1. Upload Data":
 
-    st.title("Upload Transaction Data")
+    st.title("Upload Your Data")
 
-    st.subheader("Data Requirements")
+    st.subheader("What You Need")
 
     st.markdown("""
-Your dataset should include the following types of information:
+    Upload your dataset with key customer and transaction signals.
+    
+    **Required:**
+    - Customer score or rating
+    - Behavioral signal (e.g. review or activity)
+    - Transaction value
+    
+    The system will:
+    - Detect fraud risk
+    - Estimate financial impact
+    - Recommend the best action
+    """)
 
-**Core Signals (Required)**
-- Customer rating or satisfaction score
-- Review or feedback text
-- Purchase verification indicator
-- Engagement signals (e.g., helpful votes)
-
-**Financial Data (Required)**
-- Transaction value / order amount
-
-**What the system does:**
-- Derives behavioral features automatically
-- Predicts risk probability
-- Recommends cost-optimized decisions
-""")
 
     st.divider()
 
@@ -285,7 +282,7 @@ Your dataset should include the following types of information:
     if file:
         df = pd.read_csv(file)
 
-        st.subheader("Raw Data Preview")
+        st.subheader("Preview Your Data")
         st.dataframe(df.head(), use_container_width=True)
 
         st.divider()
@@ -304,9 +301,9 @@ Your dataset should include the following types of information:
                     return col
             return columns[0]
 
-        st.subheader("Column Mapping")
-        st.caption("The system remembers your schema and will auto-map fields for similar datasets.")
-        st.markdown("Map your dataset fields to required features")
+        st.subheader("Match Your Columns")
+        st.caption("We’ll automatically match similar datasets in the future.")
+        st.markdown("Match your data to the required fields")
 
         mapping = {}
 
@@ -380,7 +377,7 @@ Your dataset should include the following types of information:
 
             return df, missing_before, missing_after
 
-        if st.button("Confirm Mapping & Clean Data"):
+        if st.button("Confirm & Continue"):
 
             if validation_errors:
                 st.error("Fix mapping errors before proceeding")
@@ -395,7 +392,7 @@ Your dataset should include the following types of information:
                 st.session_state.saved_mappings[schema_signature] = mapping
                 st.session_state.mapped_data = df
 
-                st.success("Data mapped, validated, and cleaned successfully")
+                st.success("Data ready for analysis")
 
                 st.subheader("Data Quality Report")
 
@@ -411,11 +408,11 @@ Your dataset should include the following types of information:
 # ==============================
 elif page == "2. Set Costs":
 
-    st.title("Business Cost Configuration")
+    st.title("Set Business Costs")
 
     col1, col2 = st.columns(2)
 
-    fraud_cost = col1.slider("Fraud Loss Multiplier", 1.0, 5.0, 3.0)
+    fraud_cost = col1.slider("Fraud Loss Impact", 1.0, 5.0, 3.0)
     review_cost = col2.slider("Manual Review Cost", 1.0, 20.0, 4.0)
 
     st.session_state.config = {
@@ -431,7 +428,7 @@ elif page == "3. Generate Decisions":
     st.title("Run Decision Engine")
 
     if st.session_state.mapped_data is None:
-        st.warning("Upload data first")
+        st.warning("Upload your data to continue")
     else:
         if st.button("Generate Decisions"):
 
@@ -460,7 +457,7 @@ elif page == "3. Generate Decisions":
 
             st.session_state.results = df
 
-            st.success("Analysis complete")
+            st.success("Decisions generated successfully")
 
 # ==============================
 # DECISIONS
@@ -474,7 +471,7 @@ elif page == "4. Decisions":
     else:
         base_df = st.session_state.results
 
-        st.subheader("Adjust Business Costs")
+        st.subheader("Adjust Costs")
 
         col1, col2 = st.columns(2)
 
@@ -501,9 +498,9 @@ elif page == "4. Decisions":
         high_risk = (sim_df["risk_probability"] > 0.7).mean()
         
         col1, col2, col3 = st.columns(3)
-        col1.metric("Total Cost", f"${total_cost:,.0f}")
+        col1.metric("Total Estimated Loss", f"${total_cost:,.0f}")
         col2.metric("Automation Rate", f"{automation_rate:.1%}")
-        col3.metric("High Risk Transactions", f"{high_risk:.1%}")
+        col3.metric(""High Risk Cases"", f"{high_risk:.1%}")
         
         st.divider()
         
@@ -522,18 +519,17 @@ elif page == "4. Decisions":
         
         st.divider()
         
-        st.subheader("Explain a Decision")
+        st.subheader("Why this decision?")
 
         selected_index = st.selectbox("Select Transaction", sim_df.index)
 
         row = sim_df.loc[selected_index]
 
         st.markdown(f"""
-**Prediction Details**
-- Risk Probability: {row['risk_probability']:.2f}
-- Selected Strategy: {row['optimal_strategy']}
-- Expected Cost: ${row['expected_cost']:.2f}
-""")
+        **Decision Summary**
+        - Fraud Risk Score: {row['risk_probability']:.2f}
+        - Recommended Action: {row['optimal_strategy']}
+        - Expected Cost: ${row['expected_cost']:.2f}
 
         X_row = base_df.loc[[selected_index], feature_columns]
 
@@ -553,7 +549,7 @@ elif page == "4. Decisions":
 # ==============================
 elif page == "5. Insights":
 
-    st.title("Executive Dashboard")
+    st.title("Business Impact")
 
     if st.session_state.results is None:
         st.warning("Generate decisions first")
@@ -564,11 +560,10 @@ elif page == "5. Insights":
         optimized = df["expected_cost"].sum()
         savings = baseline - optimized
 
-        st.subheader("Business Impact")
 
         col1, col2, col3 = st.columns(3)
         col1.metric("Baseline Cost", f"${baseline:,.0f}")
-        col2.metric("Optimized Cost", f"${optimized:,.0f}")
+        col2.metric("Estimated Loss", f"${optimized:,.0f}")
         col3.metric("Estimated Savings", f"${savings:,.0f}")
 
         st.divider()
