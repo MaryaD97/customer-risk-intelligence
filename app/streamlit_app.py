@@ -525,18 +525,21 @@ elif page == "4. Decisions":
 
         row = sim_df.loc[selected_index]
 
-        st.markdown(f""
+        row = sim_df.loc[selected_index]
+
+        st.markdown(f"""
         **Decision Summary**
         - Fraud Risk Score: {row['risk_probability']:.2f}
         - Recommended Action: {row['optimal_strategy']}
         - Expected Cost: ${row['expected_cost']:.2f}
-
+        """)
+        
         X_row = base_df.loc[[selected_index], feature_columns]
-
+        
         shap_values = explainer(X_row)
-
+        
         st.write("Feature Impact (SHAP)")
-
+        
         st.bar_chart(
             pd.DataFrame({
                 "feature": feature_columns,
