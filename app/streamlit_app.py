@@ -525,7 +525,7 @@ elif page == "4. Decisions":
 
         row = sim_df.loc[selected_index]
 
-        st.markdown(f"""
+        st.markdown(f""
         **Decision Summary**
         - Fraud Risk Score: {row['risk_probability']:.2f}
         - Recommended Action: {row['optimal_strategy']}
