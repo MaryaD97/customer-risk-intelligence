@@ -184,18 +184,29 @@ if page == "Overview":
         savings = baseline - optimized
         reduction = (savings / baseline) if baseline > 0 else 0
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
-
+        
+        # HERO VALUE LINE (MOST IMPORTANT)
+        st.markdown(f"## 💰 You saved **${savings:,.0f}** using optimized decisions")
+        
+        # CORE METRICS
         col1, col2, col3 = st.columns(3)
         col1.metric("Estimated Savings", f"${savings:,.0f}")
-        col2.metric("Loss Reduction", f"{reduction:.1%}")
-        col3.metric("Automation Rate", f"{automation:.1%}")
+        col2.metric("Baseline Cost", f"${baseline:,.0f}")
+        col3.metric("Optimized Cost", f"${optimized:,.0f}")
+        
+        # SECONDARY METRICS
+        col4, col5 = st.columns(2)
+        col4.metric("Loss Reduction", f"{reduction:.1%}")
+        col5.metric("Automation Rate", f"{automation:.1%}")
 
     else:
-        col1, col2, col3 = st.columns(3)
-        col1.metric("💰 Estimated Savings", "$0")
-        col2.metric("📉 Loss Reduction", "0%")
-        col3.metric("⚡ Automation Rate", "0%")
+        st.markdown("## 💰 You saved $0 using optimized decisions")
 
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Estimated Savings", "$0")
+        col2.metric("Baseline Cost", "$0")
+        col3.metric("Optimized Cost", "$0")
+        
     st.divider()
 
     # ------------------------------
@@ -496,6 +507,11 @@ elif page == "4. Decisions":
         total_cost = sim_df["expected_cost"].sum()
         automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
         high_risk = (sim_df["risk_probability"] > 0.7).mean()
+
+        baseline = estimate_baseline_cost(sim_df)
+        savings = baseline - total_cost
+        
+        st.markdown(f"### 💰 You save **${savings:,.0f}** with current settings")
         
         col1, col2, col3 = st.columns(3)
         col1.metric("Total Estimated Loss", f"${total_cost:,.0f}")
@@ -562,12 +578,22 @@ elif page == "5. Insights":
         baseline = estimate_baseline_cost(df)
         optimized = df["expected_cost"].sum()
         savings = baseline - optimized
-
-
+        reduction = (savings / baseline) if baseline > 0 else 0
+        
+        # HERO VALUE
+        st.markdown(f"## 💰 You saved **${savings:,.0f}** using optimized decisions")
+        
+        st.subheader("Business Impact")
+        
         col1, col2, col3 = st.columns(3)
-        col1.metric("Baseline Cost", f"${baseline:,.0f}")
-        col2.metric("Estimated Loss", f"${optimized:,.0f}")
-        col3.metric("Estimated Savings", f"${savings:,.0f}")
+        col1.metric("Estimated Savings", f"${savings:,.0f}")
+        col2.metric("Baseline Cost", f"${baseline:,.0f}")
+        col3.metric("Optimized Cost", f"${optimized:,.0f}")
+        
+        # SECONDARY
+        col4, col5 = st.columns(2)
+        col4.metric("Loss Reduction", f"{reduction:.1%}")
+        col5.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
 
         st.divider()
 
