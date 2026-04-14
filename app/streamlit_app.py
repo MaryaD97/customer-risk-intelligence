@@ -500,7 +500,7 @@ elif page == "4. Decisions":
         col1, col2, col3 = st.columns(3)
         col1.metric("Total Estimated Loss", f"${total_cost:,.0f}")
         col2.metric("Automation Rate", f"{automation_rate:.1%}")
-        col3.metric(""High Risk Cases"", f"{high_risk:.1%}")
+        col3.metric("High Risk Cases", f"{high_risk:.1%}")
         
         st.divider()
         
