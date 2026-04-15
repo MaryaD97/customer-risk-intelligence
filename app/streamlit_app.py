@@ -144,6 +144,26 @@ def clean_data(df):
 
     return df, missing_before, missing_after
 
+def get_risk_drivers(row):
+    drivers = []
+
+    if row["order_value"] > 100:
+        drivers.append("High transaction value")
+
+    if row["rating"] < 3:
+        drivers.append("Low customer rating")
+
+    if row["review_length"] < 20:
+        drivers.append("Low engagement activity")
+
+    if row["verified_purchase"] == 0:
+        drivers.append("Unverified purchase")
+
+    if not drivers:
+        drivers.append("No strong risk signals")
+
+    return drivers[:3]
+
 def risk_tier(p):
     return "Low" if p < 0.3 else "Medium" if p < 0.7 else "High"
 
@@ -278,12 +298,12 @@ if page == "Overview":
 
     st.divider()
 
-    # ------------------------------
+   # ------------------------------
     # OUTPUT PREVIEW
     # ------------------------------
     st.markdown("### Example Decisions")
     st.caption("Recommended action and expected cost per transaction")
-
+    
     preview_df = pd.DataFrame({
         "Transaction": ["#123", "#124", "#125"],
         "Fraud Risk Score": ["0.89", "0.52", "0.12"],
@@ -295,6 +315,10 @@ if page == "Overview":
         ],
         "Expected Cost": ["$12.40", "$6.20", "$1.10"]
     })
+    
+    st.dataframe(preview_df, use_container_width=True, height=220)
+    
+    st.divider()
 
     def highlight_action(val):
         if val == "Approve":
@@ -622,33 +646,25 @@ elif page == "4. Decisions":
                 
         st.divider()
         
-        st.subheader("Why this decision?")
+       st.subheader("Decision Explanation")
 
         selected_index = st.selectbox("Select Transaction", sim_df.index)
-
+        
         row = sim_df.loc[selected_index]
-
-        row = sim_df.loc[selected_index]
-
+        
         st.markdown(f"""
-        **Decision Summary**
-        - Fraud Risk Score: {row['risk_probability']:.2f}
+        **Summary**
+        - Risk Score: {row['risk_probability']:.2f}
         - Recommended Action: {map_action(row['optimal_strategy'])}
         - Expected Cost: ${row['expected_cost']:.2f}
         """)
         
-        X_row = base_df.loc[[selected_index], feature_columns]
+        st.markdown("**Top Risk Drivers**")
         
-        shap_values = explainer(X_row)
+        drivers = get_risk_drivers(row)
         
-        st.write("Feature Impact (SHAP)")
-        
-        st.bar_chart(
-            pd.DataFrame({
-                "feature": feature_columns,
-                "impact": shap_values.values[0]
-            }).set_index("feature")
-        )
+        for d in drivers:
+            st.markdown(f"- {d}")
 
 # ==============================
 # INSIGHTS
