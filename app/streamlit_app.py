@@ -290,6 +290,25 @@ elif page == "1. Upload Data":
 
     file = st.file_uploader("Upload CSV")
 
+    st.info("No data? Use sample data to explore how the system works.")
+    
+    st.markdown("or")
+    
+    if st.button("Try Sample Data"):
+        df = pd.read_csv("sample_data.csv")
+    
+        required_cols = feature_columns + ["order_value"]
+        df = df[required_cols]
+    
+        df, _, _ = clean_data(df)
+    
+        st.session_state.mapped_data = df
+    
+        st.success("Sample data loaded. You can now generate decisions.")
+    
+        st.subheader("Sample Data Preview")
+        st.dataframe(df.head(), use_container_width=True)
+
     if file:
         df = pd.read_csv(file)
 
