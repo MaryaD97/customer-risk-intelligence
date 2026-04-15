@@ -626,7 +626,7 @@ elif page == "4. Decisions":
         display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
         
         st.dataframe(
-            display_df.style.applymap(highlight_action, subset=["Recommended Action"]),
+            display_df,
             use_container_width=True,
             height=420
         )
