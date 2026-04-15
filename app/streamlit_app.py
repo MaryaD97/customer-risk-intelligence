@@ -646,23 +646,23 @@ elif page == "4. Decisions":
                 
         st.divider()
         
-       st.subheader("Decision Explanation")
-
+        st.subheader("Decision Explanation")
+    
         selected_index = st.selectbox("Select Transaction", sim_df.index)
-        
+            
         row = sim_df.loc[selected_index]
-        
+            
         st.markdown(f"""
         **Summary**
         - Risk Score: {row['risk_probability']:.2f}
         - Recommended Action: {map_action(row['optimal_strategy'])}
         - Expected Cost: ${row['expected_cost']:.2f}
         """)
-        
+            
         st.markdown("**Top Risk Drivers**")
-        
+            
         drivers = get_risk_drivers(row)
-        
+            
         for d in drivers:
             st.markdown(f"- {d}")
 
