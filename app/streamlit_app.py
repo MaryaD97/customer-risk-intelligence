@@ -109,6 +109,25 @@ page = st.sidebar.radio(
 # ==============================
 # HELPER FUNCTIONS
 # ==============================
+
+def clean_data(df):
+    df = df.copy()
+
+    df.columns = df.columns.str.strip()
+
+    for col in feature_columns + ["order_value"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    missing_before = df.isna().mean().mean()
+
+    df = df.fillna(0)
+    df = df.replace([np.inf, -np.inf], 0)
+
+    missing_after = df.isna().mean().mean()
+
+    return df, missing_before, missing_after
+
 def risk_tier(p):
     return "Low" if p < 0.3 else "Medium" if p < 0.7 else "High"
 
@@ -387,25 +406,6 @@ elif page == "1. Upload Data":
             st.success("✅ Mapping looks good")
 
         st.divider()
-
-        def clean_data(df):
-            df = df.copy()
-
-            df.columns = df.columns.str.strip()
-
-            for col in feature_columns + ["order_value"]:
-                if col in df.columns:
-                    df[col] = pd.to_numeric(df[col], errors="coerce")
-
-            missing_before = df.isna().mean().mean()
-
-            df = df.fillna(0)
-
-            df = df.replace([np.inf, -np.inf], 0)
-
-            missing_after = df.isna().mean().mean()
-
-            return df, missing_before, missing_after
 
         if st.button("Confirm & Continue"):
 
