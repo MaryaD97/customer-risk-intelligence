@@ -17,52 +17,68 @@ st.set_page_config(
 # ==============================
 st.markdown("""
 <style>
-.main {
-    background-color: #0B0F17;
-    color: #E5E7EB;
-}
-h1, h2, h3 {
-    color: #FFFFFF;
-    letter-spacing: -0.3px;
-}
-section[data-testid="stSidebar"] {
-    background-color: #0E1117;
-}
+
+/* ===== BASE ===== */
 .block-container {
     padding-top: 2rem;
     padding-bottom: 2rem;
+    max-width: 1200px;
 }
-/* Cards */
-.card {
-    background: linear-gradient(145deg, #111827, #0B0F17);
-    padding: 20px;
-    border-radius: 14px;
+
+/* ===== TYPOGRAPHY ===== */
+h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+}
+h3 {
+    font-size: 1.1rem;
+    color: #9CA3AF;
+}
+
+/* ===== SECTIONS ===== */
+.section {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #1F2937;
+}
+
+/* ===== METRICS ===== */
+[data-testid="metric-container"] {
+    background-color: #111827;
     border: 1px solid #1F2937;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    padding: 16px;
+    border-radius: 12px;
 }
-/* Buttons */
+
+/* ===== BUTTON ===== */
 .stButton>button {
     background-color: #2563EB;
     color: white;
     border-radius: 8px;
-    border: none;
     padding: 10px 18px;
     font-weight: 500;
+    border: none;
 }
 .stButton>button:hover {
     background-color: #1D4ED8;
 }
-/* Metrics */
-[data-testid="metric-container"] {
-    background-color: #111827;
+
+/* ===== TABLE ===== */
+[data-testid="stDataFrame"] {
     border: 1px solid #1F2937;
-    padding: 15px;
     border-radius: 10px;
 }
-/* Divider */
-hr {
-    border: 1px solid #1F2937;
+
+/* ===== SUBTEXT ===== */
+.caption {
+    color: #9CA3AF;
+    font-size: 0.9rem;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -186,12 +202,11 @@ if page == "Overview":
     # ------------------------------
     # HERO SECTION
     # ------------------------------
-    st.title("Optimize fraud decisions by minimizing financial loss")
+    st.title("Customer Risk Intelligence")
 
     st.markdown("Upload transaction data and get the **lowest-cost action for every case — instantly.**")
-    st.markdown("### Get clear decisions, reduce fraud loss, and minimize manual reviews — automatically.")
+    st.markdown("Make better fraud decisions. Reduce loss. Automate actions.")
 
-    st.divider()
 
     # Show real metrics if available, else placeholders
     if st.session_state.results is not None:
@@ -204,8 +219,6 @@ if page == "Overview":
         reduction = (savings / baseline) if baseline > 0 else 0
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
         
-        # HERO VALUE LINE (MOST IMPORTANT)
-        st.markdown(f"## 💰 You saved **${savings:,.0f}** using optimized decisions")
         
         # CORE METRICS
         col1, col2, col3 = st.columns(3)
@@ -217,6 +230,9 @@ if page == "Overview":
         col4, col5 = st.columns(2)
         col4.metric("Loss Reduction", f"{reduction:.1%}")
         col5.metric("Automation Rate", f"{automation:.1%}")
+
+        st.markdown(" ")
+        st.success(f"You saved ${savings:,.0f} using optimized decisions")
 
     else:
         st.markdown("## 💰 You saved $0 using optimized decisions")
@@ -231,7 +247,9 @@ if page == "Overview":
     # ------------------------------
     # SIMPLE FLOW
     # ------------------------------
-    st.subheader("How It Works")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.markdown("### How it works")
 
     flow_cols = st.columns(7)
     
@@ -248,8 +266,8 @@ if page == "Overview":
     # ------------------------------
     # OUTPUT PREVIEW
     # ------------------------------
-    st.subheader("Example Decisions")
-    st.markdown("See the recommended action and expected cost for each transaction.")
+    st.markdown("### Example Decisions")
+    st.caption("Recommended action and expected cost per transaction")
 
     preview_df = pd.DataFrame({
         "Transaction": ["#123", "#124", "#125"],
@@ -311,9 +329,15 @@ elif page == "1. Upload Data":
 
     st.info("No data? Use sample data to explore how the system works.")
     
-    st.markdown("or")
+    col1, col2 = st.columns([1, 3])
+
+    with col1:
+        sample_clicked = st.button("Try Sample Data")
     
-    if st.button("Try Sample Data"):
+    with col2:
+        st.caption("No setup needed")
+    
+    if sample_clicked:
         df = pd.read_csv("sample_data.csv")
     
         required_cols = feature_columns + ["order_value"]
@@ -324,6 +348,8 @@ elif page == "1. Upload Data":
         st.session_state.mapped_data = df
     
         st.success("Sample data loaded. You can now generate decisions.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
     
         st.subheader("Sample Data Preview")
         st.dataframe(df.head(), use_container_width=True)
@@ -455,11 +481,13 @@ elif page == "2. Set Costs":
 # ==============================
 elif page == "3. Generate Decisions":
 
-    st.title("Run Decision Engine")
+    st.title("Generate Decisions")
 
     if st.session_state.mapped_data is None:
         st.warning("Upload your data to continue")
+        
     else:
+        st.markdown(" ")
         if st.button("Generate Decisions"):
 
             df = st.session_state.mapped_data.copy()
@@ -494,7 +522,7 @@ elif page == "3. Generate Decisions":
 # ==============================
 elif page == "4. Decisions":
 
-    st.title("Decision Simulator")
+    st.title("Decisions")
 
     if st.session_state.results is None:
         st.warning("Run analysis first")
@@ -530,7 +558,7 @@ elif page == "4. Decisions":
         baseline = estimate_baseline_cost(sim_df)
         savings = baseline - total_cost
         
-        st.markdown(f"### 💰 You save **${savings:,.0f}** with current settings")
+        st.success(f"You save ${savings:,.0f} with current settings")
         
         col1, col2, col3 = st.columns(3)
         col1.metric("Total Estimated Loss", f"${total_cost:,.0f}")
@@ -542,15 +570,21 @@ elif page == "4. Decisions":
         display_df = sim_df[
             [
                 "risk_probability",
-                "risk_tier",
                 "optimal_strategy",
                 "expected_cost"
             ]
-        ].rename(columns={
-            "risk_probability": "Fraud Risk Score"
-        })
+        ].copy()
         
-        st.dataframe(display_df, use_container_width=True)
+        display_df.columns = [
+            "Risk Score",
+            "Recommended Action",
+            "Expected Cost"
+        ]
+        
+        display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
+        display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
+        
+        st.dataframe(display_df, use_container_width=True, height=420)
         
         st.divider()
         
@@ -587,7 +621,7 @@ elif page == "4. Decisions":
 # ==============================
 elif page == "5. Insights":
 
-    st.title("Business Impact")
+    st.title("Impact")
 
     if st.session_state.results is None:
         st.warning("Generate decisions first")
@@ -600,7 +634,7 @@ elif page == "5. Insights":
         reduction = (savings / baseline) if baseline > 0 else 0
         
         # HERO VALUE
-        st.markdown(f"## 💰 You saved **${savings:,.0f}** using optimized decisions")
+        st.success(f"You saved ${savings:,.0f} using optimized decisions")
         
         st.subheader("Business Impact")
         
