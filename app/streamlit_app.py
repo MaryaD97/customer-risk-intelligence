@@ -191,6 +191,22 @@ def simulate_decisions(df, fraud_cost, review_cost):
 
     return df
 
+def map_action(strategy):
+    if strategy == "AI Automation":
+        return "Approve"
+    elif strategy == "Human Review":
+        return "Review"
+    else:
+        return "Conditional"
+
+def generate_reason(row):
+    if row["risk_probability"] > 0.7:
+        return "High risk transaction"
+    elif row["risk_probability"] > 0.4:
+        return "Moderate risk pattern"
+    else:
+        return "Low risk profile"
+
 def estimate_baseline_cost(df):
     return df["cost_human"].sum()
 
@@ -204,7 +220,6 @@ if page == "Overview":
     # ------------------------------
     st.title("Customer Risk Intelligence")
 
-    st.markdown("Upload transaction data and get the **lowest-cost action for every case — instantly.**")
     st.markdown("Make better fraud decisions. Reduce loss. Automate actions.")
 
 
@@ -235,7 +250,7 @@ if page == "Overview":
         st.success(f"You saved ${savings:,.0f} using optimized decisions")
 
     else:
-        st.markdown("## 💰 You saved $0 using optimized decisions")
+        st.success("You saved $0 using optimized decisions")
 
         col1, col2, col3 = st.columns(3)
         col1.metric("Estimated Savings", "$0")
@@ -280,6 +295,14 @@ if page == "Overview":
         ],
         "Expected Cost": ["$12.40", "$6.20", "$1.10"]
     })
+
+    def highlight_action(val):
+    if val == "Approve":
+        return "color: #10B981; font-weight: 600"
+    elif val == "Review":
+        return "color: #EF4444; font-weight: 600"
+    else:
+        return "color: #F59E0B; font-weight: 600"
 
     st.dataframe(preview_df, use_container_width=True)
 
@@ -567,25 +590,36 @@ elif page == "4. Decisions":
         
         st.divider()
         
-        display_df = sim_df[
+        display_df = sim_df.copy()
+
+        display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+        display_df["Why"] = display_df.apply(generate_reason, axis=1)
+        
+        display_df = display_df[
             [
                 "risk_probability",
-                "optimal_strategy",
-                "expected_cost"
+                "Decision",
+                "expected_cost",
+                "Why"
             ]
-        ].copy()
+        ]
         
         display_df.columns = [
             "Risk Score",
             "Recommended Action",
-            "Expected Cost"
+            "Expected Cost",
+            "Why"
         ]
         
         display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
         display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
         
-        st.dataframe(display_df, use_container_width=True, height=420)
-        
+        st.dataframe(
+            display_df.style.applymap(highlight_action, subset=["Recommended Action"]),
+            use_container_width=True,
+            height=420
+        )
+                
         st.divider()
         
         st.subheader("Why this decision?")
@@ -599,7 +633,7 @@ elif page == "4. Decisions":
         st.markdown(f"""
         **Decision Summary**
         - Fraud Risk Score: {row['risk_probability']:.2f}
-        - Recommended Action: {row['optimal_strategy']}
+        - Recommended Action: {map_action(row['optimal_strategy'])}
         - Expected Cost: ${row['expected_cost']:.2f}
         """)
         
@@ -639,7 +673,7 @@ elif page == "5. Insights":
         st.subheader("Business Impact")
         
         col1, col2, col3 = st.columns(3)
-        col1.metric("Estimated Savings", f"${savings:,.0f}")
+        col1.metric("💰 Savings", f"${savings:,.0f}")
         col2.metric("Baseline Cost", f"${baseline:,.0f}")
         col3.metric("Optimized Cost", f"${optimized:,.0f}")
         
