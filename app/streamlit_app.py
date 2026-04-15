@@ -298,9 +298,9 @@ if page == "Overview":
 
     st.divider()
 
-   # ------------------------------
-    # OUTPUT PREVIEW
-    # ------------------------------
+# ------------------------------
+# OUTPUT PREVIEW
+# ------------------------------
     st.markdown("### Example Decisions")
     st.caption("Recommended action and expected cost per transaction")
     
@@ -319,19 +319,6 @@ if page == "Overview":
     st.dataframe(preview_df, use_container_width=True, height=220)
     
     st.divider()
-
-    def highlight_action(val):
-        if val == "Approve":
-            return "color: #10B981; font-weight: 600"
-        elif val == "Review":
-            return "color: #EF4444; font-weight: 600"
-        else:
-            return "color: #F59E0B; font-weight: 600"
-
-    st.dataframe(preview_df, use_container_width=True)
-
-    st.divider()
-
     # ------------------------------
     # CTA
     # ------------------------------
