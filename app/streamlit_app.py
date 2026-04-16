@@ -500,7 +500,13 @@ if st.session_state.step == 1:
 # ==============================
 # CONFIG
 # ==============================
-elif page == "2. Set Costs":
+elif st.session_state.step == 2:
+
+    st.button("← Back", on_click=lambda: st.session_state.update(step=1))
+
+    if st.session_state.mapped_data is None:
+        st.warning("Upload data first to continue")
+        st.stop()
 
     st.title("Set Business Costs")
 
@@ -514,10 +520,19 @@ elif page == "2. Set Costs":
         "review_cost": review_cost
     }
 
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    st.button(
+        "Continue to Generate Decisions",
+        on_click=lambda: st.session_state.update(step=3)
+    )
+
 # ==============================
 # RUN
 # ==============================
-elif page == "3. Generate Decisions":
+elif st.session_state.step == 3:
+
+    st.button("← Back", on_click=lambda: st.session_state.update(step=2))
 
     st.title("Generate Decisions")
 
@@ -554,11 +569,19 @@ elif page == "3. Generate Decisions":
             st.session_state.results = df
 
             st.success("Decisions generated successfully")
+            
+            st.session_state.step = 4
 
 # ==============================
 # DECISIONS
 # ==============================
-elif page == "4. Decisions":
+elif st.session_state.step == 4:
+
+    st.button("← Back", on_click=lambda: st.session_state.update(step=3))
+
+    if st.session_state.results is None:
+        st.warning("Generate decisions first")
+        st.stop()
 
     st.title("Decisions")
 
@@ -657,10 +680,23 @@ elif page == "4. Decisions":
         for d in drivers:
             st.markdown(f"- {d}")
 
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        st.button(
+            "View Insights",
+            on_click=lambda: st.session_state.update(step=5)
+        )
+
 # ==============================
 # INSIGHTS
 # ==============================
-elif page == "5. Insights":
+elif st.session_state.step == 5:
+
+    st.button("← Back", on_click=lambda: st.session_state.update(step=4))
+
+    if st.session_state.results is None:
+        st.warning("Generate decisions first")
+        st.stop()
 
     st.title("Impact")
 
@@ -696,3 +732,5 @@ elif page == "5. Insights":
 
         st.subheader("Risk Distribution")
         st.bar_chart(df["risk_tier"].value_counts())
+
+        
