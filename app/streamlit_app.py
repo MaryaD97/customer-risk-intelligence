@@ -580,9 +580,9 @@ elif st.session_state.step == 4:
     st.title("Decisions")
 
     st.subheader("Adjust Costs")
-
+    
     col1, col2 = st.columns(2)
-
+    
     sim_fraud = col1.slider(
         "Fraud Cost",
         1.0,
@@ -596,87 +596,87 @@ elif st.session_state.step == 4:
         20.0,
         st.session_state.config["review_cost"]
     )
-        
-        base_df = st.session_state.results
-        sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
-
-        st.divider()
-        
-        total_cost = sim_df["expected_cost"].sum()
-        automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
-        high_risk = (sim_df["risk_probability"] > 0.7).mean()
-
-        baseline = estimate_baseline_cost(sim_df)
-        savings = baseline - total_cost
-        
-        st.markdown(f"### 💰 Savings: ${savings:,.0f}")
-        
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Total Estimated Loss", f"${total_cost:,.0f}")
-        col2.metric("Automation Rate", f"{automation_rate:.1%}")
-        col3.metric("High Risk Cases", f"{high_risk:.1%}")
-        
-        st.divider()
-        
-        display_df = sim_df.copy()
-
-        display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-        display_df["Why"] = display_df.apply(generate_reason, axis=1)
-        
-        display_df = display_df[
-            [
-                "risk_probability",
-                "Decision",
-                "expected_cost",
-                "Why"
-            ]
-        ]
-        
-        display_df.columns = [
-            "Risk Score",
-            "Recommended Action",
-            "Expected Cost",
+    
+    # ✅ FIXED INDENTATION STARTS HERE
+    base_df = st.session_state.results
+    sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
+    
+    st.divider()
+    
+    total_cost = sim_df["expected_cost"].sum()
+    automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
+    high_risk = (sim_df["risk_probability"] > 0.7).mean()
+    
+    baseline = estimate_baseline_cost(sim_df)
+    savings = baseline - total_cost
+    
+    st.markdown(f"### 💰 Savings: ${savings:,.0f}")
+    
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Estimated Loss", f"${total_cost:,.0f}")
+    col2.metric("Automation Rate", f"{automation_rate:.1%}")
+    col3.metric("High Risk Cases", f"{high_risk:.1%}")
+    
+    st.divider()
+    
+    display_df = sim_df.copy()
+    
+    display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+    display_df["Why"] = display_df.apply(generate_reason, axis=1)
+    
+    display_df = display_df[
+        [
+            "risk_probability",
+            "Decision",
+            "expected_cost",
             "Why"
         ]
-        
-        display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
-        display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
-        
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            height=420
-        )
-                
-        st.divider()
-        
-        st.subheader("Decision Explanation")
+    ]
     
-        selected_index = st.selectbox("Select Transaction", sim_df.index)
-            
-        row = sim_df.loc[selected_index]
-            
-        st.markdown(f"""
-        **Summary**
-        - Risk Score: {row['risk_probability']:.2f}
-        - Recommended Action: {map_action(row['optimal_strategy'])}
-        - Expected Cost: ${row['expected_cost']:.2f}
-        """)
-            
-        st.markdown("**Top Risk Drivers**")
-            
-        drivers = get_risk_drivers(row)
-            
-        for d in drivers:
-            st.markdown(f"- {d}")
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        st.button(
-            "View Insights",
-            on_click=lambda: st.session_state.update(step=5)
-        )
-
+    display_df.columns = [
+        "Risk Score",
+        "Recommended Action",
+        "Expected Cost",
+        "Why"
+    ]
+    
+    display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
+    display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
+    
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        height=420
+    )
+    
+    st.divider()
+    
+    st.subheader("Decision Explanation")
+    
+    selected_index = st.selectbox("Select Transaction", sim_df.index)
+    
+    row = sim_df.loc[selected_index]
+    
+    st.markdown(f"""
+    **Summary**
+    - Risk Score: {row['risk_probability']:.2f}
+    - Recommended Action: {map_action(row['optimal_strategy'])}
+    - Expected Cost: ${row['expected_cost']:.2f}
+    """)
+    
+    st.markdown("**Top Risk Drivers**")
+    
+    drivers = get_risk_drivers(row)
+    
+    for d in drivers:
+        st.markdown(f"- {d}")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.button(
+        "View Insights",
+        on_click=lambda: st.session_state.update(step=5)
+    )
 # ==============================
 # INSIGHTS
 # ==============================
