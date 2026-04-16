@@ -105,22 +105,9 @@ if "results" not in st.session_state:
 if "config" not in st.session_state:
     st.session_state.config = {"fraud_cost": 3.0, "review_cost": 4.0}
 
-# ==============================
-# SIDEBAR NAVIGATION
-# ==============================
-st.sidebar.title("Customer Risk Intelligence Platform")
+if "step" not in st.session_state:
+    st.session_state.step = 1
 
-page = st.sidebar.radio(
-    "Navigation",
-    [
-        "Overview",
-        "1. Upload Data",
-        "2. Set Costs",
-        "3. Generate Decisions",
-        "4. Decisions",
-        "5. Insights"
-    ]
-)
 
 # ==============================
 # HELPER FUNCTIONS
@@ -230,10 +217,28 @@ def generate_reason(row):
 def estimate_baseline_cost(df):
     return df["cost_human"].sum()
 
+steps = [
+    "Upload Data",
+    "Set Costs",
+    "Generate Decisions",
+    "Decisions",
+    "Insights"
+]
+
+current_step = st.session_state.step
+
+progress_text = " → ".join([
+    f"[{s}]" if i+1 == current_step else s
+    for i, s in enumerate(steps)
+])
+
+st.markdown(f"**Step {current_step} of 5:** {progress_text}")
+st.markdown("---")
+
 # ==============================
 # OVERVIEW PAGE
 # ==============================
-if page == "Overview":
+if st.session_state.step == 1:
 
     # ------------------------------
     # HERO SECTION
@@ -333,12 +338,11 @@ if page == "Overview":
     if st.session_state.results is None:
         st.info("Start by uploading your transaction data to generate decisions.")
 
-# ==============================
-# UPLOAD
-# ==============================
-elif page == "1. Upload Data":
+    # ==============================
+    # UPLOAD
+    # ==============================
 
-    st.title("Upload Your Data")
+    st.markdown("### Upload Data")
 
     st.subheader("What You Need")
 
