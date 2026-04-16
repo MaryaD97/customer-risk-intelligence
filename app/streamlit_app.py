@@ -488,11 +488,12 @@ else:
 
                 st.subheader("Cleaned Data Preview")
                 st.dataframe(df.head(), use_container_width=True)
+                # END OF STEP 1
 
 # ==============================
 # CONFIG
 # ==============================
-elif st.session_state.step == 2:
+if st.session_state.step == 2:
 
     st.button("← Back", on_click=lambda: st.session_state.update(step=1))
 
