@@ -596,8 +596,7 @@ elif st.session_state.step == 4:
         20.0,
         st.session_state.config["review_cost"]
     )
-
-        base_df = st.session_state.results
+    base_df = st.session_state.results
         sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
 
         st.divider()
