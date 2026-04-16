@@ -585,7 +585,7 @@ elif st.session_state.step == 4:
 
     st.subheader("Adjust Costs")
 
-        col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
         sim_fraud = col1.slider(
             "Fraud Cost",
