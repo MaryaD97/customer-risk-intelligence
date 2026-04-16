@@ -171,15 +171,6 @@ def choose_strategy(row):
     }
     return min(costs, key=costs.get)
 
-import shap
-
-@st.cache_resource
-def load_explainer():
-    explainer = shap.Explainer(model)
-    return explainer
-
-explainer = load_explainer()
-
 def simulate_decisions(df, fraud_cost, review_cost):
     df = df.copy()
 
@@ -240,9 +231,9 @@ st.markdown("---")
 # ==============================
 if st.session_state.step == 1:
 
-# ------------------------------
-# HERO SECTION
-# ------------------------------
+    # ------------------------------
+    # HERO SECTION
+    # ------------------------------
     if st.session_state.results is not None:
 
         df = st.session_state.results
@@ -253,26 +244,23 @@ if st.session_state.step == 1:
         reduction = (savings / baseline) if baseline > 0 else 0
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
     
-        # PRIMARY SIGNAL (TOP PRIORITY)
         st.markdown(f"## 💰 You saved ${savings:,.0f}")
     
-        # CORE METRICS
         col1, col2, col3 = st.columns(3)
         col1.metric("Baseline Cost", f"${baseline:,.0f}")
         col2.metric("Optimized Cost", f"${optimized:,.0f}")
         col3.metric("Loss Reduction", f"{reduction:.1%}")
     
-        # SECONDARY
         col4, col5 = st.columns(2)
         col4.metric("Automation Rate", f"{automation:.1%}")
 
-else:
-    st.markdown("## 💰 You saved $0")
+    else:
+        st.markdown("## 💰 You saved $0")
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Baseline Cost", "$0")
-    col2.metric("Optimized Cost", "$0")
-    col3.metric("Loss Reduction", "0%")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Baseline Cost", "$0")
+        col2.metric("Optimized Cost", "$0")
+        col3.metric("Loss Reduction", "0%")
 
     # ------------------------------
     # SIMPLE FLOW
@@ -318,7 +306,7 @@ else:
     # CTA
     # ------------------------------
     st.subheader("Get Started")
-    st.markdown("Upload your dataset and start generating optimized decisions.")
+    st.caption("Upload data to identify risk and reduce loss instantly")
 
     col1, col2, col3 = st.columns(3)
     col1.markdown("**1. Upload Data**")
@@ -326,7 +314,12 @@ else:
     col3.markdown("**3. Generate Decisions**")
 
     if st.session_state.results is None:
-        st.info("Upload data to begin")
+        st.markdown("""
+        <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
+        <b>No data loaded</b><br>
+        Upload your dataset or use sample data to see how decisions are optimized.
+        </div>
+        """, unsafe_allow_html=True)
 
     # ==============================
     # UPLOAD
@@ -505,8 +498,18 @@ if st.session_state.step == 2:
 
     col1, col2 = st.columns(2)
 
-    fraud_cost = col1.slider("Fraud Loss Impact", 1.0, 5.0, 3.0)
-    review_cost = col2.slider("Manual Review Cost", 1.0, 20.0, 4.0)
+    fraud_cost = col1.slider(
+        "Fraud Loss Impact",
+        1.0,
+        5.0,
+        st.session_state.config["fraud_cost"]
+    )
+    review_cost = col2.slider(
+        "Manual Review Cost",
+        1.0,
+        20.0,
+        st.session_state.config["review_cost"]
+    )
 
     st.session_state.config = {
         "fraud_cost": fraud_cost,
@@ -537,6 +540,8 @@ elif st.session_state.step == 3:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("Generate Decisions"):
 
+            with st.spinner("Analyzing transactions..."):
+
             df = st.session_state.mapped_data.copy()
             cfg = st.session_state.config
 
@@ -544,25 +549,11 @@ elif st.session_state.step == 3:
 
             df["risk_probability"] = model.predict_proba(X)[:, 1]
 
-            df["cost_ai"] = df.apply(
-                lambda x: cost_ai(x["risk_probability"], x["order_value"], cfg["fraud_cost"]), axis=1
-            )
-            df["cost_human"] = df.apply(
-                lambda x: cost_human(x["risk_probability"], x["order_value"], cfg["fraud_cost"], cfg["review_cost"]), axis=1
-            )
-            df["cost_hybrid"] = df.apply(
-                lambda x: cost_hybrid(x["risk_probability"], x["order_value"], cfg["fraud_cost"], cfg["review_cost"]), axis=1
-            )
-
-            df["optimal_strategy"] = df.apply(choose_strategy, axis=1)
-
-            df["expected_cost"] = df[["cost_ai", "cost_human", "cost_hybrid"]].min(axis=1)
+            df = simulate_decisions(df, cfg["fraud_cost"], cfg["review_cost"])
 
             df["risk_tier"] = df["risk_probability"].apply(risk_tier)
 
             st.session_state.results = df
-
-            st.success("Decisions generated successfully")
             
             st.session_state.step = 4
 
@@ -626,22 +617,24 @@ elif st.session_state.step == 4:
     
     display_df = display_df[
         [
-            "risk_probability",
             "Decision",
             "expected_cost",
+            "risk_probability",
             "Why"
         ]
     ]
     
-    display_df.columns = [
-        "Risk Score",
+   display_df.columns = [
         "Recommended Action",
         "Expected Cost",
+        "Risk Score",
         "Why"
     ]
     
     display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
     display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
+
+    st.caption("Each decision is optimized to minimize expected loss")
     
     st.dataframe(
         display_df,
@@ -717,10 +710,11 @@ elif st.session_state.step == 5:
 
         st.divider()
 
-        st.subheader("Decision Breakdown")
-        st.bar_chart(df["optimal_strategy"].value_counts())
+        st.subheader("What changed")
 
-        st.subheader("Risk Distribution")
-        st.bar_chart(df["risk_tier"].value_counts())
-
+        st.markdown(f"""
+        - Reduced expected loss by **{reduction:.1%}**
+        - Automated **{(df['optimal_strategy'].str.contains('AI')).mean():.1%}** of decisions
+        - Focused human review on highest-risk transactions
+        """)
         
