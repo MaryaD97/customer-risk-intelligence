@@ -228,7 +228,7 @@ steps = [
 current_step = st.session_state.step
 
 progress_text = " → ".join([
-    f"[{s}]" if i+1 == current_step else s
+    f"**{s}**" if i+1 == current_step else s
     for i, s in enumerate(steps)
 ])
 
@@ -245,7 +245,7 @@ if st.session_state.step == 1:
     # ------------------------------
     st.title("Customer Risk Intelligence")
 
-    st.markdown("Make better fraud decisions. Reduce loss. Automate actions.")
+    st.markdown("Get the lowest-cost decision for every transaction — instantly.")
 
 
     # Show real metrics if available, else placeholders
@@ -258,7 +258,8 @@ if st.session_state.step == 1:
         savings = baseline - optimized
         reduction = (savings / baseline) if baseline > 0 else 0
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
-        
+
+        st.markdown(f"## 💰 You saved ${savings:,.0f}")
         
         # CORE METRICS
         col1, col2, col3 = st.columns(3)
@@ -270,12 +271,6 @@ if st.session_state.step == 1:
         col4, col5 = st.columns(2)
         col4.metric("Loss Reduction", f"{reduction:.1%}")
         col5.metric("Automation Rate", f"{automation:.1%}")
-
-        st.markdown(" ")
-        st.success(f"You saved ${savings:,.0f} using optimized decisions")
-
-    else:
-        st.success("You saved $0 using optimized decisions")
 
         col1, col2, col3 = st.columns(3)
         col1.metric("Estimated Savings", "$0")
@@ -336,7 +331,7 @@ if st.session_state.step == 1:
     col3.markdown("**3. Generate Decisions**")
 
     if st.session_state.results is None:
-        st.info("Start by uploading your transaction data to generate decisions.")
+        st.info("Upload data to begin")
 
     # ==============================
     # UPLOAD
@@ -384,6 +379,7 @@ if st.session_state.step == 1:
         df, _, _ = clean_data(df)
     
         st.session_state.mapped_data = df
+        st.session_state.step = 2
     
         st.success("Sample data loaded. You can now generate decisions.")
 
@@ -485,6 +481,7 @@ if st.session_state.step == 1:
 
                 st.session_state.saved_mappings[schema_signature] = mapping
                 st.session_state.mapped_data = df
+                st.session_state.step = 2
 
                 st.success("Data ready for analysis")
 
@@ -538,9 +535,10 @@ elif st.session_state.step == 3:
 
     if st.session_state.mapped_data is None:
         st.warning("Upload your data to continue")
+        st.stop()
         
     else:
-        st.markdown(" ")
+        st.markdown("<br>", unsafe_allow_html=True)
         if st.button("Generate Decisions"):
 
             df = st.session_state.mapped_data.copy()
@@ -585,11 +583,6 @@ elif st.session_state.step == 4:
 
     st.title("Decisions")
 
-    if st.session_state.results is None:
-        st.warning("Run analysis first")
-    else:
-        base_df = st.session_state.results
-
         st.subheader("Adjust Costs")
 
         col1, col2 = st.columns(2)
@@ -619,7 +612,7 @@ elif st.session_state.step == 4:
         baseline = estimate_baseline_cost(sim_df)
         savings = baseline - total_cost
         
-        st.success(f"You save ${savings:,.0f} with current settings")
+        st.markdown(f"### 💰 Savings: ${savings:,.0f}")
         
         col1, col2, col3 = st.columns(3)
         col1.metric("Total Estimated Loss", f"${total_cost:,.0f}")
@@ -635,9 +628,9 @@ elif st.session_state.step == 4:
         
         display_df = display_df[
             [
-                "risk_probability",
                 "Decision",
-                "expected_cost",
+                "Expected Cost",
+                "Risk Score",
                 "Why"
             ]
         ]
@@ -711,7 +704,7 @@ elif st.session_state.step == 5:
         reduction = (savings / baseline) if baseline > 0 else 0
         
         # HERO VALUE
-        st.success(f"You saved ${savings:,.0f} using optimized decisions")
+        st.markdown(f"### 💰 Savings: ${savings:,.0f}")
         
         st.subheader("Business Impact")
         
