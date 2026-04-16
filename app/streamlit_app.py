@@ -240,44 +240,39 @@ st.markdown("---")
 # ==============================
 if st.session_state.step == 1:
 
-    # ------------------------------
-    # HERO SECTION
-    # ------------------------------
-    st.title("Customer Risk Intelligence")
-
-    st.markdown("Get the lowest-cost decision for every transaction — instantly.")
-
-
-    # Show real metrics if available, else placeholders
+# ------------------------------
+# HERO SECTION
+# ------------------------------
     if st.session_state.results is not None:
 
         df = st.session_state.results
-
+    
         baseline = estimate_baseline_cost(df)
         optimized = df["expected_cost"].sum()
         savings = baseline - optimized
         reduction = (savings / baseline) if baseline > 0 else 0
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
-
+    
+        # PRIMARY SIGNAL (TOP PRIORITY)
         st.markdown(f"## 💰 You saved ${savings:,.0f}")
-        
+    
         # CORE METRICS
         col1, col2, col3 = st.columns(3)
-        col1.metric("Estimated Savings", f"${savings:,.0f}")
-        col2.metric("Baseline Cost", f"${baseline:,.0f}")
-        col3.metric("Optimized Cost", f"${optimized:,.0f}")
-        
-        # SECONDARY METRICS
+        col1.metric("Baseline Cost", f"${baseline:,.0f}")
+        col2.metric("Optimized Cost", f"${optimized:,.0f}")
+        col3.metric("Loss Reduction", f"{reduction:.1%}")
+    
+        # SECONDARY
         col4, col5 = st.columns(2)
-        col4.metric("Loss Reduction", f"{reduction:.1%}")
-        col5.metric("Automation Rate", f"{automation:.1%}")
+        col4.metric("Automation Rate", f"{automation:.1%}")
 
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Estimated Savings", "$0")
-        col2.metric("Baseline Cost", "$0")
-        col3.metric("Optimized Cost", "$0")
-        
-    st.divider()
+else:
+    st.markdown("## 💰 You saved $0")
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Baseline Cost", "$0")
+    col2.metric("Optimized Cost", "$0")
+    col3.metric("Loss Reduction", "0%")
 
     # ------------------------------
     # SIMPLE FLOW
@@ -587,20 +582,21 @@ elif st.session_state.step == 4:
 
     col1, col2 = st.columns(2)
 
-        sim_fraud = col1.slider(
-            "Fraud Cost",
-            1.0,
-            5.0,
-            st.session_state.config["fraud_cost"]
-        )
+    sim_fraud = col1.slider(
+        "Fraud Cost",
+        1.0,
+        5.0,
+        st.session_state.config["fraud_cost"]
+    )
+    
+    sim_review = col2.slider(
+        "Review Cost",
+        1.0,
+        20.0,
+        st.session_state.config["review_cost"]
+    )
 
-        sim_review = col2.slider(
-            "Review Cost",
-            1.0,
-            20.0,
-            st.session_state.config["review_cost"]
-        )
-
+        base_df = st.session_state.results
         sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
 
         st.divider()
@@ -628,9 +624,9 @@ elif st.session_state.step == 4:
         
         display_df = display_df[
             [
+                "risk_probability",
                 "Decision",
-                "Expected Cost",
-                "Risk Score",
+                "expected_cost",
                 "Why"
             ]
         ]
