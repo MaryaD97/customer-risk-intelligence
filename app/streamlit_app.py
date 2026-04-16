@@ -583,7 +583,7 @@ elif st.session_state.step == 4:
 
     st.title("Decisions")
 
-        st.subheader("Adjust Costs")
+    st.subheader("Adjust Costs")
 
         col1, col2 = st.columns(2)
 
