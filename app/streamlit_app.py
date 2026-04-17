@@ -230,93 +230,64 @@ st.markdown(f"**Step {current_step} of 5:** {progress_text}")
 st.markdown("---")
 
 # ==============================
-# OVERVIEW / UPLOAD (STEP 1)
+# UPLOAD
 # ==============================
 
-st.markdown("## Start Optimizing Decisions")
-st.caption("Upload transactions and receive lowest-cost fraud actions instantly.")
+st.markdown("### Upload Data")
 
-# PRIMARY CTA
-cta1, cta2, cta3 = st.columns([1.2, 1.2, 3])
+st.subheader("What You Need")
 
-with cta1:
-    sample_clicked = st.button("Try Sample Data", use_container_width=True)
+st.markdown("""
+Upload your dataset with key customer and transaction signals.
 
-with cta2:
-    file = st.file_uploader(
-        "Upload CSV",
-        type=["csv"],
-        label_visibility="collapsed"
-    )
+**Required:**
+- Customer score or rating
+- Behavioral signal (e.g. review or activity)
+- Transaction value
 
-with cta3:
-    st.caption("No setup required. Use sample data for instant demo.")
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# HOW IT WORKS (clean cards)
-st.subheader("How It Works")
-
-c1, c2, c3 = st.columns(3)
-
-with c1:
-    st.markdown("""
-    <div style='padding:16px;border:1px solid #1F2937;border-radius:12px;background:#111827'>
-    <b>1. Upload Data</b><br>
-    Import transactions or try sample data.
-    </div>
-    """, unsafe_allow_html=True)
-
-with c2:
-    st.markdown("""
-    <div style='padding:16px;border:1px solid #1F2937;border-radius:12px;background:#111827'>
-    <b>2. Analyze Risk</b><br>
-    Detect suspicious patterns automatically.
-    </div>
-    """, unsafe_allow_html=True)
-
-with c3:
-    st.markdown("""
-    <div style='padding:16px;border:1px solid #1F2937;border-radius:12px;background:#111827'>
-    <b>3. Optimize Decisions</b><br>
-    Recommend lowest-cost action instantly.
-    </div>
-    """, unsafe_allow_html=True)
+The system will:
+- Detect fraud risk
+- Estimate financial impact
+- Recommend the best action
+""")
 
 st.divider()
 
-# LIGHT INPUT INFO
-st.subheader("Accepted Data")
-st.caption("Typical fields include rating, trust signals, engagement activity, and transaction value. Column mapping is supported automatically.")
+file = st.file_uploader("Upload CSV")
 
-# ==============================
-# SAMPLE DATA FLOW
-# ==============================
+st.info("No data? Use sample data to explore how the system works.")
+
+col1, col2 = st.columns([1, 3])
+
+with col1:
+    sample_clicked = st.button("Try Sample Data")
+
+with col2:
+    st.caption("No setup needed")
 
 if sample_clicked:
+    df = pd.read_csv("sample_data.csv")
 
-    with st.spinner("Loading sample transactions..."):
+    required_cols = feature_columns + ["order_value"]
+    df = df[required_cols]
 
-        df = pd.read_csv("sample_data.csv")
+    df, _, _ = clean_data(df)
 
-        required_cols = feature_columns + ["order_value"]
-        df = df[required_cols]
+    st.session_state.mapped_data = df
+    st.session_state.step = 2
 
-        df, _, _ = clean_data(df)
+    st.success("Sample data loaded. You can now generate decisions.")
 
-        st.session_state.mapped_data = df
-        st.session_state.step = 2
+    st.markdown("<br>", unsafe_allow_html=True)
 
-# ==============================
-# USER FILE FLOW
-# ==============================
+    st.subheader("Sample Data Preview")
+    st.dataframe(df.head(), use_container_width=True)
 
 if file:
-
     df = pd.read_csv(file)
 
-    st.subheader("Preview Data")
-    st.dataframe(df.head(), use_container_width=True, hide_index=True)
+    st.subheader("Preview Your Data")
+    st.dataframe(df.head(), use_container_width=True)
 
     st.divider()
 
@@ -329,19 +300,22 @@ if file:
 
     def suggest_column(target, columns):
         target = target.lower()
+
         for col in columns:
             if target in col.lower():
                 return col
+
         return columns[0]
 
-    st.subheader("Match Columns")
-    st.caption("Map your file to required business signals.")
+    st.subheader("Match Your Columns")
+    st.caption("We’ll automatically match similar datasets in the future.")
+    st.markdown("Match your data to the required fields")
 
     mapping = {}
 
     feature_labels = {
         "rating": "Customer Score",
-        "sentiment_score": "Behavior Signal",
+        "sentiment_score": "Behavioral Signal",
         "review_length": "Engagement Depth",
         "helpfulness_ratio": "Peer Validation",
         "verified_purchase": "Trust Indicator",
@@ -351,7 +325,6 @@ if file:
     left, right = st.columns(2)
 
     for i, target_col in enumerate(feature_columns + ["order_value"]):
-
         default_col = previous_mapping.get(
             target_col,
             suggest_column(target_col, df.columns)
@@ -360,7 +333,7 @@ if file:
         container = left if i % 2 == 0 else right
 
         mapping[target_col] = container.selectbox(
-            feature_labels.get(target_col, target_col),
+            f"{feature_labels.get(target_col, target_col)}",
             df.columns,
             index=list(df.columns).index(default_col)
         )
@@ -371,7 +344,7 @@ if file:
         errors = []
 
         if len(set(mapping.values())) < len(mapping.values()):
-            errors.append("Duplicate columns selected")
+            errors.append("Duplicate columns selected for multiple fields")
 
         for k, v in mapping.items():
             if v not in df.columns:
@@ -382,16 +355,20 @@ if file:
     validation_errors = validate_mapping(mapping, df)
 
     if validation_errors:
-        st.error("Mapping needs attention")
+        st.error("⚠️ Mapping Issues Detected")
+
         for err in validation_errors:
             st.write(f"- {err}")
-    else:
-        st.success("Mapping ready")
 
-    if st.button("Confirm & Continue", use_container_width=True):
+    else:
+        st.success("✅ Mapping looks good")
+
+    st.divider()
+
+    if st.button("Confirm & Continue"):
 
         if validation_errors:
-            st.error("Resolve mapping issues first")
+            st.error("Fix mapping errors before proceeding")
 
         else:
             df = df.rename(columns={v: k for k, v in mapping.items()})
@@ -404,6 +381,20 @@ if file:
             st.session_state.saved_mappings[schema_signature] = mapping
             st.session_state.mapped_data = df
             st.session_state.step = 2
+
+            st.success("Data ready for analysis")
+
+            st.subheader("Data Quality Report")
+
+            col1, col2 = st.columns(2)
+
+            col1.metric("Missing Values Before", f"{before:.2%}")
+            col2.metric("Missing Values After", f"{after:.2%}")
+
+            st.subheader("Cleaned Data Preview")
+            st.dataframe(df.head(), use_container_width=True)
+
+# END OF STEP 1
 
 # ==============================
 # CONFIG
