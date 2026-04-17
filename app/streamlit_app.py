@@ -258,7 +258,7 @@ if st.session_state.step == 1:
         col4, col5 = st.columns(2)
         col4.metric("Automation Rate", f"{automation:.1%}")
 
-   else:
+       else:
         st.markdown("## 💰 Start optimizing fraud decisions")
     
         st.markdown("""
