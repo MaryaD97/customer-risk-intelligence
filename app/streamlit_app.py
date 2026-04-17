@@ -540,22 +540,22 @@ elif st.session_state.step == 3:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("Generate Decisions"):
 
-        with st.spinner("Analyzing transactions..."):
+            with st.spinner("Analyzing transactions..."):
 
-        df = st.session_state.mapped_data.copy()
-        cfg = st.session_state.config
-
-         X = df[feature_columns]
-
-         df["risk_probability"] = model.predict_proba(X)[:, 1]
-
-         df = simulate_decisions(df, cfg["fraud_cost"], cfg["review_cost"])
-
-         df["risk_tier"] = df["risk_probability"].apply(risk_tier)
-
-         st.session_state.results = df
-            
-         st.session_state.step = 4
+                df = st.session_state.mapped_data.copy()
+                cfg = st.session_state.config
+        
+                 X = df[feature_columns]
+        
+                 df["risk_probability"] = model.predict_proba(X)[:, 1]
+        
+                 df = simulate_decisions(df, cfg["fraud_cost"], cfg["review_cost"])
+        
+                 df["risk_tier"] = df["risk_probability"].apply(risk_tier)
+        
+                 st.session_state.results = df
+                    
+                 st.session_state.step = 4
 
 # ==============================
 # DECISIONS
