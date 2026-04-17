@@ -540,7 +540,7 @@ elif st.session_state.step == 3:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("Generate Decisions"):
 
-            with st.spinner("Analyzing transactions..."):
+        with st.spinner("Analyzing transactions..."):
 
         df = st.session_state.mapped_data.copy()
         cfg = st.session_state.config
