@@ -718,7 +718,7 @@ elif st.session_state.step == 4:
     
     row = sim_df.loc[selected_index]
     
-   st.markdown(f"""
+    st.markdown(f"""
     **Decision Summary**
     - **Action:** {map_action(row['optimal_strategy'])}
     - **Expected Cost:** ${row['expected_cost']:.2f}
