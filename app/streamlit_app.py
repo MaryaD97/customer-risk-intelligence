@@ -237,34 +237,34 @@ if st.session_state.step == 1:
     # ------------------------------
     # HERO SECTION
     # ------------------------------
-   if st.session_state.results is not None:
+    if st.session_state.results is not None:
 
-    df = st.session_state.results
+        df = st.session_state.results
 
-    baseline = estimate_baseline_cost(df)
-    optimized = df["expected_cost"].sum()
-    savings = baseline - optimized
-    reduction = (savings / baseline) if baseline > 0 else 0
-    automation = (df["optimal_strategy"].str.contains("AI")).mean()
+        baseline = estimate_baseline_cost(df)
+        optimized = df["expected_cost"].sum()
+        savings = baseline - optimized
+        reduction = (savings / baseline) if baseline > 0 else 0
+        automation = (df["optimal_strategy"].str.contains("AI")).mean()
 
-    st.markdown(f"## 💰 You saved ${savings:,.0f}")
+        st.markdown(f"## 💰 You saved ${savings:,.0f}")
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Baseline Cost", f"${baseline:,.0f}")
-    col2.metric("Optimized Cost", f"${optimized:,.0f}")
-    col3.metric("Loss Reduction", f"{reduction:.1%}")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Baseline Cost", f"${baseline:,.0f}")
+        col2.metric("Optimized Cost", f"${optimized:,.0f}")
+        col3.metric("Loss Reduction", f"{reduction:.1%}")
 
-    col4, col5 = st.columns(2)
-    col4.metric("Automation Rate", f"{automation:.1%}")
+        col4, col5 = st.columns(2)
+        col4.metric("Automation Rate", f"{automation:.1%}")
 
-else:
-    st.markdown("## 💰 Start optimizing fraud decisions")
+    else:
+        st.markdown("## 💰 Start optimizing fraud decisions")
 
-    st.markdown("""
-    <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
-    Upload data or try a sample to see how much cost you can reduce.
-    </div>
-    """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
+        Upload data or try a sample to see how much cost you can reduce.
+        </div>
+        """, unsafe_allow_html=True)
     
     # ------------------------------
     # SIMPLE FLOW
