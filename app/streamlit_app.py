@@ -627,7 +627,7 @@ elif st.session_state.step == 4:
         ]
     ]
     
-   display_df.columns = [
+    display_df.columns = [
         "Recommended Action",
         "Expected Cost",
         "Risk Score",
