@@ -238,41 +238,34 @@ if st.session_state.step == 1:
     # ------------------------------
     # HERO SECTION
     # ------------------------------
-
     if st.session_state.results is not None:
 
         df = st.session_state.results
-
+    
         baseline = estimate_baseline_cost(df)
         optimized = df["expected_cost"].sum()
         savings = baseline - optimized
         reduction = (savings / baseline) if baseline > 0 else 0
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
-
-        # PRIMARY SIGNAL
+    
         st.markdown(f"## 💰 You saved ${savings:,.0f}")
-
-        # CORE METRICS
+    
         col1, col2, col3 = st.columns(3)
-
         col1.metric("Baseline Cost", f"${baseline:,.0f}")
         col2.metric("Optimized Cost", f"${optimized:,.0f}")
         col3.metric("Loss Reduction", f"{reduction:.1%}")
-
-        # SECONDARY
+    
         col4, col5 = st.columns(2)
-
         col4.metric("Automation Rate", f"{automation:.1%}")
 
-    else:
-
-        st.markdown("## 💰 You saved $0")
-
-        col1, col2, col3 = st.columns(3)
-
-        col1.metric("Baseline Cost", "$0")
-        col2.metric("Optimized Cost", "$0")
-        col3.metric("Loss Reduction", "0%")
+   else:
+        st.markdown("## 💰 Start optimizing fraud decisions")
+    
+        st.markdown("""
+        <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
+        Upload data or try a sample to see how much cost you can reduce.
+        </div>
+        """, unsafe_allow_html=True)
 
     # ------------------------------
     # SIMPLE FLOW
@@ -343,7 +336,12 @@ if st.session_state.step == 1:
     col3.markdown("**3. Generate Decisions**")
 
     if st.session_state.results is None:
-        st.info("Upload data to begin")
+        st.markdown("""
+        <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
+        <b>No data loaded</b><br>
+        Upload your dataset or use sample data to see how decisions are optimized.
+        </div>
+        """, unsafe_allow_html=True)
 
     # ==============================
     # UPLOAD
@@ -558,7 +556,8 @@ if st.session_state.step == 2:
         st.warning("Upload data first to continue")
         st.stop()
 
-    st.title("Set Business Costs")
+    st.title("Define Cost Impact")
+    st.caption("Tell the system how expensive fraud and reviews are")
 
     col1, col2 = st.columns(2)
 
@@ -595,6 +594,7 @@ elif st.session_state.step == 3:
     st.button("← Back", on_click=lambda: st.session_state.update(step=2))
 
     st.title("Generate Decisions")
+    st.caption("We’ll analyze risk and recommend lowest-cost actions")
 
     if st.session_state.mapped_data is None:
         st.warning("Upload your data to continue")
@@ -606,22 +606,25 @@ elif st.session_state.step == 3:
         if st.button("Generate Decisions"):
     
             with st.spinner("Analyzing transactions..."):
-    
+                st.markdown("<div class='caption'>Detecting risk patterns</div>", unsafe_allow_html=True)
+            
                 df = st.session_state.mapped_data.copy()
                 cfg = st.session_state.config
-    
+            
                 X = df[feature_columns]
-    
+            
                 df["risk_probability"] = model.predict_proba(X)[:, 1]
-    
+            
+                st.markdown("<div class='caption'>Optimizing decisions</div>", unsafe_allow_html=True)
+            
                 df = simulate_decisions(
                     df,
                     cfg["fraud_cost"],
                     cfg["review_cost"]
                 )
-    
+            
                 df["risk_tier"] = df["risk_probability"].apply(risk_tier)
-    
+            
                 st.session_state.results = df
                 st.session_state.step = 4
 # ==============================
@@ -635,7 +638,7 @@ elif st.session_state.step == 4:
         st.warning("Generate decisions first")
         st.stop()
 
-    st.title("Decisions")
+    st.title("Optimized Decisions")
 
     st.subheader("Adjust Costs")
     
@@ -697,31 +700,31 @@ elif st.session_state.step == 4:
         "Risk Score",
         "Why"
     ]
-    
+        
     display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
     display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
 
-    st.caption("Each decision is optimized to minimize expected loss")
+    st.caption("Each action minimizes expected financial loss")
     
     st.dataframe(
         display_df,
         use_container_width=True,
-        height=420
+        height=480
     )
     
     st.divider()
     
-    st.subheader("Decision Explanation")
+    st.subheader("Why this decision?")
     
     selected_index = st.selectbox("Select Transaction", sim_df.index)
     
     row = sim_df.loc[selected_index]
     
-    st.markdown(f"""
-    **Summary**
-    - Risk Score: {row['risk_probability']:.2f}
-    - Recommended Action: {map_action(row['optimal_strategy'])}
-    - Expected Cost: ${row['expected_cost']:.2f}
+   st.markdown(f"""
+    **Decision Summary**
+    - **Action:** {map_action(row['optimal_strategy'])}
+    - **Expected Cost:** ${row['expected_cost']:.2f}
+    - **Risk Score:** {row['risk_probability']:.2f}
     """)
     
     st.markdown("**Top Risk Drivers**")
@@ -748,7 +751,7 @@ elif st.session_state.step == 5:
         st.warning("Generate decisions first")
         st.stop()
 
-    st.title("Impact")
+    st.title("Business Impact")
 
     if st.session_state.results is None:
         st.warning("Generate decisions first")
@@ -761,7 +764,8 @@ elif st.session_state.step == 5:
         reduction = (savings / baseline) if baseline > 0 else 0
         
         # HERO VALUE
-        st.markdown(f"### 💰 Savings: ${savings:,.0f}")
+        st.markdown(f"## 💰 ${savings:,.0f} saved")
+        st.caption("Compared to reviewing all transactions manually")
         
         st.subheader("Business Impact")
         
@@ -777,7 +781,7 @@ elif st.session_state.step == 5:
 
         st.divider()
 
-        st.subheader("What changed")
+        st.subheader("Key Outcomes")
 
         st.markdown(f"""
         - Reduced expected loss by **{reduction:.1%}**
