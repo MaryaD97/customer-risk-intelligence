@@ -265,6 +265,7 @@ else:
     Upload data or try a sample to see how much cost you can reduce.
     </div>
     """, unsafe_allow_html=True)
+    
     # ------------------------------
     # SIMPLE FLOW
     # ------------------------------
