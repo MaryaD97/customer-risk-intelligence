@@ -235,6 +235,17 @@ st.markdown("---")
 if st.session_state.step == 1:
 
     # ------------------------------
+    # PRODUCT MESSAGE (CLARITY)
+    # ------------------------------
+    st.markdown("## Make better fraud decisions, not just predictions")
+    
+    st.markdown("""
+    Automatically choose the lowest-cost action for each transaction by balancing fraud risk and operational cost.
+    """)
+    
+    st.caption("High-risk transactions may need review. Low-risk ones can be safely approved — this system finds the optimal balance.")
+
+    # ------------------------------
     # HERO SECTION
     # ------------------------------
     if st.session_state.results is not None:
@@ -248,6 +259,7 @@ if st.session_state.step == 1:
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
 
         st.markdown(f"## 💰 You saved ${savings:,.0f}")
+        st.caption("Savings come from choosing the most cost-effective action per transaction instead of reviewing everything manually.")
 
         col1, col2, col3 = st.columns(3)
         col1.metric("Baseline Cost", f"${baseline:,.0f}")
@@ -256,6 +268,7 @@ if st.session_state.step == 1:
 
         col4, col5 = st.columns(2)
         col4.metric("Automation Rate", f"{automation:.1%}")
+        st.caption("Baseline = reviewing all transactions manually. Optimized = using AI + selective review to reduce total cost.")
 
     else:
         st.markdown("## 💰 Start optimizing fraud decisions")
@@ -272,7 +285,7 @@ if st.session_state.step == 1:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown("### How it works")
+    st.markdown("### How decisions are made")
 
     flow_cols = st.columns(7)
 
@@ -349,6 +362,7 @@ if st.session_state.step == 1:
     st.markdown("### Upload Data")
 
     st.subheader("What You Need")
+    st.caption("We use this data to estimate fraud risk and simulate the cost of each possible decision.")
 
     st.markdown("""
     Upload your dataset with key customer and transaction signals.
