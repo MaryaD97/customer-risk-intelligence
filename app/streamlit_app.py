@@ -256,7 +256,7 @@ if st.session_state.step == 1:
         automation = (df["optimal_strategy"].str.contains("AI")).mean()
 
         st.markdown(f"## 💰 You saved ${savings:,.0f}")
-        st.caption("Savings come from choosing the most cost-effective action per transaction instead of reviewing everything manually.")
+        st.caption("Compared to reviewing all transactions manually")
 
         col1, col2, col3 = st.columns(3)
         col1.metric("Baseline Cost", f"${baseline:,.0f}")
@@ -714,7 +714,7 @@ elif st.session_state.step == 4:
     display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
     display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
 
-    st.caption("Each action minimizes expected financial loss")
+    st.caption("Each action is chosen to minimize cost for that transaction")
     
     st.dataframe(
         display_df,
@@ -780,7 +780,6 @@ elif st.session_state.step == 5:
         st.subheader("Business Impact")
         
         col1, col2, col3 = st.columns(3)
-        col1.metric("💰 Savings", f"${savings:,.0f}")
         col2.metric("Baseline Cost", f"${baseline:,.0f}")
         col3.metric("Optimized Cost", f"${optimized:,.0f}")
         
