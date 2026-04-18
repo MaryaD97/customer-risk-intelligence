@@ -238,12 +238,9 @@ if st.session_state.step == 1:
     # PRODUCT MESSAGE (CLARITY)
     # ------------------------------
     st.markdown("## Make better fraud decisions, not just predictions")
-    
     st.markdown("""
-    Automatically choose the lowest-cost action for each transaction by balancing fraud risk and operational cost.
+    Automatically choose the lowest-cost action for each transaction by balancing fraud risk and operational cost — reviewing high-risk cases while safely approving low-risk ones.
     """)
-    
-    st.caption("High-risk transactions may need review. Low-risk ones can be safely approved — this system finds the optimal balance.")
 
     # ------------------------------
     # HERO SECTION
@@ -275,7 +272,7 @@ if st.session_state.step == 1:
 
         st.markdown("""
         <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
-        Upload data or try a sample to see how much cost you can reduce.
+        No data loaded yet.
         </div>
         """, unsafe_allow_html=True)
     
