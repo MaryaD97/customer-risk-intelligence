@@ -312,16 +312,6 @@ if st.session_state.step == 1:
     st.markdown("### Example Decisions")
     st.caption("Recommended action and expected cost per transaction")
 
-    sort_option = st.selectbox(
-        "Sort by",
-        [
-            "Default Order",
-            "Highest Risk",
-            "Highest Cost",
-            "Lowest Cost"
-        ]
-    )
-
     preview_df = pd.DataFrame({
         "Transaction": ["#123", "#124", "#125"],
         "Fraud Risk Score": ["0.89", "0.52", "0.12"],
@@ -711,8 +701,9 @@ elif st.session_state.step == 4:
     st.markdown("### Recommended Actions")
 
     sort_option = st.selectbox(
-        "Prioritize by",
+        "Sort by by",
         [
+            "Default Order",
             "Highest Risk",
             "Highest Cost",
             "Lowest Cost"
