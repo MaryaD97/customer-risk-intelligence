@@ -20,9 +20,9 @@ st.markdown("""
 
 /* ===== BASE ===== */
 .block-container {
-    padding-top: 5rem;
+    padding-top: 3rem;
     padding-bottom: 2rem;
-    max-width: 1180px;
+    max-width: 1100px;
 }
 #MainMenu {visibility:hidden;}
 header {visibility:hidden;}
@@ -30,12 +30,13 @@ footer {visibility:hidden;}
 
 /* ===== TYPOGRAPHY ===== */
 h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 600;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.3px;
 }
 h2 {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
+    font-weight: 600;
     margin-bottom: 0.5rem;
 }
 h3 {
@@ -45,24 +46,25 @@ h3 {
 
 /* ===== SECTIONS ===== */
 .section {
-    padding: 1.5rem 0;
+    padding: 1.2rem 0;
+    margin-bottom: 0.5rem;
     border-bottom: 1px solid #1F2937;
 }
 
 /* ===== METRICS ===== */
 [data-testid="metric-container"] {
-    background-color: #111827;
+    background-color: #0F172A;
     border: 1px solid #1F2937;
-    padding: 16px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 10px;
 }
 
 /* ===== BUTTON ===== */
 .stButton>button {
     background-color: #2563EB;
     color: white;
-    border-radius: 8px;
-    padding: 10px 18px;
+    border-radius: 6px;
+    padding: 8px 16px;
     font-weight: 500;
     border: none;
 }
@@ -76,10 +78,18 @@ h3 {
     border-radius: 10px;
 }
 
+.stDataFrame div[data-testid="stDataFrame"] table {
+    font-size: 0.9rem;
+}
+
+.stDataFrame div[data-testid="stDataFrame"] table {
+    font-size: 0.9rem;
+}
+
 /* ===== SUBTEXT ===== */
 .caption {
-    color: #9CA3AF;
-    font-size: 0.9rem;
+    color: #6B7280;
+    font-size: 0.85rem;
 }
 
 </style>
@@ -338,7 +348,7 @@ if st.session_state.step == 1:
         "Upload your dataset and start generating optimized decisions."
     )
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns([1,1,1])
 
     col1.markdown("**1. Upload Data**")
     col2.markdown("**2. Set Costs**")
@@ -503,8 +513,6 @@ if st.session_state.step == 1:
 
         else:
             st.success("✅ Mapping looks good")
-
-        st.divider()
 
         if st.button("Confirm & Continue"):
 
@@ -696,12 +704,11 @@ elif st.session_state.step == 4:
     
     display_df = sim_df.copy()
     display_df = display_df.reset_index().rename(columns={"index": "Transaction ID"})
-    st.divider()
 
     st.markdown("### Recommended Actions")
 
     sort_option = st.selectbox(
-        "Sort by by",
+        "Sort by",
         [
             "Default Order",
             "Highest Risk",
@@ -754,9 +761,8 @@ elif st.session_state.step == 4:
         hide_index=True
     )
     
-    st.divider()
     
-    st.subheader("Why this decision?")
+    st.subheader("Decision Rationale")
     
     selected_index = st.selectbox("Select Transaction", sim_df.index)
     
@@ -818,8 +824,6 @@ elif st.session_state.step == 5:
         col4, col5 = st.columns(2)
         col4.metric("Loss Reduction", f"{reduction:.1%}")
         col5.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
-
-        st.divider()
 
         st.subheader("Key Outcomes")
 
