@@ -315,6 +315,7 @@ if st.session_state.step == 1:
     sort_option = st.selectbox(
         "Sort by",
         [
+            "Default Order",
             "Highest Risk",
             "Highest Cost",
             "Lowest Cost"
@@ -758,7 +759,8 @@ elif st.session_state.step == 4:
     st.dataframe(
         display_df,
         use_container_width=True,
-        height=480
+        height=480,
+        hide_index=True
     )
     
     st.divider()
