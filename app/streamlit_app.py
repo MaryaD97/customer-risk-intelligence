@@ -313,13 +313,13 @@ if st.session_state.step == 1:
     st.caption("Recommended action and expected cost per transaction")
 
     sort_option = st.selectbox(
-    "Sort by",
-    [
-        "Highest Risk",
-        "Highest Cost",
-        "Lowest Cost"
-    ]
-)
+        "Sort by",
+        [
+            "Highest Risk",
+            "Highest Cost",
+            "Lowest Cost"
+        ]
+    )
 
     preview_df = pd.DataFrame({
         "Transaction": ["#123", "#124", "#125"],
