@@ -138,6 +138,7 @@ def clean_data(df):
     missing_before = df.isna().mean().mean()
 
     df = df.fillna(0)
+    df["order_value"] = df["order_value"].clip(lower=1)
     df = df.replace([np.inf, -np.inf], 0)
 
     missing_after = df.isna().mean().mean()
@@ -357,7 +358,6 @@ if st.session_state.step == 1:
     if st.session_state.results is None:
         st.markdown("""
         <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
-        <b>No data loaded</b><br>
         Upload your dataset or use sample data to see how decisions are optimized.
         </div>
         """, unsafe_allow_html=True)
@@ -366,13 +366,10 @@ if st.session_state.step == 1:
     # UPLOAD
     # ==============================
 
-    st.markdown("### Upload Data")
-
     st.subheader("What You Need")
     st.caption("We use this data to estimate fraud risk and simulate the cost of each possible decision.")
 
     st.markdown("""
-    Upload your dataset with key customer and transaction signals.
 
     **Required:**
     - Customer score or rating
@@ -402,6 +399,11 @@ if st.session_state.step == 1:
         df = pd.read_csv("sample_data.csv")
 
         required_cols = feature_columns + ["order_value"]
+        missing_cols = [col for col in required_cols if col not in df.columns]
+
+        if missing_cols:
+            st.error(f"Missing required fields: {', '.join(missing_cols)}")
+            st.stop()
         df = df[required_cols]
 
         df, _, _ = clean_data(df)
@@ -422,6 +424,13 @@ if st.session_state.step == 1:
     if file:
 
         df = pd.read_csv(file)
+        if df.empty:
+            st.error("Uploaded file is empty")
+            st.stop()
+        
+        if len(df.columns) < 2:
+            st.error("File does not contain enough usable data")
+            st.stop()
 
         st.subheader("Preview Your Data")
         st.dataframe(df.head(), use_container_width=True)
@@ -631,7 +640,11 @@ elif st.session_state.step == 3:
                 cfg = st.session_state.config
         
                 X = df[feature_columns]
-                df["risk_probability"] = model.predict_proba(X)[:, 1]
+                try:
+                    df["risk_probability"] = model.predict_proba(X)[:, 1]
+                except Exception:
+                    st.error("Unable to analyze this dataset. Please check your input format.")
+                    st.stop()
         
                 st.markdown("<div class='caption'>Optimizing decisions</div>", unsafe_allow_html=True)
         
@@ -701,9 +714,14 @@ elif st.session_state.step == 4:
     col3.metric("High Risk Cases", f"{high_risk:.1%}")
     
     st.divider()
+
+    
     
     display_df = sim_df.copy()
     display_df = display_df.reset_index().rename(columns={"index": "Transaction ID"})
+    if display_df.empty:
+        st.warning("No valid transactions to display")
+        st.stop()
 
     st.markdown("### Recommended Actions")
 
