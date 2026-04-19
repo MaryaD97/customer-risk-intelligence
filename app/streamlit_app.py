@@ -312,6 +312,15 @@ if st.session_state.step == 1:
     st.markdown("### Example Decisions")
     st.caption("Recommended action and expected cost per transaction")
 
+    sort_option = st.selectbox(
+    "Sort by",
+    [
+        "Highest Risk",
+        "Highest Cost",
+        "Lowest Cost"
+    ]
+)
+
     preview_df = pd.DataFrame({
         "Transaction": ["#123", "#124", "#125"],
         "Fraud Risk Score": ["0.89", "0.52", "0.12"],
@@ -694,12 +703,22 @@ elif st.session_state.step == 4:
     st.divider()
     
     display_df = sim_df.copy()
+
+    # Apply sorting BEFORE formatting
+    if sort_option == "Highest Risk":
+        display_df = display_df.sort_values(by="risk_probability", ascending=False)
+    elif sort_option == "Highest Cost":
+        display_df = display_df.sort_values(by="expected_cost", ascending=False)
+    elif sort_option == "Lowest Cost":
+        display_df = display_df.sort_values(by="expected_cost", ascending=True)
     
     display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
     display_df["Why"] = display_df.apply(generate_reason, axis=1)
+    display_df["Why"] = display_df["Why"].str.capitalize()
     
     display_df = display_df[
         [
+            "Transaction ID",
             "Decision",
             "expected_cost",
             "risk_probability",
@@ -708,13 +727,16 @@ elif st.session_state.step == 4:
     ]
     
     display_df.columns = [
+        "Transaction ID",
         "Recommended Action",
         "Expected Cost",
         "Risk Score",
         "Why"
     ]
         
-    display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
+    display_df["Risk Score"] = display_df["Risk Score"].map(
+        lambda x: f"{x:.2f} ({risk_tier(x)})"
+    )
     display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
 
     st.caption("Each action is chosen to minimize cost for that transaction")
