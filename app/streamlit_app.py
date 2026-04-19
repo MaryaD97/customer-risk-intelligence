@@ -226,7 +226,7 @@ progress_text = " → ".join([
     for i, s in enumerate(steps)
 ])
 
-st.markdown(f"**Step {current_step} of 5:** {progress_text}")
+st.caption(f"Step {current_step} of 5")
 st.markdown("---")
 
 # ==============================
@@ -379,8 +379,6 @@ if st.session_state.step == 1:
 
     file = st.file_uploader("Upload CSV")
 
-    st.info("No data? Use sample data to explore how the system works.")
-
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -400,6 +398,7 @@ if st.session_state.step == 1:
 
         st.session_state.mapped_data = df
         st.session_state.step = 2
+        st.rerun()
 
         st.success(
             "Sample data loaded. You can now generate decisions."
@@ -529,6 +528,7 @@ if st.session_state.step == 1:
 
                 st.session_state.mapped_data = df
                 st.session_state.step = 2
+                st.rerun()
 
                 st.success("Data ready for analysis")
 
@@ -589,7 +589,6 @@ if st.session_state.step == 2:
         "review_cost": review_cost
     }
 
-    st.markdown("<br>", unsafe_allow_html=True)
 
     st.button(
         "Continue to Generate Decisions",
@@ -613,30 +612,34 @@ elif st.session_state.step == 3:
     else:
         st.markdown("<br>", unsafe_allow_html=True)
     
-        if st.button("Generate Decisions"):
-    
+        generate = st.button("Generate Decisions")
+
+        if generate:
+        
             with st.spinner("Analyzing transactions..."):
                 st.markdown("<div class='caption'>Detecting risk patterns</div>", unsafe_allow_html=True)
-            
+        
                 df = st.session_state.mapped_data.copy()
                 cfg = st.session_state.config
-            
+        
                 X = df[feature_columns]
-            
                 df["risk_probability"] = model.predict_proba(X)[:, 1]
-            
+        
                 st.markdown("<div class='caption'>Optimizing decisions</div>", unsafe_allow_html=True)
-            
+        
                 df = simulate_decisions(
                     df,
                     cfg["fraud_cost"],
                     cfg["review_cost"]
                 )
-            
+        
                 df["risk_tier"] = df["risk_probability"].apply(risk_tier)
-            
+        
                 st.session_state.results = df
-                st.session_state.step = 4
+        
+            # 🚀 FORCE UI UPDATE
+            st.session_state.step = 4
+            st.rerun()
 # ==============================
 # DECISIONS
 # ==============================
@@ -743,8 +746,7 @@ elif st.session_state.step == 4:
     
     for d in drivers:
         st.markdown(f"- {d}")
-    
-    st.markdown("<br>", unsafe_allow_html=True)
+
     
     st.button(
         "View Insights",
