@@ -348,10 +348,6 @@ if st.session_state.step == 1:
 
     st.subheader("Get Started")
 
-    st.markdown(
-        "Upload your dataset and start generating optimized decisions."
-    )
-
     col1, col2, col3 = st.columns([1,1,1])
 
     col1.markdown("**1. Upload Data**")
