@@ -557,7 +557,7 @@ elif st.session_state.step == 4:
     # ✅ FIXED INDENTATION STARTS HERE
     base_df = st.session_state.results
     sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
-    df["expected_cost"] = df["expected_cost"].clip(upper=1e6)
+
     
     st.divider()
     
