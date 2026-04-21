@@ -247,329 +247,178 @@ st.markdown("---")
 # OVERVIEW PAGE
 # ==============================
 if st.session_state.step == 1:
+# ==============================
+# STEP 1 — LOAD DATA
+# ==============================
 
-    # ------------------------------
-    # PRODUCT MESSAGE (CLARITY)
-    # ------------------------------
-    st.markdown("## Make better fraud decisions, not just predictions")
-    st.markdown("""
-    Automatically choose the lowest-cost action for each transaction by balancing fraud risk and operational cost — reviewing high-risk cases while safely approving low-risk ones.
-    """)
+st.title("Fraud Decision Engine")
 
-    # ------------------------------
-    # HERO SECTION
-    # ------------------------------
-    if st.session_state.results is not None:
+st.markdown("""
+**Decide the lowest-cost action for every transaction.**  
+Upload your data to identify risk and automatically choose between approve, review, or conditional handling.
+""")
 
-        df = st.session_state.results
+st.caption("Used to reduce fraud loss while minimizing manual review costs")
 
-        baseline = estimate_baseline_cost(df)
-        optimized = df["expected_cost"].sum()
-        savings = baseline - optimized
-        reduction = (savings / baseline) if baseline > 0 else 0
-        automation = (df["optimal_strategy"].str.contains("AI")).mean()
+st.markdown("---")
 
-        st.markdown(f"## 💰 You saved ${savings:,.0f}")
-        st.caption("Compared to reviewing all transactions manually")
+st.markdown("### Load Data")
+st.caption("Upload your dataset to begin decision analysis")
 
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Baseline Cost", f"${baseline:,.0f}")
-        col2.metric("Optimized Cost", f"${optimized:,.0f}")
-        col3.metric("Loss Reduction", f"{reduction:.1%}")
 
-        col4, col5 = st.columns(2)
-        col4.metric("Automation Rate", f"{automation:.1%}")
-        st.caption("Baseline = reviewing all transactions manually. Optimized = using AI + selective review to reduce total cost.")
+# ------------------------------
+# DATA SOURCE
+# ------------------------------
+col1, col2 = st.columns(2)
 
-    else:
-        st.markdown("## 💰 Start optimizing fraud decisions")
-
-        st.markdown("""
-        <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
-        No data loaded yet.
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # ------------------------------
-    # SIMPLE FLOW
-    # ------------------------------
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    st.markdown("### How decisions are made")
-
-    flow_cols = st.columns(7)
-
-    flow_cols[0].markdown("**Upload Data**")
-    flow_cols[1].markdown(
-        "<div style='text-align:center;'>→</div>",
-        unsafe_allow_html=True
-    )
-    flow_cols[2].markdown("**Detect Risk**")
-    flow_cols[3].markdown(
-        "<div style='text-align:center;'>→</div>",
-        unsafe_allow_html=True
-    )
-    flow_cols[4].markdown("**Simulate Cost**")
-    flow_cols[5].markdown(
-        "<div style='text-align:center;'>→</div>",
-        unsafe_allow_html=True
-    )
-    flow_cols[6].markdown("**Recommend Action**")
-
-    st.divider()
-
-    # ------------------------------
-    # OUTPUT PREVIEW
-    # ------------------------------
-
-    st.markdown("### Example Decisions")
-    st.caption("Recommended action and expected cost per transaction")
-
-    preview_df = pd.DataFrame({
-        "Transaction": ["#123", "#124", "#125"],
-        "Fraud Risk Score": ["0.89", "0.52", "0.12"],
-        "Decision": ["Review", "Conditional", "Approve"],
-        "Why": [
-            "High value, low trust signal",
-            "Moderate risk pattern",
-            "Low risk profile"
-        ],
-        "Expected Cost": ["$12.40", "$6.20", "$1.10"]
-    })
-
-    st.dataframe(preview_df, use_container_width=True, height=220)
-
-    st.divider()
-
-    # ------------------------------
-    # CTA
-    # ------------------------------
-
-    st.subheader("Get Started")
-
-    col1, col2, col3 = st.columns([1,1,1])
-
-    col1.markdown("**1. Upload Data**")
-    col2.markdown("**2. Set Costs**")
-    col3.markdown("**3. Generate Decisions**")
-
-    if st.session_state.results is None:
-        st.markdown("""
-        <div style='padding:16px;border:1px solid #1F2937;border-radius:10px;background:#111827'>
-        Upload your dataset or use sample data to see how decisions are optimized.
-        </div>
-        """, unsafe_allow_html=True)
-
-    # ==============================
-    # UPLOAD
-    # ==============================
-
-    st.subheader("What You Need")
-    st.caption("We use this data to estimate fraud risk and simulate the cost of each possible decision.")
-
-    st.markdown("""
-
-    **Required:**
-    - Customer score or rating
-    - Behavioral signal (e.g. review or activity)
-    - Transaction value
-
-    The system will:
-    - Detect fraud risk
-    - Estimate financial impact
-    - Recommend the best action
-    """)
-
-    st.divider()
-
+with col1:
     file = st.file_uploader("Upload CSV")
 
-    col1, col2 = st.columns([1, 3])
+with col2:
+    sample_clicked = st.button("Use Sample Data")
+    st.caption("Quick start with preloaded dataset")
 
-    with col1:
-        sample_clicked = st.button("Try Sample Data")
 
-    with col2:
-        st.caption("No setup needed")
+# ------------------------------
+# SAMPLE DATA FLOW
+# ------------------------------
+if sample_clicked:
+    df = pd.read_csv("sample_data.csv")
 
-    if sample_clicked:
+    required_cols = feature_columns + ["order_value"]
+    missing_cols = [col for col in required_cols if col not in df.columns]
 
-        df = pd.read_csv("sample_data.csv")
+    if missing_cols:
+        st.error(f"Missing required fields: {', '.join(missing_cols)}")
+        st.stop()
 
-        required_cols = feature_columns + ["order_value"]
-        missing_cols = [col for col in required_cols if col not in df.columns]
+    df = df[required_cols]
+    df, _, _ = clean_data(df)
 
-        if missing_cols:
-            st.error(f"Missing required fields: {', '.join(missing_cols)}")
-            st.stop()
-        df = df[required_cols]
+    st.session_state.mapped_data = df
+    st.session_state.step = 2
 
-        df, _, _ = clean_data(df)
+    st.success("Sample data loaded successfully")
+    st.rerun()
 
-        st.session_state.mapped_data = df
-        st.session_state.step = 2
-        st.rerun()
 
-        st.success(
-            "Sample data loaded. You can now generate decisions."
+# ------------------------------
+# FILE UPLOAD FLOW
+# ------------------------------
+if file:
+
+    df = pd.read_csv(file)
+
+    if df.empty:
+        st.error("Uploaded file is empty")
+        st.stop()
+
+    if len(df.columns) < 2:
+        st.error("File does not contain enough usable data")
+        st.stop()
+
+    # ------------------------------
+    # PREVIEW
+    # ------------------------------
+    st.markdown("### Data Preview")
+    st.dataframe(df.head(), use_container_width=True)
+
+    st.markdown("---")
+
+    # ------------------------------
+    # MAPPING
+    # ------------------------------
+    st.markdown("### Map Required Fields")
+    st.caption("Match your dataset columns to required inputs")
+
+    schema_signature = tuple(sorted(df.columns))
+
+    if "saved_mappings" not in st.session_state:
+        st.session_state.saved_mappings = {}
+
+    previous_mapping = st.session_state.saved_mappings.get(schema_signature, {})
+
+    def suggest_column(target, columns):
+        target = target.lower()
+        for col in columns:
+            if target in col.lower():
+                return col
+        return columns[0]
+
+    mapping = {}
+
+    feature_labels = {
+        "rating": "Customer Score",
+        "sentiment_score": "Behavioral Signal",
+        "review_length": "Engagement Depth",
+        "helpfulness_ratio": "Peer Validation",
+        "verified_purchase": "Trust Indicator",
+        "order_value": "Transaction Value"
+    }
+
+    left, right = st.columns(2)
+
+    for i, target_col in enumerate(feature_columns + ["order_value"]):
+
+        default_col = previous_mapping.get(
+            target_col,
+            suggest_column(target_col, df.columns)
         )
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        container = left if i % 2 == 0 else right
 
-        st.subheader("Sample Data Preview")
-        st.dataframe(df.head(), use_container_width=True)
-
-    if file:
-
-        df = pd.read_csv(file)
-        if df.empty:
-            st.error("Uploaded file is empty")
-            st.stop()
-        
-        if len(df.columns) < 2:
-            st.error("File does not contain enough usable data")
-            st.stop()
-
-        st.subheader("Preview Your Data")
-        st.dataframe(df.head(), use_container_width=True)
-
-        st.divider()
-
-        schema_signature = tuple(sorted(df.columns))
-
-        if "saved_mappings" not in st.session_state:
-            st.session_state.saved_mappings = {}
-
-        previous_mapping = st.session_state.saved_mappings.get(
-            schema_signature, {}
+        mapping[target_col] = container.selectbox(
+            feature_labels.get(target_col, target_col),
+            df.columns,
+            index=list(df.columns).index(default_col)
         )
 
-        def suggest_column(target, columns):
+    # ------------------------------
+    # VALIDATION
+    # ------------------------------
+    def validate_mapping(mapping, df):
+        errors = []
 
-            target = target.lower()
+        if len(set(mapping.values())) < len(mapping.values()):
+            errors.append("Duplicate columns selected")
 
-            for col in columns:
-                if target in col.lower():
-                    return col
+        for k, v in mapping.items():
+            if v not in df.columns:
+                errors.append(f"Missing column: {v}")
 
-            return columns[0]
+        return errors
 
-        st.subheader("Match Your Columns")
+    validation_errors = validate_mapping(mapping, df)
 
-        st.caption(
-            "We’ll automatically match similar datasets in the future."
-        )
+    if validation_errors:
+        st.error("Mapping issues detected")
+        for err in validation_errors:
+            st.write(f"- {err}")
+    else:
+        st.success("Mapping complete")
 
-        st.markdown("Match your data to the required fields")
-
-        mapping = {}
-
-        feature_labels = {
-            "rating": "Customer Score",
-            "sentiment_score": "Behavioral Signal",
-            "review_length": "Engagement Depth",
-            "helpfulness_ratio": "Peer Validation",
-            "verified_purchase": "Trust Indicator",
-            "order_value": "Transaction Value"
-        }
-
-        left, right = st.columns(2)
-
-        for i, target_col in enumerate(
-            feature_columns + ["order_value"]
-        ):
-
-            default_col = previous_mapping.get(
-                target_col,
-                suggest_column(target_col, df.columns)
-            )
-
-            container = left if i % 2 == 0 else right
-
-            mapping[target_col] = container.selectbox(
-                f"{feature_labels.get(target_col, target_col)}",
-                df.columns,
-                index=list(df.columns).index(default_col)
-            )
-
-        st.divider()
-
-        def validate_mapping(mapping, df):
-
-            errors = []
-
-            if len(set(mapping.values())) < len(mapping.values()):
-                errors.append(
-                    "Duplicate columns selected for multiple fields"
-                )
-
-            for k, v in mapping.items():
-                if v not in df.columns:
-                    errors.append(f"Missing column: {v}")
-
-            return errors
-
-        validation_errors = validate_mapping(mapping, df)
+    # ------------------------------
+    # CONFIRM
+    # ------------------------------
+    if st.button("Confirm & Continue"):
 
         if validation_errors:
-
-            st.error("⚠️ Mapping Issues Detected")
-
-            for err in validation_errors:
-                st.write(f"- {err}")
-
+            st.error("Fix mapping errors before proceeding")
         else:
-            st.success("✅ Mapping looks good")
+            df = df.rename(columns={v: k for k, v in mapping.items()})
 
-        if st.button("Confirm & Continue"):
+            required_cols = feature_columns + ["order_value"]
+            df = df[required_cols]
 
-            if validation_errors:
-                st.error("Fix mapping errors before proceeding")
+            df, _, _ = clean_data(df)
 
-            else:
+            st.session_state.saved_mappings[schema_signature] = mapping
+            st.session_state.mapped_data = df
 
-                df = df.rename(
-                    columns={v: k for k, v in mapping.items()}
-                )
+            st.success("Data ready for analysis")
 
-                required_cols = feature_columns + ["order_value"]
-                df = df[required_cols]
-
-                df, before, after = clean_data(df)
-
-                st.session_state.saved_mappings[
-                    schema_signature
-                ] = mapping
-
-                st.session_state.mapped_data = df
-                st.session_state.step = 2
-                st.rerun()
-
-                st.success("Data ready for analysis")
-
-                st.subheader("Data Quality Report")
-
-                col1, col2 = st.columns(2)
-
-                col1.metric(
-                    "Missing Values Before",
-                    f"{before:.2%}"
-                )
-
-                col2.metric(
-                    "Missing Values After",
-                    f"{after:.2%}"
-                )
-
-                st.subheader("Cleaned Data Preview")
-
-                st.dataframe(
-                    df.head(),
-                    use_container_width=True
-                )
-
-# END OF STEP 1
+            st.session_state.step = 2
+            st.rerun()
 
 # ==============================
 # CONFIG
