@@ -251,174 +251,174 @@ if st.session_state.step == 1:
 # STEP 1 — LOAD DATA
 # ==============================
 
-st.title("Fraud Decision Engine")
-
-st.markdown("""
-**Decide the lowest-cost action for every transaction.**  
-Upload your data to identify risk and automatically choose between approve, review, or conditional handling.
-""")
-
-st.caption("Used to reduce fraud loss while minimizing manual review costs")
-
-st.markdown("---")
-
-st.markdown("### Load Data")
-st.caption("Upload your dataset to begin decision analysis")
-
-
-# ------------------------------
-# DATA SOURCE
-# ------------------------------
-col1, col2 = st.columns(2)
-
-with col1:
-    file = st.file_uploader("Upload CSV")
-
-with col2:
-    sample_clicked = st.button("Use Sample Data")
-    st.caption("Quick start with preloaded dataset")
-
-
-# ------------------------------
-# SAMPLE DATA FLOW
-# ------------------------------
-if sample_clicked:
-    df = pd.read_csv("sample_data.csv")
-
-    required_cols = feature_columns + ["order_value"]
-    missing_cols = [col for col in required_cols if col not in df.columns]
-
-    if missing_cols:
-        st.error(f"Missing required fields: {', '.join(missing_cols)}")
-        st.stop()
-
-    df = df[required_cols]
-    df, _, _ = clean_data(df)
-
-    st.session_state.mapped_data = df
-    st.session_state.step = 2
-
-    st.success("Sample data loaded successfully")
-    st.rerun()
-
-
-# ------------------------------
-# FILE UPLOAD FLOW
-# ------------------------------
-if file:
-
-    df = pd.read_csv(file)
-
-    if df.empty:
-        st.error("Uploaded file is empty")
-        st.stop()
-
-    if len(df.columns) < 2:
-        st.error("File does not contain enough usable data")
-        st.stop()
-
-    # ------------------------------
-    # PREVIEW
-    # ------------------------------
-    st.markdown("### Data Preview")
-    st.dataframe(df.head(), use_container_width=True)
-
+    st.title("Fraud Decision Engine")
+    
+    st.markdown("""
+    **Decide the lowest-cost action for every transaction.**  
+    Upload your data to identify risk and automatically choose between approve, review, or conditional handling.
+    """)
+    
+    st.caption("Used to reduce fraud loss while minimizing manual review costs")
+    
     st.markdown("---")
-
+    
+    st.markdown("### Load Data")
+    st.caption("Upload your dataset to begin decision analysis")
+    
+    
     # ------------------------------
-    # MAPPING
+    # DATA SOURCE
     # ------------------------------
-    st.markdown("### Map Required Fields")
-    st.caption("Match your dataset columns to required inputs")
-
-    schema_signature = tuple(sorted(df.columns))
-
-    if "saved_mappings" not in st.session_state:
-        st.session_state.saved_mappings = {}
-
-    previous_mapping = st.session_state.saved_mappings.get(schema_signature, {})
-
-    def suggest_column(target, columns):
-        target = target.lower()
-        for col in columns:
-            if target in col.lower():
-                return col
-        return columns[0]
-
-    mapping = {}
-
-    feature_labels = {
-        "rating": "Customer Score",
-        "sentiment_score": "Behavioral Signal",
-        "review_length": "Engagement Depth",
-        "helpfulness_ratio": "Peer Validation",
-        "verified_purchase": "Trust Indicator",
-        "order_value": "Transaction Value"
-    }
-
-    left, right = st.columns(2)
-
-    for i, target_col in enumerate(feature_columns + ["order_value"]):
-
-        default_col = previous_mapping.get(
-            target_col,
-            suggest_column(target_col, df.columns)
-        )
-
-        container = left if i % 2 == 0 else right
-
-        mapping[target_col] = container.selectbox(
-            feature_labels.get(target_col, target_col),
-            df.columns,
-            index=list(df.columns).index(default_col)
-        )
-
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        file = st.file_uploader("Upload CSV")
+    
+    with col2:
+        sample_clicked = st.button("Use Sample Data")
+        st.caption("Quick start with preloaded dataset")
+    
+    
     # ------------------------------
-    # VALIDATION
+    # SAMPLE DATA FLOW
     # ------------------------------
-    def validate_mapping(mapping, df):
-        errors = []
-
-        if len(set(mapping.values())) < len(mapping.values()):
-            errors.append("Duplicate columns selected")
-
-        for k, v in mapping.items():
-            if v not in df.columns:
-                errors.append(f"Missing column: {v}")
-
-        return errors
-
-    validation_errors = validate_mapping(mapping, df)
-
-    if validation_errors:
-        st.error("Mapping issues detected")
-        for err in validation_errors:
-            st.write(f"- {err}")
-    else:
-        st.success("Mapping complete")
-
+    if sample_clicked:
+        df = pd.read_csv("sample_data.csv")
+    
+        required_cols = feature_columns + ["order_value"]
+        missing_cols = [col for col in required_cols if col not in df.columns]
+    
+        if missing_cols:
+            st.error(f"Missing required fields: {', '.join(missing_cols)}")
+            st.stop()
+    
+        df = df[required_cols]
+        df, _, _ = clean_data(df)
+    
+        st.session_state.mapped_data = df
+        st.session_state.step = 2
+    
+        st.success("Sample data loaded successfully")
+        st.rerun()
+    
+    
     # ------------------------------
-    # CONFIRM
+    # FILE UPLOAD FLOW
     # ------------------------------
-    if st.button("Confirm & Continue"):
-
+    if file:
+    
+        df = pd.read_csv(file)
+    
+        if df.empty:
+            st.error("Uploaded file is empty")
+            st.stop()
+    
+        if len(df.columns) < 2:
+            st.error("File does not contain enough usable data")
+            st.stop()
+    
+        # ------------------------------
+        # PREVIEW
+        # ------------------------------
+        st.markdown("### Data Preview")
+        st.dataframe(df.head(), use_container_width=True)
+    
+        st.markdown("---")
+    
+        # ------------------------------
+        # MAPPING
+        # ------------------------------
+        st.markdown("### Map Required Fields")
+        st.caption("Match your dataset columns to required inputs")
+    
+        schema_signature = tuple(sorted(df.columns))
+    
+        if "saved_mappings" not in st.session_state:
+            st.session_state.saved_mappings = {}
+    
+        previous_mapping = st.session_state.saved_mappings.get(schema_signature, {})
+    
+        def suggest_column(target, columns):
+            target = target.lower()
+            for col in columns:
+                if target in col.lower():
+                    return col
+            return columns[0]
+    
+        mapping = {}
+    
+        feature_labels = {
+            "rating": "Customer Score",
+            "sentiment_score": "Behavioral Signal",
+            "review_length": "Engagement Depth",
+            "helpfulness_ratio": "Peer Validation",
+            "verified_purchase": "Trust Indicator",
+            "order_value": "Transaction Value"
+        }
+    
+        left, right = st.columns(2)
+    
+        for i, target_col in enumerate(feature_columns + ["order_value"]):
+    
+            default_col = previous_mapping.get(
+                target_col,
+                suggest_column(target_col, df.columns)
+            )
+    
+            container = left if i % 2 == 0 else right
+    
+            mapping[target_col] = container.selectbox(
+                feature_labels.get(target_col, target_col),
+                df.columns,
+                index=list(df.columns).index(default_col)
+            )
+    
+        # ------------------------------
+        # VALIDATION
+        # ------------------------------
+        def validate_mapping(mapping, df):
+            errors = []
+    
+            if len(set(mapping.values())) < len(mapping.values()):
+                errors.append("Duplicate columns selected")
+    
+            for k, v in mapping.items():
+                if v not in df.columns:
+                    errors.append(f"Missing column: {v}")
+    
+            return errors
+    
+        validation_errors = validate_mapping(mapping, df)
+    
         if validation_errors:
-            st.error("Fix mapping errors before proceeding")
+            st.error("Mapping issues detected")
+            for err in validation_errors:
+                st.write(f"- {err}")
         else:
-            df = df.rename(columns={v: k for k, v in mapping.items()})
-
-            required_cols = feature_columns + ["order_value"]
-            df = df[required_cols]
-
-            df, _, _ = clean_data(df)
-
-            st.session_state.saved_mappings[schema_signature] = mapping
-            st.session_state.mapped_data = df
-
-            st.success("Data ready for analysis")
-
-            st.session_state.step = 2
-            st.rerun()
+            st.success("Mapping complete")
+    
+        # ------------------------------
+        # CONFIRM
+        # ------------------------------
+        if st.button("Confirm & Continue"):
+    
+            if validation_errors:
+                st.error("Fix mapping errors before proceeding")
+            else:
+                df = df.rename(columns={v: k for k, v in mapping.items()})
+    
+                required_cols = feature_columns + ["order_value"]
+                df = df[required_cols]
+    
+                df, _, _ = clean_data(df)
+    
+                st.session_state.saved_mappings[schema_signature] = mapping
+                st.session_state.mapped_data = df
+    
+                st.success("Data ready for analysis")
+    
+                st.session_state.step = 2
+                st.rerun()
 
 # ==============================
 # CONFIG
