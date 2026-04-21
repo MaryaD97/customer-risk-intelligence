@@ -262,8 +262,6 @@ if st.session_state.step == 1:
     
     st.markdown("---")
     st.subheader("What You Need")
-    st.caption(
-        "We use this data to estimate fraud risk and simulate the cost of each possible decision.")
 
     st.markdown("""
 
