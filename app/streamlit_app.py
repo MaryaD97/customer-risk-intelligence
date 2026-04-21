@@ -261,6 +261,22 @@ if st.session_state.step == 1:
     st.caption("Used to reduce fraud loss while minimizing manual review costs")
     
     st.markdown("---")
+    st.subheader("What You Need")
+    st.caption(
+        "We use this data to estimate fraud risk and simulate the cost of each possible decision.")
+
+    st.markdown("""
+
+    **Required:**
+    - Customer score or rating
+    - Behavioral signal (e.g. review or activity)
+    - Transaction value
+
+    The system will:
+    - Detect fraud risk
+    - Estimate financial impact
+    - Recommend the best action
+    """)
     
     st.markdown("### Load Data")
     st.caption("Upload your dataset to begin decision analysis")
