@@ -496,7 +496,10 @@ elif st.session_state.step == 2:
         st.session_state.config["review_cost"]
     )
 
-    st.caption("Higher fraud loss increases the cost of approving risky transactions. Review cost reflects operational expense per case.")
+    st.caption("""
+    Fraud Loss Multiplier = financial impact when fraud is missed (relative to order value)  
+    Cost per Manual Review = operational cost to investigate one transaction  
+    """)
 
     st.session_state.config = {
         "fraud_cost": fraud_cost,
@@ -620,7 +623,7 @@ elif st.session_state.step == 4:
     
     c1, c2, c3 = st.columns(3)
     
-    c1.metric("Manual Review (Baseline)", format_money(baseline))
+    c1.metric("Human Review Strategy", format_money(baseline))
     c2.metric("Full Automation (Risky)", format_money(full_auto_cost))
     c3.metric("Optimized (This System)", format_money(total_cost))
 
@@ -751,7 +754,7 @@ elif st.session_state.step == 5:
         st.stop()
 
     st.title("Value Summary")
-    st.caption("Overall financial impact of decision optimization")
+    st.caption("Impact based on your current cost settings")
 
     baseline = estimate_baseline_cost(df)
     optimized = df["expected_cost"].sum()
@@ -760,13 +763,13 @@ elif st.session_state.step == 5:
         
     # HERO VALUE
     st.markdown(f"## 💰 {format_money(savings)} in cost savings")
-    st.caption("Compared to reviewing all transactions manually")
+    st.caption("Compared to reviewing transactions using a human-only strategy")
         
     st.subheader("Business Impact")
         
     c1, c2, c3, c4 = st.columns(4)
 
-    c1.metric("Baseline Cost", format_money(baseline))
+    c1.metric("Human Review Strategy", format_money(baseline))
     c2.metric("Optimized Cost", format_money(optimized))
     c3.metric("Loss Reduction", f"{reduction:.1%}")
     c4.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
