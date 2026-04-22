@@ -541,18 +541,16 @@ elif st.session_state.step == 3:
                 except Exception:
                     st.error("Unable to analyze this dataset. Please check your input format.")
                     st.stop()
-        
-                with st.spinner("Running decision engine..."):
 
-                    df = simulate_decisions(
-                        df,
-                        cfg["fraud_cost"],
-                        cfg["review_cost"]
-                    )
+                df = simulate_decisions(
+                    df,
+                    cfg["fraud_cost"],
+                    cfg["review_cost"]
+                )
                 
-                    df["risk_tier"] = df["risk_probability"].apply(risk_tier)
+                df["risk_tier"] = df["risk_probability"].apply(risk_tier)
                 
-                    st.session_state.results = df
+                st.session_state.results = df
         
             # 🚀 FORCE UI UPDATE
             st.session_state.step = 4
@@ -652,10 +650,13 @@ elif st.session_state.step == 4:
     c3.metric("Selective Review", f"{conditional_rate:.1%}")
     
     if "transaction_id" in display_df.columns:
+        id_col = "transaction_id"
         display_df = display_df.rename(columns={"transaction_id": "Transaction ID"})
+        id_name = "Transaction ID"
     else:
         display_df = display_df.reset_index().rename(columns={"index": "Row ID"})
-    display_df = display_df.sort_values(by="risk_probability", ascending=False)
+        id_col = "Row ID"
+        id_name = "Row ID"
     
     if display_df.empty:
         st.warning("No valid transactions to display")
@@ -685,7 +686,7 @@ elif st.session_state.step == 4:
     
     display_df = display_df[
         [
-            "Transaction ID",
+            "id_name",
             "Decision",
             "risk_probability",
             "expected_cost",
@@ -703,7 +704,7 @@ elif st.session_state.step == 4:
     display_df["Risk Score"] = display_df["Risk Score"].map(
         lambda x: f"{x:.2f} ({risk_tier(x)})"
     )
-    display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
+    display_df["Expected Cost"] = display_df["Expected Cost"].map(format_money)
     
     st.dataframe(
         display_df,
@@ -727,7 +728,7 @@ elif st.session_state.step == 4:
 
     st.markdown(f"""
     **Action:** {map_action(row['optimal_strategy'])}  
-    **Expected Cost:** ${row['expected_cost']:.2f}  
+    **Expected Cost:** {format_money(row['expected_cost'])}  
     **Risk Score:** {row['risk_probability']:.2f}
     """)
     
@@ -764,8 +765,8 @@ elif st.session_state.step == 5:
     savings = baseline - optimized
     reduction = (savings / baseline) if baseline > 0 else 0
         
-        # HERO VALUE
-    st.markdown(f"## 💰 ${format_money(savings)} in cost savings")
+    # HERO VALUE
+    st.markdown(f"## 💰 {format_money(savings)} in cost savings")
     st.caption("Compared to reviewing all transactions manually")
         
     st.subheader("Business Impact")
