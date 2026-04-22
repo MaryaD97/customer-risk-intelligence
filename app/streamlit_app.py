@@ -695,22 +695,22 @@ elif st.session_state.step == 5:
     reduction = (savings / baseline) if baseline > 0 else 0
         
         # HERO VALUE
-        st.markdown(f"## 💰 ${savings:,.0f} in cost savings")
-        st.caption("Compared to reviewing all transactions manually")
+    st.markdown(f"## 💰 ${savings:,.0f} in cost savings")
+    st.caption("Compared to reviewing all transactions manually")
         
-        st.subheader("Business Impact")
+    st.subheader("Business Impact")
         
-        c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric("Baseline Cost", f"${baseline:,.0f}")
-        c2.metric("Optimized Cost", f"${optimized:,.0f}")
-        c3.metric("Loss Reduction", f"{reduction:.1%}")
-        c4.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
+    c1.metric("Baseline Cost", f"${baseline:,.0f}")
+    c2.metric("Optimized Cost", f"${optimized:,.0f}")
+    c3.metric("Loss Reduction", f"{reduction:.1%}")
+    c4.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
 
-        st.subheader("Key Outcomes")
+    st.subheader("Key Outcomes")
 
-        st.markdown(f"""
-        - Reduced loss by **{reduction:.1%}**
-        - Automated **{(df['optimal_strategy'].str.contains('AI')).mean():.1%}** of decisions
-        - Focused manual review on high-risk cases
-        """)
+    st.markdown(f"""
+    - Reduced loss by **{reduction:.1%}**
+    - Automated **{(df['optimal_strategy'].str.contains('AI')).mean():.1%}** of decisions
+    - Focused manual review on high-risk cases
+    """)
