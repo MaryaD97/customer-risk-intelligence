@@ -626,10 +626,10 @@ elif st.session_state.step == 4:
 
     st.markdown("### Decision Breakdown")
 
-    c1, c2, c3 = st.columns(3)
+    c1, c2, = st.columns(2)
     
     c1.metric("Automated Decisions", f"{automation_rate:.1%}")
-    c3.metric("Sent to Review", f"{1 - automation_rate:.1%}")
+    c2.metric("Sent to Review", f"{1 - automation_rate:.1%}")
     
     st.caption("Balances fraud loss and review cost to minimize total spend")
     
