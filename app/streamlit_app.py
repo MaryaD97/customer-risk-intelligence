@@ -164,14 +164,19 @@ def get_risk_drivers(row):
 
     return drivers[:3]
 
+REVIEW_EFFECTIVENESS = 0.9   # humans catch ~90% fraud
+AI_EFFECTIVENESS = 0.6       # automation catches ~60%
+
 def risk_tier(p):
     return "Low" if p < 0.3 else "Medium" if p < 0.7 else "High"
 
 def cost_ai(p, amt, fraud_cost):
-    return p * amt * fraud_cost * 0.3
+    fraud_loss = (1 - AI_EFFECTIVENESS) * p * amt * fraud_cost
+    return fraud_loss
 
 def cost_human(p, amt, fraud_cost, review_cost):
-    return review_cost + (p * amt * fraud_cost * 0.1)
+    fraud_loss = (1 - REVIEW_EFFECTIVENESS) * p * amt * fraud_cost
+    return review_cost + fraud_loss
 
 def cost_hybrid(p, amt, fraud_cost, review_cost):
     return cost_ai(p, amt, fraud_cost) if p < 0.4 else cost_human(p, amt, fraud_cost, review_cost)
@@ -220,6 +225,13 @@ def generate_reason(row):
 
 def estimate_baseline_cost(df):
     return df["cost_human"].sum()
+
+def format_money(x):
+    if x >= 1_000_000:
+        return f"${x/1_000_000:.1f}M"
+    elif x >= 1_000:
+        return f"${x/1_000:.1f}K"
+    return f"${x:.0f}"
 
 steps = [
     "Upload Data",
@@ -444,6 +456,18 @@ elif st.session_state.step == 2:
     st.title("Set Business Assumptions")
     st.caption("Define the financial impact of fraud and manual review")
 
+    st.caption("""
+    How cost is calculated:
+    • Fraud loss Multiplier = risk score × order value × fraud impact  
+    • Cost per Manual Review = fixed cost per manually reviewed transaction  
+    
+    Assumptions:
+    • Manual review catches ~90% of fraud  
+    • Automation catches ~60% of fraud  
+    
+    Automation reduces review cost but allows more fraud loss.
+    """)
+
     col1, col2 = st.columns(2)
 
     fraud_cost = col1.slider(
@@ -575,18 +599,26 @@ elif st.session_state.step == 4:
     baseline = estimate_baseline_cost(sim_df)
     savings = baseline - total_cost
     full_auto_cost = (
+        (1 - AI_EFFECTIVENESS) *
         sim_df["risk_probability"] *
         sim_df["order_value"] *
         sim_fraud
     ).sum()
     
-    st.markdown("### 💰 Decision Impact Comparison")
+    st.markdown("### 💰 Cost Comparison Across Strategies")
     
     c1, c2, c3 = st.columns(3)
     
-    c1.metric("Manual Review (Baseline)", f"${baseline:,.0f}")
-    c2.metric("Full Automation (Risky)", f"${full_auto_cost:,.0f}")
-    c3.metric("Optimized (This System)", f"${total_cost:,.0f}")
+    c1.metric("Manual Review (Baseline)", format_money(baseline))
+    c2.metric("Full Automation (Risky)", format_money(full_auto_cost))
+    c3.metric("Optimized (This System)", format_money(total_cost))
+
+    st.markdown("### Operational Mix")
+
+    c1, c2 = st.columns(2)
+    
+    c1.metric("Automated Decisions", f"{automation_rate:.1%}")
+    c2.metric("Sent to Review", f"{1 - automation_rate:.1%}")
     
     st.caption("Balances fraud loss and review cost to minimize total spend")
     
@@ -702,15 +734,15 @@ elif st.session_state.step == 5:
     reduction = (savings / baseline) if baseline > 0 else 0
         
         # HERO VALUE
-    st.markdown(f"## 💰 ${savings:,.0f} in cost savings")
+    st.markdown(f"## 💰 ${format_money(savings)} in cost savings")
     st.caption("Compared to reviewing all transactions manually")
         
     st.subheader("Business Impact")
         
     c1, c2, c3, c4 = st.columns(4)
 
-    c1.metric("Baseline Cost", f"${baseline:,.0f}")
-    c2.metric("Optimized Cost", f"${optimized:,.0f}")
+    c1.metric("Baseline Cost", format_money(baseline))
+    c2.metric("Optimized Cost", format_money(optimized))
     c3.metric("Loss Reduction", f"{reduction:.1%}")
     c4.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
 
