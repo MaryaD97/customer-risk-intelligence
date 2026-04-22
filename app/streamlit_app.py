@@ -624,12 +624,12 @@ elif st.session_state.step == 4:
     c2.metric("Full Automation (Risky)", format_money(full_auto_cost))
     c3.metric("Optimized (This System)", format_money(total_cost))
 
-    st.markdown("### Operational Mix")
+    st.markdown("### Decision Breakdown")
 
-    c1, c2 = st.columns(2)
+    c1, c2, c3 = st.columns(3)
     
     c1.metric("Automated Decisions", f"{automation_rate:.1%}")
-    c2.metric("Sent to Review", f"{1 - automation_rate:.1%}")
+    c3.metric("Sent to Review", f"{1 - automation_rate:.1%}")
     
     st.caption("Balances fraud loss and review cost to minimize total spend")
     
@@ -641,13 +641,6 @@ elif st.session_state.step == 4:
     review_rate = decision_counts.get("Review", 0)
     conditional_rate = decision_counts.get("Review (Selective)", 0)
 
-    st.markdown("### Decision Breakdown")
-
-    c1, c2, c3 = st.columns(3)
-    
-    c1.metric("Approve", f"{approve_rate:.1%}")
-    c2.metric("Review", f"{review_rate:.1%}")
-    c3.metric("Selective Review", f"{conditional_rate:.1%}")
     
     if "transaction_id" in display_df.columns:
         id_col = "transaction_id"
