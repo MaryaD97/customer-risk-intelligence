@@ -216,12 +216,28 @@ def map_action(strategy):
         return "Review (Selective)"
 
 def generate_reason(row):
+
+    reasons = []
+
     if row["risk_probability"] > 0.7:
-        return "High risk transaction"
-    elif row["risk_probability"] > 0.4:
-        return "Moderate risk pattern"
-    else:
-        return "Low risk profile"
+        reasons.append("High fraud risk")
+
+    if row["order_value"] > 100:
+        reasons.append("High order value")
+
+    if row["rating"] < 3:
+        reasons.append("Low customer trust")
+
+    if row["verified_purchase"] == 0:
+        reasons.append("Unverified purchase")
+
+    if row["review_length"] < 20:
+        reasons.append("Low activity signal")
+
+    if not reasons:
+        return "No strong risk signals"
+
+    return ", ".join(reasons[:2])
 
 def estimate_baseline_cost(df):
     return df["cost_human"].sum()
@@ -620,8 +636,27 @@ elif st.session_state.step == 4:
     st.caption("Balances fraud loss and review cost to minimize total spend")
     
     display_df = sim_df.copy()
-    display_df = display_df.reset_index().rename(columns={"index": "Transaction ID"})
+
+    decision_counts = display_df["optimal_strategy"].apply(map_action).value_counts(normalize=True)
+
+    approve_rate = decision_counts.get("Approve", 0)
+    review_rate = decision_counts.get("Review", 0)
+    conditional_rate = decision_counts.get("Review (Selective)", 0)
+
+    st.markdown("### Decision Breakdown")
+
+    c1, c2, c3 = st.columns(3)
+    
+    c1.metric("Approve", f"{approve_rate:.1%}")
+    c2.metric("Review", f"{review_rate:.1%}")
+    c3.metric("Selective Review", f"{conditional_rate:.1%}")
+    
+    if "transaction_id" in display_df.columns:
+        display_df = display_df.rename(columns={"transaction_id": "Transaction ID"})
+    else:
+        display_df = display_df.reset_index().rename(columns={"index": "Row ID"})
     display_df = display_df.sort_values(by="risk_probability", ascending=False)
+    
     if display_df.empty:
         st.warning("No valid transactions to display")
         st.stop()
@@ -630,14 +665,14 @@ elif st.session_state.step == 4:
         "Sort by",
         [
             "Default Order",
-            "Highest Risk",
+            "Highest Risk (Recommended)",
             "Highest Cost",
             "Lowest Cost"
         ]
     )
 
     # Apply sorting BEFORE formatting
-    if sort_option == "Highest Risk":
+    if sort_option == "Highest Risk (Recommended)":
         display_df = display_df.sort_values(by="risk_probability", ascending=False)
     elif sort_option == "Highest Cost":
         display_df = display_df.sort_values(by="expected_cost", ascending=False)
@@ -652,17 +687,17 @@ elif st.session_state.step == 4:
         [
             "Transaction ID",
             "Decision",
-            "expected_cost",
             "risk_probability",
+            "expected_cost",
             "Why"
         ]
     ]
     
-    display_df.columns = [
+        display_df.columns = [
         "Transaction ID",
         "Recommended Action",
-        "Expected Cost",
         "Risk Score",
+        "Expected Cost",
         "Why"
     ]
         
