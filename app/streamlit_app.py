@@ -457,13 +457,10 @@ elif st.session_state.step == 2:
     st.caption("Define the financial impact of fraud and manual review")
 
     st.caption("""
-    How cost is calculated:
-    • Fraud loss Multiplier = risk score × order value × fraud impact  
-    • Cost per Manual Review = fixed cost per manually reviewed transaction  
-    
     Assumptions:
-    • Manual review catches ~90% of fraud  
-    • Automation catches ~60% of fraud  
+    
+    - Manual review catches ~90% of fraud  
+    - Automation catches ~60% of fraud  
     
     Automation reduces review cost but allows more fraud loss.
     """)
