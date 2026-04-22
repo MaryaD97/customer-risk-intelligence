@@ -82,10 +82,6 @@ h3 {
     font-size: 0.9rem;
 }
 
-.stDataFrame div[data-testid="stDataFrame"] table {
-    font-size: 0.9rem;
-}
-
 /* ===== SUBTEXT ===== */
 .caption {
     color: #6B7280;
@@ -437,7 +433,7 @@ if st.session_state.step == 1:
 # ==============================
 # CONFIG
 # ==============================
-if st.session_state.step == 2:
+elif st.session_state.step == 2:
 
     st.button("← Back", on_click=lambda: st.session_state.update(step=1))
 
@@ -445,23 +441,25 @@ if st.session_state.step == 2:
         st.warning("Upload data first to continue")
         st.stop()
 
-    st.title("Define Cost Impact")
-    st.caption("Tell the system how expensive fraud and reviews are")
+    st.title("Set Business Assumptions")
+    st.caption("Define the financial impact of fraud and manual review")
 
     col1, col2 = st.columns(2)
 
     fraud_cost = col1.slider(
-        "Fraud Loss Impact",
+        "Fraud Loss Multiplier",
         1.0,
         5.0,
         st.session_state.config["fraud_cost"]
     )
     review_cost = col2.slider(
-        "Manual Review Cost",
+        "Cost per Manual Review",
         1.0,
         20.0,
         st.session_state.config["review_cost"]
     )
+
+    st.caption("Higher fraud loss increases the cost of approving risky transactions. Review cost reflects operational expense per case.")
 
     st.session_state.config = {
         "fraud_cost": fraud_cost,
@@ -470,7 +468,7 @@ if st.session_state.step == 2:
 
 
     st.button(
-        "Continue to Generate Decisions",
+        "Run Decision Engine",
         on_click=lambda: st.session_state.update(step=3)
     )
 
@@ -481,8 +479,8 @@ elif st.session_state.step == 3:
 
     st.button("← Back", on_click=lambda: st.session_state.update(step=2))
 
-    st.title("Generate Decisions")
-    st.caption("We’ll analyze risk and recommend lowest-cost actions")
+    st.title("Run Decision Engine")
+    st.caption("Analyze transactions and compute the lowest-cost action")
 
     if st.session_state.mapped_data is None:
         st.warning("Upload your data to continue")
@@ -491,12 +489,11 @@ elif st.session_state.step == 3:
     else:
         st.markdown("<br>", unsafe_allow_html=True)
     
-        generate = st.button("Generate Decisions")
+        generate = st.button("Run Analysis")
 
         if generate:
         
-            with st.spinner("Analyzing transactions..."):
-                st.markdown("<div class='caption'>Detecting risk patterns</div>", unsafe_allow_html=True)
+            with st.spinner("Running decision engine..."):
         
                 df = st.session_state.mapped_data.copy()
                 cfg = st.session_state.config
@@ -508,17 +505,17 @@ elif st.session_state.step == 3:
                     st.error("Unable to analyze this dataset. Please check your input format.")
                     st.stop()
         
-                st.markdown("<div class='caption'>Optimizing decisions</div>", unsafe_allow_html=True)
-        
-                df = simulate_decisions(
-                    df,
-                    cfg["fraud_cost"],
-                    cfg["review_cost"]
-                )
-        
-                df["risk_tier"] = df["risk_probability"].apply(risk_tier)
-        
-                st.session_state.results = df
+                with st.spinner("Running decision engine..."):
+
+                    df = simulate_decisions(
+                        df,
+                        cfg["fraud_cost"],
+                        cfg["review_cost"]
+                    )
+                
+                    df["risk_tier"] = df["risk_probability"].apply(risk_tier)
+                
+                    st.session_state.results = df
         
             # 🚀 FORCE UI UPDATE
             st.session_state.step = 4
@@ -534,29 +531,39 @@ elif st.session_state.step == 4:
         st.warning("Generate decisions first")
         st.stop()
 
-    st.title("Optimized Decisions")
+    st.title("Recommended Actions")
+    st.caption("Each action minimizes expected cost per transaction")
 
     st.subheader("Adjust Costs")
     
     col1, col2 = st.columns(2)
     
     sim_fraud = col1.slider(
-        "Fraud Cost",
+        "Fraud Loss Multiplier",
         1.0,
         5.0,
         st.session_state.config["fraud_cost"]
     )
     
     sim_review = col2.slider(
-        "Review Cost",
+        "Cost per Manual Review",
         1.0,
         20.0,
         st.session_state.config["review_cost"]
     )
+
+    if st.session_state.mapped_data is not None:
+        st.caption(f"""
+        Data Loaded: Yes | Rows: {len(st.session_state.mapped_data)} | 
+        Fraud Cost: {sim_fraud if 'sim_fraud' in locals() else st.session_state.config['fraud_cost']} | 
+        Review Cost: {sim_review if 'sim_review' in locals() else st.session_state.config['review_cost']}
+        """)
+        
     
     # ✅ FIXED INDENTATION STARTS HERE
     base_df = st.session_state.results
     sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
+    st.session_state.simulated_results = sim_df
 
     
     st.divider()
@@ -567,26 +574,21 @@ elif st.session_state.step == 4:
     
     baseline = estimate_baseline_cost(sim_df)
     savings = baseline - total_cost
-    
-    st.markdown(f"### 💰 Savings: ${savings:,.0f}")
+    st.markdown("### 💰 Estimated Impact")
 
+    c1, c2, c3, c4 = st.columns(4)
     
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Estimated Cost", f"${total_cost:,.0f}")
-    col2.metric("Automation Rate", f"{automation_rate:.1%}")
-    col3.metric("High Risk Cases", f"{high_risk:.1%}")
-    
-    st.divider()
-
-    
+    c1.metric("Total Cost", f"${total_cost:,.0f}")
+    c2.metric("Savings", f"${savings:,.0f}")
+    c3.metric("Automation", f"{automation_rate:.1%}")
+    c4.metric("High Risk", f"{high_risk:.1%}")
     
     display_df = sim_df.copy()
     display_df = display_df.reset_index().rename(columns={"index": "Transaction ID"})
+    display_df = display_df.sort_values(by="risk_probability", ascending=False)
     if display_df.empty:
         st.warning("No valid transactions to display")
         st.stop()
-
-    st.markdown("### Recommended Actions")
 
     sort_option = st.selectbox(
         "Sort by",
@@ -632,8 +634,6 @@ elif st.session_state.step == 4:
         lambda x: f"{x:.2f} ({risk_tier(x)})"
     )
     display_df["Expected Cost"] = display_df["Expected Cost"].map(lambda x: f"${x:,.0f}")
-
-    st.caption("Each action is chosen to minimize cost for that transaction")
     
     st.dataframe(
         display_df,
@@ -651,14 +651,14 @@ elif st.session_state.step == 4:
     )
     
     row = sim_df.iloc[selected_index]
+
     
-    row = sim_df.loc[selected_index]
-    
+    st.markdown("### Decision Breakdown")
+
     st.markdown(f"""
-    **Decision Summary**
-    - **Action:** {map_action(row['optimal_strategy'])}
-    - **Expected Cost:** ${row['expected_cost']:.2f}
-    - **Risk Score:** {row['risk_probability']:.2f}
+    **Action:** {map_action(row['optimal_strategy'])}  
+    **Expected Cost:** ${row['expected_cost']:.2f}  
+    **Risk Score:** {row['risk_probability']:.2f}
     """)
     
     st.markdown("**Top Risk Drivers**")
@@ -678,44 +678,39 @@ elif st.session_state.step == 4:
 # ==============================
 elif st.session_state.step == 5:
 
+    df = st.session_state.get("simulated_results", st.session_state.results)
+
     st.button("← Back", on_click=lambda: st.session_state.update(step=4))
 
     if st.session_state.results is None:
         st.warning("Generate decisions first")
         st.stop()
 
-    st.title("Business Impact")
+    st.title("Value Summary")
+    st.caption("Overall financial impact of decision optimization")
 
-    if st.session_state.results is None:
-        st.warning("Generate decisions first")
-    else:
-        df = st.session_state.results
-
-        baseline = estimate_baseline_cost(df)
-        optimized = df["expected_cost"].sum()
-        savings = baseline - optimized
-        reduction = (savings / baseline) if baseline > 0 else 0
+    baseline = estimate_baseline_cost(df)
+    optimized = df["expected_cost"].sum()
+    savings = baseline - optimized
+    reduction = (savings / baseline) if baseline > 0 else 0
         
         # HERO VALUE
-        st.markdown(f"## 💰 ${savings:,.0f} saved")
+        st.markdown(f"## 💰 ${savings:,.0f} in cost savings")
         st.caption("Compared to reviewing all transactions manually")
         
         st.subheader("Business Impact")
         
-        col1, col2, col3 = st.columns(3)
-        col2.metric("Baseline Cost", f"${baseline:,.0f}")
-        col3.metric("Optimized Cost", f"${optimized:,.0f}")
-        
-        # SECONDARY
-        col4, col5 = st.columns(2)
-        col4.metric("Loss Reduction", f"{reduction:.1%}")
-        col5.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
+        c1, c2, c3, c4 = st.columns(4)
+
+        c1.metric("Baseline Cost", f"${baseline:,.0f}")
+        c2.metric("Optimized Cost", f"${optimized:,.0f}")
+        c3.metric("Loss Reduction", f"{reduction:.1%}")
+        c4.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
 
         st.subheader("Key Outcomes")
 
         st.markdown(f"""
-        - Reduced expected loss by **{reduction:.1%}**
+        - Reduced loss by **{reduction:.1%}**
         - Automated **{(df['optimal_strategy'].str.contains('AI')).mean():.1%}** of decisions
-        - Focused human review on highest-risk transactions
+        - Focused manual review on high-risk cases
         """)
-        
