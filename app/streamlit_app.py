@@ -692,8 +692,7 @@ elif st.session_state.step == 4:
             "Why"
         ]
     ]
-    
-        display_df.columns = [
+    display_df.columns = [
         "Transaction ID",
         "Recommended Action",
         "Risk Score",
