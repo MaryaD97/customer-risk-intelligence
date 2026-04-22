@@ -208,7 +208,7 @@ def map_action(strategy):
     elif strategy == "Human Review":
         return "Review"
     else:
-        return "Conditional"
+        return "Review (Selective)"
 
 def generate_reason(row):
     if row["risk_probability"] > 0.7:
@@ -553,11 +553,11 @@ elif st.session_state.step == 4:
     )
 
     if st.session_state.mapped_data is not None:
-        st.caption(f"""
-        Data Loaded: Yes | Rows: {len(st.session_state.mapped_data)} | 
-        Fraud Cost: {sim_fraud if 'sim_fraud' in locals() else st.session_state.config['fraud_cost']} | 
-        Review Cost: {sim_review if 'sim_review' in locals() else st.session_state.config['review_cost']}
-        """)
+        st.caption(
+            f"Data Loaded: Yes | Rows: {len(st.session_state.mapped_data)} | "
+            f"Fraud Cost: {st.session_state.config['fraud_cost']} | "
+            f"Review Cost: {st.session_state.config['review_cost']}"
+        )
         
     
     # ✅ FIXED INDENTATION STARTS HERE
@@ -574,14 +574,21 @@ elif st.session_state.step == 4:
     
     baseline = estimate_baseline_cost(sim_df)
     savings = baseline - total_cost
-    st.markdown("### 💰 Estimated Impact")
-
-    c1, c2, c3, c4 = st.columns(4)
+    full_auto_cost = (
+        sim_df["risk_probability"] *
+        sim_df["order_value"] *
+        sim_fraud
+    ).sum()
     
-    c1.metric("Total Cost", f"${total_cost:,.0f}")
-    c2.metric("Savings", f"${savings:,.0f}")
-    c3.metric("Automation", f"{automation_rate:.1%}")
-    c4.metric("High Risk", f"{high_risk:.1%}")
+    st.markdown("### 💰 Decision Impact Comparison")
+    
+    c1, c2, c3 = st.columns(3)
+    
+    c1.metric("Manual Review (Baseline)", f"${baseline:,.0f}")
+    c2.metric("Full Automation (Risky)", f"${full_auto_cost:,.0f}")
+    c3.metric("Optimized (This System)", f"${total_cost:,.0f}")
+    
+    st.caption("Balances fraud loss and review cost to minimize total spend")
     
     display_df = sim_df.copy()
     display_df = display_df.reset_index().rename(columns={"index": "Transaction ID"})
