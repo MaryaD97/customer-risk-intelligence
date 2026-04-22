@@ -686,7 +686,7 @@ elif st.session_state.step == 4:
     
     display_df = display_df[
         [
-            "id_name",
+            id_name,
             "Decision",
             "risk_probability",
             "expected_cost",
@@ -694,7 +694,7 @@ elif st.session_state.step == 4:
         ]
     ]
     display_df.columns = [
-        "Transaction ID",
+        id_name,
         "Recommended Action",
         "Risk Score",
         "Expected Cost",
