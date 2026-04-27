@@ -44,11 +44,29 @@ h3 {
     color: #9CA3AF;
 }
 
-/* ===== SECTIONS ===== */
-.section {
-    padding: 1.2rem 0;
-    margin-bottom: 0.5rem;
-    border-bottom: 1px solid #1F2937;
+/* ===== CARD SYSTEM ===== */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+}
+
+/* ===== COLOR SYSTEM ===== */
+:root {
+    --bg-main: #0B0F17;
+    --bg-card: #0F172A;
+    --border: #1F2937;
+
+    --text-primary: #E5E7EB;
+    --text-secondary: #9CA3AF;
+
+    --green: #22C55E;      /* Approve */
+    --amber: #F59E0B;      /* Review */
+    --purple: #8B5CF6;     /* Conditional */
+    --red: #EF4444;        /* High Risk */
+    --blue: #3B82F6;       /* Cost */
 }
 
 /* ===== METRICS ===== */
@@ -608,7 +626,6 @@ elif st.session_state.step == 4:
     
     total_cost = sim_df["expected_cost"].sum()
     automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
-    high_risk = (sim_df["risk_probability"] > 0.7).mean()
     
     baseline = estimate_baseline_cost(sim_df)
     savings = baseline - total_cost
@@ -619,22 +636,26 @@ elif st.session_state.step == 4:
         sim_fraud
     ).sum()
     
-    st.markdown("### 💰 Cost Comparison Across Strategies")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
+    st.markdown("#### Cost Comparison")
     
     c1, c2, c3 = st.columns(3)
     
     c1.metric("Human Review Strategy", format_money(baseline))
-    c2.metric("Full Automation (Risky)", format_money(full_auto_cost))
-    c3.metric("Optimized (This System)", format_money(total_cost))
-
-    st.markdown("### Decision Breakdown")
-
-    c1, c2, = st.columns(2)
+    c2.metric("Auto Approval (No Review)", format_money(full_auto_cost))
+    c3.metric("Optimized Decisioning", format_money(total_cost))
     
-    c1.metric("Automated Decisions", f"{automation_rate:.1%}")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
+    st.markdown("#### Decision Breakdown")
+    
+    c1, c2 = st.columns(2)
+    
+    c1.metric("Auto Approved", f"{automation_rate:.1%}")
     c2.metric("Sent to Review", f"{1 - automation_rate:.1%}")
     
-    st.caption("Balances fraud loss and review cost to minimize total spend")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     display_df = sim_df.copy()
 
@@ -646,12 +667,10 @@ elif st.session_state.step == 4:
 
     
     if "transaction_id" in display_df.columns:
-        id_col = "transaction_id"
         display_df = display_df.rename(columns={"transaction_id": "Transaction ID"})
         id_name = "Transaction ID"
     else:
         display_df = display_df.reset_index().rename(columns={"index": "Row ID"})
-        id_col = "Row ID"
         id_name = "Row ID"
     
     if display_df.empty:
@@ -677,6 +696,17 @@ elif st.session_state.step == 4:
         display_df = display_df.sort_values(by="expected_cost", ascending=True)
     
     display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+
+    def color_decision(val):
+        if val == "Approve":
+            return "color: #22C55E; font-weight: 600"
+        elif val == "Review":
+            return "color: #F59E0B; font-weight: 600"
+        else:
+            return "color: #8B5CF6; font-weight: 600"
+    
+    styled_df = display_df.style.applymap(color_decision, subset=["Decision"])
+    
     display_df["Why"] = display_df.apply(generate_reason, axis=1)
     display_df["Why"] = display_df["Why"].str.capitalize()
     
@@ -701,13 +731,15 @@ elif st.session_state.step == 4:
         lambda x: f"{x:.2f} ({risk_tier(x)})"
     )
     display_df["Expected Cost"] = display_df["Expected Cost"].map(format_money)
-    
+
+
     st.dataframe(
-        display_df,
+        styled_df,
         use_container_width=True,
         height=480,
         hide_index=True
     )
+    st.markdown('</div>', unsafe_allow_html=True)
     
     
     st.subheader("Decision Rationale")
