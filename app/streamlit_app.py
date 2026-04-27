@@ -719,6 +719,8 @@ elif st.session_state.step == 4:
     )
     
     display_df["Expected Cost"] = display_df["Expected Cost"].map(format_money)
+
+    print(display_df.columns)
     
     # ✅ APPLY STYLING LAST (after column rename)
     def color_decision(val):
