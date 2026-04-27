@@ -722,10 +722,10 @@ elif st.session_state.step == 4:
     
     # ✅ APPLY STYLING LAST (after column rename)
     def color_decision(val):
-    if "Auto" in val:
-        return "color: #22C55E; font-weight: 600"
-    elif "Review" in val:
-        return "color: #F59E0B; font-weight: 600"
+        if "Auto" in val:
+            return "color: #22C55E; font-weight: 600"
+        elif "Review" in val:
+            return "color: #F59E0B; font-weight: 600"
     
     styled_df = display_df.style.applymap(color_decision, subset=["Recommended Action"])
     
