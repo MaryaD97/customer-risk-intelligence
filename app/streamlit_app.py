@@ -64,7 +64,6 @@ h3 {
 
     --green: #22C55E;      /* Approve */
     --amber: #F59E0B;      /* Review */
-    --purple: #8B5CF6;     /* Conditional */
     --red: #EF4444;        /* High Risk */
     --blue: #3B82F6;       /* Cost */
 }
@@ -230,8 +229,7 @@ def map_action(strategy):
         return "Approve"
     elif strategy == "Human Review":
         return "Review"
-    else:
-        return "Review (Selective)"
+
 
 def generate_reason(row):
 
@@ -297,7 +295,6 @@ if st.session_state.step == 1:
     
     st.markdown("""
     **Decide the lowest-cost action for every transaction.**  
-    Upload your data to identify risk and automatically choose between approve, review, or conditional handling.
     """)
     
     st.caption("Used to reduce fraud loss while minimizing manual review costs")
@@ -636,22 +633,23 @@ elif st.session_state.step == 4:
         sim_fraud
     ).sum()
     
+    # Card 1
     st.markdown('<div class="card">', unsafe_allow_html=True)
-
     st.markdown("#### Cost Comparison")
     
     c1, c2, c3 = st.columns(3)
-    
     c1.metric("Human Review Strategy", format_money(baseline))
-    c2.metric("Auto Approval (No Review)", format_money(full_auto_cost))
+    c2.metric("AI Automated Decisioning", format_money(full_auto_cost))
     c3.metric("Optimized Decisioning", format_money(total_cost))
     
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    
+    # Card 2
     st.markdown('<div class="card">', unsafe_allow_html=True)
-
     st.markdown("#### Decision Breakdown")
     
     c1, c2 = st.columns(2)
-    
     c1.metric("Auto Approved", f"{automation_rate:.1%}")
     c2.metric("Sent to Review", f"{1 - automation_rate:.1%}")
     
@@ -663,7 +661,6 @@ elif st.session_state.step == 4:
 
     approve_rate = decision_counts.get("Approve", 0)
     review_rate = decision_counts.get("Review", 0)
-    conditional_rate = decision_counts.get("Review (Selective)", 0)
 
     
     if "transaction_id" in display_df.columns:
@@ -733,7 +730,18 @@ elif st.session_state.step == 4:
             return "color: #8B5CF6; font-weight: 600"
     
     styled_df = display_df.style.applymap(color_decision, subset=["Recommended Action"])
+
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown("#### Transaction Decisions")
     
+    st.dataframe(
+        styled_df,
+        use_container_width=True,
+        height=480,
+        hide_index=True
+    )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
     
     st.subheader("Decision Rationale")
     
