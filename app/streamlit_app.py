@@ -729,13 +729,13 @@ elif st.session_state.step == 4:
         else:
             return "color: #8B5CF6; font-weight: 600"
     
-    styled_df = display_df.style.applymap(color_decision, subset=["Recommended Action"])
-
+    display_df["Recommended Action"] = display_df["Recommended Action"].apply(label_action)
+    
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("#### Transaction Decisions")
     
     st.dataframe(
-        styled_df,
+        display_df,
         use_container_width=True,
         height=480,
         hide_index=True
