@@ -226,9 +226,11 @@ def simulate_decisions(df, fraud_cost, review_cost):
 
 def map_action(strategy):
     if strategy == "AI Automation":
-        return "Approve"
+        return "Auto Approve (AI)"
     elif strategy == "Human Review":
-        return "Review"
+        return "Manual Review"
+    else:
+        return "Unknown"
 
 
 def generate_reason(row):
@@ -729,13 +731,12 @@ elif st.session_state.step == 4:
         elif "Review" in val:
             return "color: #F59E0B; font-weight: 600"
     
-    styled_df = display_df.style.applymap(color_decision, subset=["Recommended Action"])
     
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("#### Transaction Decisions")
     
-    st.dataframe(
-        styled_df,
+       st.dataframe(
+        display_df,
         use_container_width=True,
         height=480,
         hide_index=True
