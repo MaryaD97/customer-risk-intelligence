@@ -735,7 +735,7 @@ elif st.session_state.step == 4:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("#### Transaction Decisions")
     
-       st.dataframe(
+    st.dataframe(
         display_df,
         use_container_width=True,
         height=480,
