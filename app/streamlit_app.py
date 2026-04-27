@@ -695,18 +695,7 @@ elif st.session_state.step == 4:
     elif sort_option == "Lowest Cost":
         display_df = display_df.sort_values(by="expected_cost", ascending=True)
     
-    display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-
-    def color_decision(val):
-        if val == "Approve":
-            return "color: #22C55E; font-weight: 600"
-        elif val == "Review":
-            return "color: #F59E0B; font-weight: 600"
-        else:
-            return "color: #8B5CF6; font-weight: 600"
-    
-    styled_df = display_df.style.applymap(color_decision, subset=["Decision"])
-    
+ display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
     display_df["Why"] = display_df.apply(generate_reason, axis=1)
     display_df["Why"] = display_df["Why"].str.capitalize()
     
@@ -719,6 +708,7 @@ elif st.session_state.step == 4:
             "Why"
         ]
     ]
+    
     display_df.columns = [
         id_name,
         "Recommended Action",
@@ -726,20 +716,23 @@ elif st.session_state.step == 4:
         "Expected Cost",
         "Why"
     ]
-        
+    
     display_df["Risk Score"] = display_df["Risk Score"].map(
         lambda x: f"{x:.2f} ({risk_tier(x)})"
     )
+    
     display_df["Expected Cost"] = display_df["Expected Cost"].map(format_money)
-
-
-    st.dataframe(
-        styled_df,
-        use_container_width=True,
-        height=480,
-        hide_index=True
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # ✅ APPLY STYLING LAST (after column rename)
+    def color_decision(val):
+        if val == "Approve":
+            return "color: #22C55E; font-weight: 600"
+        elif val == "Review":
+            return "color: #F59E0B; font-weight: 600"
+        else:
+            return "color: #8B5CF6; font-weight: 600"
+    
+    styled_df = display_df.style.applymap(color_decision, subset=["Recommended Action"])
     
     
     st.subheader("Decision Rationale")
