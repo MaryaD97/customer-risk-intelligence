@@ -695,7 +695,7 @@ elif st.session_state.step == 4:
     elif sort_option == "Lowest Cost":
         display_df = display_df.sort_values(by="expected_cost", ascending=True)
     
- display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+    display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
     display_df["Why"] = display_df.apply(generate_reason, axis=1)
     display_df["Why"] = display_df["Why"].str.capitalize()
     
