@@ -722,20 +722,18 @@ elif st.session_state.step == 4:
     
     # ✅ APPLY STYLING LAST (after column rename)
     def color_decision(val):
-        if val == "Approve":
-            return "color: #22C55E; font-weight: 600"
-        elif val == "Review":
-            return "color: #F59E0B; font-weight: 600"
-        else:
-            return "color: #8B5CF6; font-weight: 600"
+    if "Auto" in val:
+        return "color: #22C55E; font-weight: 600"
+    elif "Review" in val:
+        return "color: #F59E0B; font-weight: 600"
     
-    display_df["Recommended Action"] = display_df["Recommended Action"].apply(label_action)
+    styled_df = display_df.style.applymap(color_decision, subset=["Recommended Action"])
     
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("#### Transaction Decisions")
     
     st.dataframe(
-        display_df,
+        styled_df,
         use_container_width=True,
         height=480,
         hide_index=True
