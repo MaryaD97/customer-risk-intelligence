@@ -18,108 +18,100 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* ===== BASE ===== */
-.block-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    max-width: 1100px;
-    background: linear-gradient(to bottom, #0B0F17 40%, #F9FAFB 40%);
+/* ===== PAGE BACKGROUND SPLIT ===== */
+body {
+    background: linear-gradient(
+        to bottom,
+        #0B1F1A 0%,
+        #0B1F1A 45%,
+        #F5F7F6 45%,
+        #F5F7F6 100%
+    );
 }
 
+/* ===== REMOVE STREAMLIT DEFAULT HEADER ===== */
 #MainMenu {visibility:hidden;}
 header {visibility:hidden;}
 footer {visibility:hidden;}
 
-/* ===== TYPOGRAPHY ===== */
-h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: -0.3px;
-}
-h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-h3 {
-    font-size: 1.1rem;
-    color: #9CA3AF;
+/* ===== CONTAINER WIDTH ===== */
+.block-container {
+    max-width: 1100px;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
-/* Remove row hover highlight */
-.stDataFrame tbody tr:hover {
-    background-color: transparent !important;
+/* ===== HERO SECTION ===== */
+.hero {
+    background: linear-gradient(135deg, #0B1F1A, #0F2A24);
+    padding: 40px;
+    border-radius: 16px;
+    color: #E5E7EB;
+    margin-bottom: 30px;
 }
 
-/* Remove selection highlight */
-.stDataFrame tbody tr:focus {
-    outline: none !important;
+/* ===== LIGHT TOOL SECTION ===== */
+.tool-section {
+    background: #F5F7F6;
+    padding: 30px;
+    border-radius: 14px;
 }
 
-/* Remove cell focus blue box */
-.stDataFrame td:focus {
-    outline: none !important;
-}
-
-/* ===== CARD SYSTEM ===== */
-.card {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border);
-    padding: 18px;
-    border-radius: 12px;
-    margin-bottom: 18px;
-}
-
-/* ===== COLOR SYSTEM ===== */
-:root {
-    --bg-main: #0B0F17;
-    --bg-card: #0F172A;
-    --border: #1F2937;
-
-    --text-primary: #E5E7EB;
-    --text-secondary: #9CA3AF;
-
-    --green: #22C55E;      /* Approve */
-    --amber: #F59E0B;      /* Review */
-    --red: #EF4444;        /* High Risk */
-    --blue: #3B82F6;       /* Cost */
-}
-
-/* ===== METRICS ===== */
-[data-testid="metric-container"] {
-    background-color: #0F172A;
-    border: 1px solid #1F2937;
-    padding: 14px;
+/* ===== CLEAN CARDS ===== */
+.card-clean {
+    background: white;
     border-radius: 10px;
+    padding: 16px;
+    border: 1px solid #E5E7EB;
+}
+
+/* ===== REMOVE BLUE RECTANGLES ===== */
+[data-testid="stDataFrame"] {
+    border: none !important;
+}
+
+/* ===== TABLE CLEAN ===== */
+.stDataFrame table {
+    font-size: 0.9rem;
+    border-collapse: collapse;
+}
+
+.stDataFrame th {
+    text-align: left;
+    font-weight: 600;
+    color: #6B7280;
+}
+
+.stDataFrame td {
+    padding: 10px 8px;
+}
+
+/* ===== UPLOAD BOXES ===== */
+.upload-box {
+    background: #EEF3F1;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.upload-inner {
+    background: #E3ECE8;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
 }
 
 /* ===== BUTTON ===== */
 .stButton>button {
-    background-color: #2563EB;
+    background-color: #1F7A63;
     color: white;
     border-radius: 6px;
     padding: 8px 16px;
     font-weight: 500;
     border: none;
 }
+
 .stButton>button:hover {
-    background-color: #1D4ED8;
-}
-
-/* ===== TABLE ===== */
-[data-testid="stDataFrame"] {
-    border: 1px solid #1F2937;
-    border-radius: 10px;
-}
-
-.stDataFrame div[data-testid="stDataFrame"] table {
-    font-size: 0.9rem;
-}
-
-/* ===== SUBTEXT ===== */
-.caption {
-    color: #6B7280;
-    font-size: 0.85rem;
+    background-color: #16614E;
 }
 
 </style>
@@ -283,21 +275,6 @@ def format_money(x):
     elif x >= 1_000:
         return f"${x/1_000:.1f}K"
     return f"${x:.0f}"
-
-steps = [
-    "Upload Data",
-    "Set Costs",
-    "Generate Decisions",
-    "Decisions",
-    "Insights"
-]
-
-current_step = st.session_state.step
-
-progress_text = " → ".join([
-    f"**{s}**" if i+1 == current_step else s
-    for i, s in enumerate(steps)
-])
 
 # ==============================
 # OVERVIEW PAGE
