@@ -19,7 +19,7 @@ st.markdown("""
 <style>
 
 /* ===== PAGE BACKGROUND SPLIT ===== */
-body {
+[data-testid="stAppViewContainer"] {
     background: linear-gradient(
         to bottom,
         #0B1F1A 0%,
@@ -36,8 +36,7 @@ footer {visibility:hidden;}
 
 /* ===== CONTAINER WIDTH ===== */
 .block-container {
-    max-width: 1100px;
-    padding-top: 2rem;
+    padding-top: 1rem;
     padding-bottom: 2rem;
 }
 
@@ -295,7 +294,13 @@ if st.session_state.step == 1:
         margin-bottom: 30px;
     ">
     
-    <div style="display: flex; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; gap: 60px; align-items: flex-start;">
+
+    <!-- LEFT -->
+    <div style="flex: 1;">
+    
+    <!-- RIGHT -->
+    <div style="flex: 1.2;">
     
     <!-- LEFT -->
     <div style="width: 45%; color: #E5E7EB;">
@@ -326,28 +331,14 @@ if st.session_state.step == 1:
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("---")
-    st.subheader("What You Need")
-
-    st.markdown("""
-
-    **Required:**
-    - Customer score or rating
-    - Behavioral signal (e.g. review or activity)
-    - Transaction value
-
-    The system will:
-    - Detect fraud risk
-    - Estimate financial impact
-    - Recommend the best action
-    """)
-    
     st.markdown("### Upload Data")
 
 
     # ------------------------------
     # DATA SOURCE
     # ------------------------------
+    st.markdown('<div class="tool-section">', unsafe_allow_html=True)
+
     col1, col2 = st.columns(2)
     
     with col1:
@@ -356,7 +347,8 @@ if st.session_state.step == 1:
     with col2:
         sample_clicked = st.button("Use Sample Data")
         st.caption("Quick start with preloaded dataset")
-    
+
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # ------------------------------
     # SAMPLE DATA FLOW
