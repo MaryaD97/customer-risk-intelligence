@@ -20,10 +20,12 @@ st.markdown("""
 
 /* ===== BASE ===== */
 .block-container {
-    padding-top: 3rem;
+    padding-top: 2rem;
     padding-bottom: 2rem;
     max-width: 1100px;
+    background: linear-gradient(to bottom, #0B0F17 40%, #F9FAFB 40%);
 }
+
 #MainMenu {visibility:hidden;}
 header {visibility:hidden;}
 footer {visibility:hidden;}
@@ -297,9 +299,6 @@ progress_text = " → ".join([
     for i, s in enumerate(steps)
 ])
 
-st.caption(f"Step {current_step} of 5")
-st.markdown("---")
-
 # ==============================
 # OVERVIEW PAGE
 # ==============================
@@ -309,12 +308,46 @@ if st.session_state.step == 1:
 # ==============================
 
     st.title("Fraud Decision Engine")
-    
+
+    st.caption("Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs")
     st.markdown("""
-    **Decide the lowest-cost action for every transaction.**  
-    """)
+    <div style="
+        background: linear-gradient(180deg, #0F172A 0%, #0B0F17 100%);
+        padding: 40px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+    ">
     
-    st.caption("Used to reduce fraud loss while minimizing manual review costs")
+    <div style="display: flex; justify-content: space-between; gap: 40px;">
+    
+    <!-- LEFT -->
+    <div style="width: 45%; color: #E5E7EB;">
+        <h3 style="color:#9CA3AF;">What You Need</h3>
+        <ul style="line-height:1.8;">
+            <li>Customer score or rating</li>
+            <li>Behavioral signal (activity/review)</li>
+            <li>Transaction value</li>
+        </ul>
+    
+        <h3 style="color:#9CA3AF;">System Output</h3>
+        <ul style="line-height:1.8;">
+            <li>Detect fraud risk</li>
+            <li>Estimate financial impact</li>
+            <li>Recommend best action</li>
+        </ul>
+    </div>
+    
+    <!-- RIGHT -->
+    <div style="width: 50%; color: #E5E7EB;">
+        <h2 style="margin-bottom:10px;">Fraud Decision Engine</h2>
+        <p style="font-size:16px; color:#9CA3AF;">
+            Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
+        </p>
+    </div>
+    
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     st.subheader("What You Need")
@@ -332,10 +365,9 @@ if st.session_state.step == 1:
     - Recommend the best action
     """)
     
-    st.markdown("### Load Data")
-    st.caption("Upload your dataset to begin decision analysis")
-    
-    
+    st.markdown("### Upload Data")
+
+
     # ------------------------------
     # DATA SOURCE
     # ------------------------------
@@ -516,22 +548,17 @@ elif st.session_state.step == 2:
     col1, col2 = st.columns(2)
 
     fraud_cost = col1.slider(
-        "Fraud Loss Multiplier",
-        1.0,
-        5.0,
+        "Fraud Loss Multiplier (impact of missed fraud)",
+        1.0, 5.0,
         st.session_state.config["fraud_cost"]
     )
+    
     review_cost = col2.slider(
-        "Cost per Manual Review",
-        1.0,
-        20.0,
+        "Manual Review Cost (cost per transaction review)",
+        1.0, 20.0,
         st.session_state.config["review_cost"]
     )
 
-    st.caption("""
-    Fraud Loss Multiplier = financial impact when fraud is missed (relative to order value)  
-    Cost per Manual Review = operational cost to investigate one transaction  
-    """)
 
     st.session_state.config = {
         "fraud_cost": fraud_cost,
@@ -539,57 +566,29 @@ elif st.session_state.step == 2:
     }
 
 
-    st.button(
-        "Run Decision Engine",
-        on_click=lambda: st.session_state.update(step=3)
-    )
+    if st.button("Run Decision Engine →", use_container_width=True):
 
-# ==============================
-# RUN
-# ==============================
-elif st.session_state.step == 3:
-
-    st.button("← Back", on_click=lambda: st.session_state.update(step=2))
-
-    st.title("Run Decision Engine")
-    st.caption("Analyze transactions and compute the lowest-cost action")
-
-    if st.session_state.mapped_data is None:
-        st.warning("Upload your data to continue")
-        st.stop()
-        
-    else:
-        st.markdown("<br>", unsafe_allow_html=True)
+        with st.spinner("Running decision engine..."):
     
-        generate = st.button("Run Analysis")
+            df = st.session_state.mapped_data.copy()
+            cfg = st.session_state.config
+    
+            X = df[feature_columns]
+            df["risk_probability"] = model.predict_proba(X)[:, 1]
+    
+            df = simulate_decisions(
+                df,
+                cfg["fraud_cost"],
+                cfg["review_cost"]
+            )
+    
+            df["risk_tier"] = df["risk_probability"].apply(risk_tier)
+    
+            st.session_state.results = df
+    
+        st.session_state.step = 4
+        st.rerun()
 
-        if generate:
-        
-            with st.spinner("Running decision engine..."):
-        
-                df = st.session_state.mapped_data.copy()
-                cfg = st.session_state.config
-        
-                X = df[feature_columns]
-                try:
-                    df["risk_probability"] = model.predict_proba(X)[:, 1]
-                except Exception:
-                    st.error("Unable to analyze this dataset. Please check your input format.")
-                    st.stop()
-
-                df = simulate_decisions(
-                    df,
-                    cfg["fraud_cost"],
-                    cfg["review_cost"]
-                )
-                
-                df["risk_tier"] = df["risk_probability"].apply(risk_tier)
-                
-                st.session_state.results = df
-        
-            # 🚀 FORCE UI UPDATE
-            st.session_state.step = 4
-            st.rerun()
 # ==============================
 # DECISIONS
 # ==============================
@@ -729,8 +728,8 @@ elif st.session_state.step == 4:
     display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
 
     display_df["Decision"] = display_df["Decision"].replace({
-        "Auto Approve (AI)": "🟢 APPROVE",
-        "Manual Review": "🟡 REVIEW"
+        "Auto Approve (AI)": "✓ Approve",
+        "Manual Review": "Review"
     })
     display_df["Why"] = display_df.apply(generate_reason, axis=1)
     display_df["Why"] = display_df["Why"].str.capitalize()
@@ -802,17 +801,15 @@ elif st.session_state.step == 4:
     st.markdown("**Cost Comparison**")
 
     st.markdown(f"""
-    - AI Cost: {format_money(row['cost_ai'])}
+    - Estimated Loss (AI): {format_money(row['cost_ai'])}
     - Human Review Cost: {format_money(row['cost_human'])}
-    - Hybrid Cost: {format_money(row['cost_hybrid'])}
     """)
     
     st.markdown("**Top Risk Drivers**")
     
     drivers = get_risk_drivers(row)
     
-    for d in drivers:
-        st.markdown(f"- {d}")
+    st.markdown(" • ".join(drivers))
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -847,7 +844,7 @@ elif st.session_state.step == 5:
     st.caption("Using optimized decisioning instead of reviewing all transactions manually")
     
     st.markdown(f"""
-    You reduced total cost from **{format_money(baseline)} → {format_money(optimized)}**
+    Reduced total cost from **{format_money(baseline)}** → **{format_money(optimized)}**
     """)
         
     st.subheader("Business Impact")
