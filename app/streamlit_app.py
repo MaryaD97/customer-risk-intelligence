@@ -746,12 +746,12 @@ elif st.session_state.step == 4:
             return "color: #F59E0B; font-weight: 600"
             
     def color_risk(val):
-    if "High" in val:
-        return "color: #EF4444; font-weight: 600"
-    elif "Medium" in val:
-        return "color: #F59E0B"
-    else:
-        return "color: #22C55E"
+        if "High" in val:
+            return "color: #EF4444; font-weight: 600"
+        elif "Medium" in val:
+            return "color: #F59E0B"
+        else:
+            return "color: #22C55E"
     
     
     st.markdown('<div class="card">', unsafe_allow_html=True)
