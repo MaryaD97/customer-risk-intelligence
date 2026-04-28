@@ -44,6 +44,21 @@ h3 {
     color: #9CA3AF;
 }
 
+/* Remove row hover highlight */
+.stDataFrame tbody tr:hover {
+    background-color: transparent !important;
+}
+
+/* Remove selection highlight */
+.stDataFrame tbody tr:focus {
+    outline: none !important;
+}
+
+/* Remove cell focus blue box */
+.stDataFrame td:focus {
+    outline: none !important;
+}
+
 /* ===== CARD SYSTEM ===== */
 .card {
     background-color: var(--bg-card);
@@ -654,6 +669,7 @@ elif st.session_state.step == 4:
     st.caption("Optimized strategy minimizes total expected cost across all transactions")
     
     st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     
     
     # Card 2
@@ -661,13 +677,16 @@ elif st.session_state.step == 4:
     st.markdown("#### Decision Breakdown")
     
     c1, c2 = st.columns(2)
-    c1.metric("Auto Approved", f"{automation_rate:.1%}")
-    st.caption("Transactions handled without manual intervention")
-    
-    c2.metric("Sent to Review", f"{1 - automation_rate:.1%}")
-    st.caption("Requires analyst investigation")
+    with c1:
+        st.metric("Auto Approved", f"{automation_rate:.1%}")
+        st.caption("Transactions handled without manual intervention")
+
+    with c2:
+        st.metric("Sent to Review", f"{1 - automation_rate:.1%}")
+        st.caption("Requires analyst investigation")
     
     st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     
     display_df = sim_df.copy()
 
@@ -708,9 +727,16 @@ elif st.session_state.step == 4:
         display_df = display_df.sort_values(by="expected_cost", ascending=True)
     
     display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+
+    display_df["Decision"] = display_df["Decision"].replace({
+        "Auto Approve (AI)": "🟢 APPROVE",
+        "Manual Review": "🟡 REVIEW"
+    })
     display_df["Why"] = display_df.apply(generate_reason, axis=1)
-    display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
     display_df["Why"] = display_df["Why"].str.capitalize()
+    display_df["Why"] = display_df["Why"].str.replace(",", " •")
+
+    display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
     
     display_df = display_df[
         [
@@ -725,48 +751,35 @@ elif st.session_state.step == 4:
     
     display_df.columns = [
         id_name,
-        "Recommended Action",
+        "Decision",
         "Risk Level",
         "Risk Score",
         "Expected Cost",
         "Why"
     ]
     
-    display_df["Risk Score"] = display_df["Risk Score"].map(
-        lambda x: f"{x:.2f} ({risk_tier(x)})"
-    )
+    display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
+
+    display_df["Risk Level"] = display_df["Risk Level"].str.upper()
     
     display_df["Expected Cost"] = display_df["Expected Cost"].map(format_money)
     
     # ✅ APPLY STYLING LAST (after column rename)
-    def color_decision(val):
-        if "Auto" in val:
-            return "color: #22C55E; font-weight: 600"
-        elif "Review" in val:
-            return "color: #F59E0B; font-weight: 600"
-            
-    def color_risk(val):
-        if "High" in val:
-            return "color: #EF4444; font-weight: 600"
-        elif "Medium" in val:
-            return "color: #F59E0B"
-        else:
-            return "color: #22C55E"
     
     
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("#### Transaction Decisions")
     
-    styled_df = display_df.style.applymap(color_risk, subset=["Risk Level"])
 
     st.dataframe(
-        styled_df,
+        display_df,
         use_container_width=True,
-        height=480,
+        height=min(600, 40 + 35 * len(display_df)),
         hide_index=True
     )
     
     st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     
     st.subheader("Decision Rationale")
     
@@ -778,13 +791,13 @@ elif st.session_state.step == 4:
     
     st.caption("Showing detailed reasoning for selected transaction")
     
-    st.markdown("### Decision Breakdown")
+    st.markdown("#### Selected Transaction")
 
-    st.markdown(f"""
-    **Action:** {map_action(row['optimal_strategy'])}  
-    **Expected Cost:** {format_money(row['expected_cost'])}  
-    **Risk Score:** {row['risk_probability']:.2f}
-    """)
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Action", map_action(row['optimal_strategy']))
+    col2.metric("Risk Score", f"{row['risk_probability']:.2f}")
+    col3.metric("Expected Cost", format_money(row['expected_cost']))
 
     st.markdown("**Cost Comparison**")
 
@@ -801,9 +814,11 @@ elif st.session_state.step == 4:
     for d in drivers:
         st.markdown(f"- {d}")
 
-    
+    st.markdown("<br>", unsafe_allow_html=True)
+
     st.button(
-        "View Insights",
+        "View Insights →",
+        use_container_width=True,
         on_click=lambda: st.session_state.update(step=5)
     )
 # ==============================
