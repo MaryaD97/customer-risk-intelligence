@@ -194,9 +194,6 @@ border-radius:16px;
 overflow:hidden;
 }
 
-</style>
-""", unsafe_allow_html=True)
-
 /* -------------------------
 HERO SECTION
 ------------------------- */
@@ -330,6 +327,9 @@ font-size:14px;
 font-weight:600;
 margin-bottom:8px;
 }
+</style>
+""", unsafe_allow_html=True)
+
 # ==============================
 # LOAD MODEL
 # ==============================
