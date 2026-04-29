@@ -433,7 +433,7 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("### Upload Data")
+ st.markdown("### Upload Data")
 
     # ------------------------------
     # DATA SOURCE
