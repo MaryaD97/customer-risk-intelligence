@@ -598,67 +598,67 @@ if st.session_state.step == 1:
 elif st.session_state.step == 2:
         render_topbar(2)
 
-    st.button("← Back", on_click=lambda: st.session_state.update(step=1))
-
-    if st.session_state.mapped_data is None:
-        st.warning("Upload data first to continue")
-        st.stop()
-
-    st.title("Set Business Assumptions")
-    st.caption("Define the financial impact of fraud and manual review")
-
-    st.caption("""
-    Assumptions:
+        st.button("← Back", on_click=lambda: st.session_state.update(step=1))
     
-    - Manual review catches ~90% of fraud  
-    - Automation catches ~60% of fraud  
+        if st.session_state.mapped_data is None:
+            st.warning("Upload data first to continue")
+            st.stop()
     
-    Automation reduces review cost but allows more fraud loss.
-    """)
-
-    col1, col2 = st.columns(2)
-
-    fraud_cost = col1.slider(
-        "Fraud Loss Multiplier (impact of missed fraud)",
-        1.0, 5.0,
-        st.session_state.config["fraud_cost"]
-    )
+        st.title("Set Business Assumptions")
+        st.caption("Define the financial impact of fraud and manual review")
     
-    review_cost = col2.slider(
-        "Manual Review Cost (cost per transaction review)",
-        1.0, 20.0,
-        st.session_state.config["review_cost"]
-    )
-
-
-    st.session_state.config = {
-        "fraud_cost": fraud_cost,
-        "review_cost": review_cost
-    }
-
-
-    if st.button("Run Decision Engine →", use_container_width=True):
-
-        with st.spinner("Running decision engine..."):
+        st.caption("""
+        Assumptions:
+        
+        - Manual review catches ~90% of fraud  
+        - Automation catches ~60% of fraud  
+        
+        Automation reduces review cost but allows more fraud loss.
+        """)
     
-            df = st.session_state.mapped_data.copy()
-            cfg = st.session_state.config
+        col1, col2 = st.columns(2)
     
-            X = df[feature_columns]
-            df["risk_probability"] = model.predict_proba(X)[:, 1]
+        fraud_cost = col1.slider(
+            "Fraud Loss Multiplier (impact of missed fraud)",
+            1.0, 5.0,
+            st.session_state.config["fraud_cost"]
+        )
+        
+        review_cost = col2.slider(
+            "Manual Review Cost (cost per transaction review)",
+            1.0, 20.0,
+            st.session_state.config["review_cost"]
+        )
     
-            df = simulate_decisions(
-                df,
-                cfg["fraud_cost"],
-                cfg["review_cost"]
-            )
     
-            df["risk_tier"] = df["risk_probability"].apply(risk_tier)
+        st.session_state.config = {
+            "fraud_cost": fraud_cost,
+            "review_cost": review_cost
+        }
     
-            st.session_state.results = df
     
-        st.session_state.step = 4
-        st.rerun()
+        if st.button("Run Decision Engine →", use_container_width=True):
+    
+            with st.spinner("Running decision engine..."):
+        
+                df = st.session_state.mapped_data.copy()
+                cfg = st.session_state.config
+        
+                X = df[feature_columns]
+                df["risk_probability"] = model.predict_proba(X)[:, 1]
+        
+                df = simulate_decisions(
+                    df,
+                    cfg["fraud_cost"],
+                    cfg["review_cost"]
+                )
+        
+                df["risk_tier"] = df["risk_probability"].apply(risk_tier)
+        
+                st.session_state.results = df
+        
+            st.session_state.step = 4
+            st.rerun()
 
 # ==============================
 # DECISIONS
@@ -666,40 +666,40 @@ elif st.session_state.step == 2:
 elif st.session_state.step == 4:
         render_topbar(3)
 
-    st.button("← Back", on_click=lambda: st.session_state.update(step=2))
-
-    if st.session_state.results is None:
-        st.warning("Generate decisions first")
-        st.stop()
-
-    st.title("Recommended Actions")
-    st.caption("Each action minimizes expected cost per transaction")
-
-    st.subheader("Adjust Costs")
+        st.button("← Back", on_click=lambda: st.session_state.update(step=2))
     
+        if st.session_state.results is None:
+            st.warning("Generate decisions first")
+            st.stop()
     
-    col1, col2 = st.columns(2)
+        st.title("Recommended Actions")
+        st.caption("Each action minimizes expected cost per transaction")
     
-    sim_fraud = col1.slider(
-        "Fraud Loss Multiplier",
-        1.0,
-        5.0,
-        st.session_state.config["fraud_cost"]
-    )
-    
-    sim_review = col2.slider(
-        "Cost per Manual Review",
-        1.0,
-        20.0,
-        st.session_state.config["review_cost"]
-    )
-
-    if st.session_state.mapped_data is not None:
-        st.caption(
-            f"Data Loaded: Yes | Rows: {len(st.session_state.mapped_data)} | "
-            f"Fraud Cost: {st.session_state.config['fraud_cost']} | "
-            f"Review Cost: {st.session_state.config['review_cost']}"
+        st.subheader("Adjust Costs")
+        
+        
+        col1, col2 = st.columns(2)
+        
+        sim_fraud = col1.slider(
+            "Fraud Loss Multiplier",
+            1.0,
+            5.0,
+            st.session_state.config["fraud_cost"]
         )
+        
+        sim_review = col2.slider(
+            "Cost per Manual Review",
+            1.0,
+            20.0,
+            st.session_state.config["review_cost"]
+        )
+    
+        if st.session_state.mapped_data is not None:
+            st.caption(
+                f"Data Loaded: Yes | Rows: {len(st.session_state.mapped_data)} | "
+                f"Fraud Cost: {st.session_state.config['fraud_cost']} | "
+                f"Review Cost: {st.session_state.config['review_cost']}"
+            )
     # ==============================
     # SUMMARY BAR (NEW)
     # ==============================
@@ -894,7 +894,7 @@ elif st.session_state.step == 4:
 # INSIGHTS
 # ==============================
 elif st.session_state.step == 5:
-    render_topbar(1)
+    render_topbar(4)
 
 
 
