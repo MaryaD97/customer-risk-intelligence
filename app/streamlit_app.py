@@ -214,24 +214,25 @@ model, feature_columns = load_model()
 def render_topbar(active_step=1):
 
     labels = {
-        1:"Upload Data",
-        2:"Set Costs",
-        3:"Decisions",
-        4:"Insights"
+        1: "Upload Data",
+        2: "Set Costs",
+        3: "Decisions",
+        4: "Insights"
     }
 
     html = '<div class="topbar">'
-    html += '<div class="brand">🛡️ Fraud Decision Engine</div>'
+    html += '<div class="brand">Fraud Decision Engine</div>'
     html += '<div class="steps">'
 
-    for i in range(1,5):
-        dot_class = "dot active-dot" if i == active_step else "dot"
-        html += f'''
-        <div class="step">
-            <div class="{dot_class}">{i}</div>
-            <div>{labels[i]}</div>
-        </div>
-        '''
+    for i in range(1, 5):
+        cls = "dot active-dot" if i == active_step else "dot"
+
+        html += (
+            f'<div class="step">'
+            f'<div class="{cls}">{i}</div>'
+            f'<div>{labels[i]}</div>'
+            f'</div>'
+        )
 
     html += '</div></div>'
 
@@ -393,52 +394,44 @@ if st.session_state.step == 1:
 # ==============================
 # STEP 1 — LOAD DATA
 # ==============================
-        st.markdown("""
-        <div style="
-            background: linear-gradient(135deg, #0B1F1A, #0F2A24);
-            padding: 40px;
-            border-radius: 16px;
-            margin-bottom: 30px;
-            color: #E5E7EB;
-        ">
+        hero_html = """
+        <div style="background:linear-gradient(135deg,#0B1F1A,#0F2A24);padding:40px;border-radius:16px;margin-bottom:30px;color:#E5E7EB;">
+        <div style="display:flex;gap:60px;align-items:flex-start;">
         
-        <div style="display: flex; gap: 60px; align-items: flex-start;">
+        <div style="flex:1;">
+        <h3 style="color:#9CA3AF;margin-bottom:14px;">What You Need</h3>
+        <ul style="line-height:1.9;padding-left:20px;margin-top:0;">
+        <li>Customer score or rating</li>
+        <li>Behavioral signal (activity/review)</li>
+        <li>Transaction value</li>
+        </ul>
         
-        <!-- LEFT -->
-        <div style="flex: 1;">
-            <h3 style="color:#9CA3AF;">What You Need</h3>
-            <ul style="line-height:1.8;">
-                <li>Customer score or rating</li>
-                <li>Behavioral signal (activity/review)</li>
-                <li>Transaction value</li>
-            </ul>
-        
-            <h3 style="color:#9CA3AF; margin-top:20px;">System Output</h3>
-            <ul style="line-height:1.8;">
-                <li>Detect fraud risk</li>
-                <li>Estimate financial impact</li>
-                <li>Recommend best action</li>
-            </ul>
+        <h3 style="color:#9CA3AF;margin-top:22px;margin-bottom:14px;">System Output</h3>
+        <ul style="line-height:1.9;padding-left:20px;margin-top:0;">
+        <li>Detect fraud risk</li>
+        <li>Estimate financial impact</li>
+        <li>Recommend best action</li>
+        </ul>
         </div>
         
-        <!-- RIGHT -->
-        <div style="flex: 1.2;">
-            <h2 style="margin-bottom:10px;">Fraud Decision Engine</h2>
-            <p style="font-size:16px; color:#9CA3AF;">
-                Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
-            </p>
+        <div style="flex:1.2;">
+        <h2 style="margin-bottom:10px;color:white;">Fraud Decision Engine</h2>
+        <p style="font-size:16px;color:#9CA3AF;line-height:1.7;">
+        Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
+        </p>
         </div>
         
         </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
+        
+        st.markdown(hero_html, unsafe_allow_html=True)
         
         st.markdown("### Upload Data")
     
         # ------------------------------
         # DATA SOURCE
         # ------------------------------
-        st.markdown('<div class="tool-section">', unsafe_allow_html=True)
     
         col1, col2 = st.columns(2)
         
@@ -448,8 +441,7 @@ if st.session_state.step == 1:
         with col2:
             sample_clicked = st.button("Use Sample Data")
             st.caption("Quick start with preloaded dataset")
-    
-        st.markdown('</div>', unsafe_allow_html=True)
+
         
         # ------------------------------
         # SAMPLE DATA FLOW
