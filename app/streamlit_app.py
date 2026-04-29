@@ -327,6 +327,70 @@ font-size:14px;
 font-weight:600;
 margin-bottom:8px;
 }
+
+/* -------------------------
+DASHBOARD KPI CARDS
+------------------------- */
+.kpi-card{
+background:white;
+border:1px solid #E5E7EB;
+border-radius:22px;
+padding:24px;
+box-shadow:0 10px 24px rgba(0,0,0,.04);
+height:145px;
+}
+
+.kpi-label{
+font-size:14px;
+font-weight:700;
+color:#64748B;
+margin-bottom:14px;
+}
+
+.kpi-value{
+font-size:42px;
+font-weight:800;
+color:#0F172A;
+line-height:1;
+}
+
+.kpi-green{
+color:#16A34A;
+}
+
+.kpi-sub{
+font-size:13px;
+color:#94A3B8;
+margin-top:12px;
+}
+
+/* -------------------------
+ANALYTICS CARD
+------------------------- */
+.panel-card{
+background:white;
+border:1px solid #E5E7EB;
+border-radius:22px;
+padding:24px;
+box-shadow:0 10px 24px rgba(0,0,0,.04);
+margin-top:18px;
+}
+
+/* -------------------------
+SECTION TITLE
+------------------------- */
+.section-title{
+font-size:28px;
+font-weight:800;
+color:#0F172A;
+margin-bottom:8px;
+}
+
+.section-sub{
+color:#64748B;
+margin-bottom:18px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -836,37 +900,23 @@ elif st.session_state.step == 4:
             st.warning("Generate decisions first")
             st.stop()
     
-        st.title("Recommended Actions")
-        st.caption("Each action minimizes expected cost per transaction")
-    
-        st.subheader("Adjust Costs")
-        
+        st.markdown('<div class="section-title">Decision Dashboard</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-sub">Lowest-cost actions for every transaction based on current assumptions.</div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
         sim_fraud = col1.slider(
             "Fraud Loss Multiplier",
-            1.0,
-            5.0,
+            1.0, 5.0,
             st.session_state.config["fraud_cost"]
         )
         
         sim_review = col2.slider(
-            "Cost per Manual Review",
-            1.0,
-            20.0,
+            "Manual Review Cost",
+            1.0, 20.0,
             st.session_state.config["review_cost"]
         )
-    
-        if st.session_state.mapped_data is not None:
-            st.caption(
-                f"Data Loaded: Yes | Rows: {len(st.session_state.mapped_data)} | "
-                f"Fraud Cost: {st.session_state.config['fraud_cost']} | "
-                f"Review Cost: {st.session_state.config['review_cost']}"
-            )
-        # ==============================
-        # SUMMARY BAR (NEW)
-        # ==============================
+        
         base_df = st.session_state.results
         sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
         
@@ -875,60 +925,72 @@ elif st.session_state.step == 4:
         savings = baseline - total_cost
         automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
         
-        st.markdown('<div class="card">', unsafe_allow_html=True)
+        k1, k2, k3 = st.columns(3)
         
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Total Cost", format_money(total_cost))
-        c2.metric("Savings vs Baseline", format_money(savings))
-        c3.metric("Automation Rate", f"{automation_rate:.1%}")
+        with k1:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-label">Total Expected Cost</div>
+                <div class="kpi-value">{format_money(total_cost)}</div>
+                <div class="kpi-sub">Optimized strategy output</div>
+            </div>
+            """, unsafe_allow_html=True)
         
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-            
+        with k2:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-label">Savings vs Baseline</div>
+                <div class="kpi-value kpi-green">{format_money(savings)}</div>
+                <div class="kpi-sub">Compared to reviewing all orders</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with k3:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-label">Automation Rate</div>
+                <div class="kpi-value">{automation_rate:.1%}</div>
+                <div class="kpi-sub">Orders auto-approved</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        left, right = st.columns([1.4, 1])
+
         full_auto_cost = (
-            (1 - AI_EFFECTIVENESS) *
-            sim_df["risk_probability"] *
-            sim_df["order_value"] *
-            sim_fraud
+            (1 - AI_EFFECTIVENESS)
+            * sim_df["risk_probability"]
+            * sim_df["order_value"]
+            * sim_fraud
         ).sum()
         
-        # Card 1
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("#### Cost Comparison")
+        with left:
+            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+            st.markdown("### Cost Comparison")
         
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Human Review", format_money(baseline))
-        c2.metric("AI Only", format_money(full_auto_cost))
-        c3.metric("✔ Optimized", format_money(total_cost))
+            st.progress(min(total_cost / max(baseline,1), 1.0))
+            st.caption(f"Optimized cost is {total_cost / baseline:.1%} of full review cost")
         
-        st.caption("Optimized strategy minimizes total expected cost across all transactions")
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Human Review", format_money(baseline))
+            c2.metric("AI Only", format_money(full_auto_cost))
+            c3.metric("Optimized", format_money(total_cost))
         
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
+        with right:
+            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+            st.markdown("### Decision Breakdown")
         
-        # Card 2
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("#### Decision Breakdown")
+            auto_rate = automation_rate
+            review_rate = 1 - automation_rate
         
-        c1, c2 = st.columns(2)
-        with c1:
-            st.metric("Auto Approved", f"{automation_rate:.1%}")
-            st.caption("Transactions handled without manual intervention")
-    
-        with c2:
-            st.metric("Sent to Review", f"{1 - automation_rate:.1%}")
-            st.caption("Requires analyst investigation")
+            st.progress(auto_rate)
+            st.caption(f"Auto Approved: {auto_rate:.1%}")
         
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
+            st.progress(review_rate)
+            st.caption(f"Manual Review: {review_rate:.1%}")
         
-        display_df = sim_df.copy()
-    
-        decision_counts = display_df["optimal_strategy"].apply(map_action).value_counts(normalize=True)
-    
-        approve_rate = decision_counts.get("Auto Approve (AI)", 0)
-        review_rate = decision_counts.get("Manual Review", 0)
+            st.markdown('</div>', unsafe_allow_html=True)
     
         
         if "transaction_id" in display_df.columns:
@@ -1002,8 +1064,8 @@ elif st.session_state.step == 4:
         # ✅ APPLY STYLING LAST (after column rename)
         
         
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("#### Transaction Decisions")
+        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        st.markdown("### Transaction Decisions")
         
     
         st.dataframe(
@@ -1022,7 +1084,7 @@ elif st.session_state.step == 4:
     
         selected_id = st.selectbox("Select Transaction", options)
         
-        row = sim_df.iloc[selected_id]
+        row = sim_df.loc[selected_id] if selected_id in sim_df.index else sim_df.iloc[0]
         
         st.caption("Showing detailed reasoning for selected transaction")
         
