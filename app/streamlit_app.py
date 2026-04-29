@@ -700,196 +700,196 @@ elif st.session_state.step == 4:
                 f"Fraud Cost: {st.session_state.config['fraud_cost']} | "
                 f"Review Cost: {st.session_state.config['review_cost']}"
             )
-    # ==============================
-    # SUMMARY BAR (NEW)
-    # ==============================
-    base_df = st.session_state.results
-    sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
-    
-    total_cost = sim_df["expected_cost"].sum()
-    baseline = estimate_baseline_cost(sim_df)
-    savings = baseline - total_cost
-    automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
-    
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Total Cost", format_money(total_cost))
-    c2.metric("Savings vs Baseline", format_money(savings))
-    c3.metric("Automation Rate", f"{automation_rate:.1%}")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
+        # ==============================
+        # SUMMARY BAR (NEW)
+        # ==============================
+        base_df = st.session_state.results
+        sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
         
-    full_auto_cost = (
-        (1 - AI_EFFECTIVENESS) *
-        sim_df["risk_probability"] *
-        sim_df["order_value"] *
-        sim_fraud
-    ).sum()
+        total_cost = sim_df["expected_cost"].sum()
+        baseline = estimate_baseline_cost(sim_df)
+        savings = baseline - total_cost
+        automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
+        
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Total Cost", format_money(total_cost))
+        c2.metric("Savings vs Baseline", format_money(savings))
+        c3.metric("Automation Rate", f"{automation_rate:.1%}")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+            
+        full_auto_cost = (
+            (1 - AI_EFFECTIVENESS) *
+            sim_df["risk_probability"] *
+            sim_df["order_value"] *
+            sim_fraud
+        ).sum()
+        
+        # Card 1
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("#### Cost Comparison")
+        
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Human Review", format_money(baseline))
+        c2.metric("AI Only", format_money(full_auto_cost))
+        c3.metric("✔ Optimized", format_money(total_cost))
+        
+        st.caption("Optimized strategy minimizes total expected cost across all transactions")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        
+        # Card 2
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("#### Decision Breakdown")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.metric("Auto Approved", f"{automation_rate:.1%}")
+            st.caption("Transactions handled without manual intervention")
     
-    # Card 1
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("#### Cost Comparison")
+        with c2:
+            st.metric("Sent to Review", f"{1 - automation_rate:.1%}")
+            st.caption("Requires analyst investigation")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        display_df = sim_df.copy()
     
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Human Review", format_money(baseline))
-    c2.metric("AI Only", format_money(full_auto_cost))
-    c3.metric("✔ Optimized", format_money(total_cost))
+        decision_counts = display_df["optimal_strategy"].apply(map_action).value_counts(normalize=True)
     
-    st.caption("Optimized strategy minimizes total expected cost across all transactions")
+        approve_rate = decision_counts.get("Auto Approve (AI)", 0)
+        review_rate = decision_counts.get("Manual Review", 0)
     
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
+        
+        if "transaction_id" in display_df.columns:
+            display_df = display_df.rename(columns={"transaction_id": "Transaction ID"})
+            id_name = "Transaction ID"
+        else:
+            display_df = display_df.reset_index().rename(columns={"index": "Row ID"})
+            id_name = "Row ID"
+        
+        if display_df.empty:
+            st.warning("No valid transactions to display")
+            st.stop()
     
+        sort_option = st.selectbox(
+            "Sort by",
+            [
+                "Original Order",
+                "Highest Risk (Recommended)",
+                "Highest Cost",
+                "Lowest Cost"
+            ],
+            index=1
+        )
     
-    # Card 2
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("#### Decision Breakdown")
+        # Apply sorting BEFORE formatting
+        if sort_option == "Highest Risk (Recommended)":
+            display_df = display_df.sort_values(by="risk_probability", ascending=False)
+        elif sort_option == "Highest Cost":
+            display_df = display_df.sort_values(by="expected_cost", ascending=False)
+        elif sort_option == "Lowest Cost":
+            display_df = display_df.sort_values(by="expected_cost", ascending=True)
+        
+        display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
     
-    c1, c2 = st.columns(2)
-    with c1:
-        st.metric("Auto Approved", f"{automation_rate:.1%}")
-        st.caption("Transactions handled without manual intervention")
-
-    with c2:
-        st.metric("Sent to Review", f"{1 - automation_rate:.1%}")
-        st.caption("Requires analyst investigation")
+        display_df["Decision"] = display_df["Decision"].replace({
+            "Auto Approve (AI)": "✓ Approve",
+            "Manual Review": "Review"
+        })
+        display_df["Why"] = display_df.apply(generate_reason, axis=1)
+        display_df["Why"] = display_df["Why"].str.capitalize()
+        display_df["Why"] = display_df["Why"].str.replace(",", " •")
     
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    display_df = sim_df.copy()
-
-    decision_counts = display_df["optimal_strategy"].apply(map_action).value_counts(normalize=True)
-
-    approve_rate = decision_counts.get("Auto Approve (AI)", 0)
-    review_rate = decision_counts.get("Manual Review", 0)
-
-    
-    if "transaction_id" in display_df.columns:
-        display_df = display_df.rename(columns={"transaction_id": "Transaction ID"})
-        id_name = "Transaction ID"
-    else:
-        display_df = display_df.reset_index().rename(columns={"index": "Row ID"})
-        id_name = "Row ID"
-    
-    if display_df.empty:
-        st.warning("No valid transactions to display")
-        st.stop()
-
-    sort_option = st.selectbox(
-        "Sort by",
-        [
-            "Original Order",
-            "Highest Risk (Recommended)",
-            "Highest Cost",
-            "Lowest Cost"
-        ],
-        index=1
-    )
-
-    # Apply sorting BEFORE formatting
-    if sort_option == "Highest Risk (Recommended)":
-        display_df = display_df.sort_values(by="risk_probability", ascending=False)
-    elif sort_option == "Highest Cost":
-        display_df = display_df.sort_values(by="expected_cost", ascending=False)
-    elif sort_option == "Lowest Cost":
-        display_df = display_df.sort_values(by="expected_cost", ascending=True)
-    
-    display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-
-    display_df["Decision"] = display_df["Decision"].replace({
-        "Auto Approve (AI)": "✓ Approve",
-        "Manual Review": "Review"
-    })
-    display_df["Why"] = display_df.apply(generate_reason, axis=1)
-    display_df["Why"] = display_df["Why"].str.capitalize()
-    display_df["Why"] = display_df["Why"].str.replace(",", " •")
-
-    display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
-    
-    display_df = display_df[
-        [
+        display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
+        
+        display_df = display_df[
+            [
+                id_name,
+                "Decision",
+                "Risk Level",
+                "risk_probability",
+                "expected_cost",
+                "Why"
+            ]
+        ]
+        
+        display_df.columns = [
             id_name,
             "Decision",
             "Risk Level",
-            "risk_probability",
-            "expected_cost",
+            "Risk Score",
+            "Expected Cost",
             "Why"
         ]
-    ]
+        
+        display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
     
-    display_df.columns = [
-        id_name,
-        "Decision",
-        "Risk Level",
-        "Risk Score",
-        "Expected Cost",
-        "Why"
-    ]
+        display_df["Risk Level"] = display_df["Risk Level"].str.upper()
+        
+        display_df["Expected Cost"] = display_df["Expected Cost"].map(format_money)
+        
+        # ✅ APPLY STYLING LAST (after column rename)
+        
+        
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("#### Transaction Decisions")
+        
     
-    display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
-
-    display_df["Risk Level"] = display_df["Risk Level"].str.upper()
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            height=min(600, 40 + 35 * len(display_df)),
+            hide_index=True
+        )
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.subheader("Decision Rationale")
+        
+        options = display_df[id_name].tolist()
     
-    display_df["Expected Cost"] = display_df["Expected Cost"].map(format_money)
+        selected_id = st.selectbox("Select Transaction", options)
+        
+        row = sim_df.iloc[selected_id]
+        
+        st.caption("Showing detailed reasoning for selected transaction")
+        
+        st.markdown("#### Selected Transaction")
     
-    # ✅ APPLY STYLING LAST (after column rename)
+        col1, col2, col3 = st.columns(3)
     
+        col1.metric("Action", map_action(row['optimal_strategy']))
+        col2.metric("Risk Score", f"{row['risk_probability']:.2f}")
+        col3.metric("Expected Cost", format_money(row['expected_cost']))
     
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("#### Transaction Decisions")
+        st.markdown("**Cost Comparison**")
     
-
-    st.dataframe(
-        display_df,
-        use_container_width=True,
-        height=min(600, 40 + 35 * len(display_df)),
-        hide_index=True
-    )
+        st.markdown(f"""
+        - Estimated Loss (AI): {format_money(row['cost_ai'])}
+        - Human Review Cost: {format_money(row['cost_human'])}
+        """)
+        
+        st.markdown("**Top Risk Drivers**")
+        
+        drivers = get_risk_drivers(row)
+        
+        st.markdown(" • ".join(drivers))
     
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
     
-    st.subheader("Decision Rationale")
-    
-    options = display_df[id_name].tolist()
-
-    selected_id = st.selectbox("Select Transaction", options)
-    
-    row = sim_df.iloc[selected_id]
-    
-    st.caption("Showing detailed reasoning for selected transaction")
-    
-    st.markdown("#### Selected Transaction")
-
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric("Action", map_action(row['optimal_strategy']))
-    col2.metric("Risk Score", f"{row['risk_probability']:.2f}")
-    col3.metric("Expected Cost", format_money(row['expected_cost']))
-
-    st.markdown("**Cost Comparison**")
-
-    st.markdown(f"""
-    - Estimated Loss (AI): {format_money(row['cost_ai'])}
-    - Human Review Cost: {format_money(row['cost_human'])}
-    """)
-    
-    st.markdown("**Top Risk Drivers**")
-    
-    drivers = get_risk_drivers(row)
-    
-    st.markdown(" • ".join(drivers))
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    st.button(
-        "View Insights →",
-        use_container_width=True,
-        on_click=lambda: st.session_state.update(step=5)
-    )
+        st.button(
+            "View Insights →",
+            use_container_width=True,
+            on_click=lambda: st.session_state.update(step=5)
+        )
 # ==============================
 # INSIGHTS
 # ==============================
