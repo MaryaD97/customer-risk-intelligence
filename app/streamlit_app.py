@@ -13,104 +13,185 @@ st.set_page_config(
 )
 
 # ==============================
-# GLOBAL STYLING (PREMIUM UI)
+# GLOBAL UI FOUNDATION
 # ==============================
 st.markdown("""
 <style>
 
-/* ===== PAGE BACKGROUND SPLIT ===== */
-[data-testid="stAppViewContainer"] {
-    background: linear-gradient(
-        to bottom,
-        #0B1F1A 0%,
-        #0B1F1A 45%,
-        #F5F7F6 45%,
-        #F5F7F6 100%
-    );
+/* -------------------------
+ROOT COLORS
+------------------------- */
+:root{
+--bg-dark:#07141F;
+--bg-dark-2:#0B1E2B;
+--green:#22C55E;
+--green-soft:#DCFCE7;
+--white:#FFFFFF;
+--border:#E5E7EB;
+--text:#0F172A;
+--muted:#64748B;
+--radius:18px;
 }
 
-/* ===== REMOVE STREAMLIT DEFAULT HEADER ===== */
+/* -------------------------
+APP BACKGROUND
+------------------------- */
+[data-testid="stAppViewContainer"]{
+background:
+linear-gradient(
+180deg,
+#07141F 0%,
+#0A1B29 34%,
+#F6F8FA 34%,
+#F6F8FA 100%
+);
+}
+
+/* -------------------------
+REMOVE STREAMLIT DEFAULTS
+------------------------- */
 #MainMenu {visibility:hidden;}
 header {visibility:hidden;}
 footer {visibility:hidden;}
 
-/* ===== CONTAINER WIDTH ===== */
-.block-container {
-    padding-top: 1rem;
-    padding-bottom: 2rem;
+.block-container{
+max-width:1450px;
+padding-top:0rem;
+padding-bottom:3rem;
+padding-left:2rem;
+padding-right:2rem;
 }
 
-/* ===== HERO SECTION ===== */
-.hero {
-    background: linear-gradient(135deg, #0B1F1A, #0F2A24);
-    padding: 40px;
-    border-radius: 16px;
-    color: #E5E7EB;
-    margin-bottom: 30px;
+/* remove empty top gap */
+section.main > div{
+padding-top:0rem;
 }
 
-/* ===== LIGHT TOOL SECTION ===== */
-.tool-section {
-    background: #F5F7F6;
-    padding: 30px;
-    border-radius: 14px;
+/* -------------------------
+TYPOGRAPHY
+------------------------- */
+html, body, [class*="css"]{
+font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ===== CLEAN CARDS ===== */
-.card-clean {
-    background: white;
-    border-radius: 10px;
-    padding: 16px;
-    border: 1px solid #E5E7EB;
+h1,h2,h3{
+color:white;
+margin:0;
 }
 
-/* ===== REMOVE BLUE RECTANGLES ===== */
-[data-testid="stDataFrame"] {
-    border: none !important;
+p, label{
+color:#CBD5E1;
 }
 
-/* ===== TABLE CLEAN ===== */
-.stDataFrame table {
-    font-size: 0.9rem;
-    border-collapse: collapse;
+/* -------------------------
+TOP NAVBAR
+------------------------- */
+.topbar{
+background:rgba(7,20,31,.92);
+border:1px solid rgba(255,255,255,.06);
+padding:16px 24px;
+border-radius:18px;
+margin-top:12px;
+margin-bottom:18px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+backdrop-filter: blur(8px);
 }
 
-.stDataFrame th {
-    text-align: left;
-    font-weight: 600;
-    color: #6B7280;
+.brand{
+font-size:22px;
+font-weight:700;
+color:white;
 }
 
-.stDataFrame td {
-    padding: 10px 8px;
+.steps{
+display:flex;
+gap:14px;
+align-items:center;
 }
 
-/* ===== UPLOAD BOXES ===== */
-.upload-box {
-    background: #EEF3F1;
-    padding: 20px;
-    border-radius: 12px;
+.step{
+display:flex;
+align-items:center;
+gap:8px;
+color:#94A3B8;
+font-size:14px;
+font-weight:600;
 }
 
-.upload-inner {
-    background: #E3ECE8;
-    padding: 25px;
-    border-radius: 10px;
-    text-align: center;
+.dot{
+width:28px;
+height:28px;
+border-radius:50%;
+background:#1E293B;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:13px;
+color:white;
 }
 
-/* ===== BUTTON ===== */
-.stButton>button {
-    background-color: #1F7A63;
-    color: white;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-weight: 500;
-    border: none;
+.active-dot{
+background:#22C55E;
+color:#04120B;
+font-weight:700;
 }
 
-.stButton>button:hover {
-    background-color: #16614E;
+/* -------------------------
+GENERIC WHITE CARD
+------------------------- */
+.white-card{
+background:white;
+border:1px solid #E5E7EB;
+border-radius:18px;
+padding:24px;
+box-shadow:0 10px 30px rgba(0,0,0,.04);
+}
+
+/* -------------------------
+SECTION SPACING
+------------------------- */
+.tight-gap{
+margin-top:12px;
+}
+
+.big-gap{
+margin-top:26px;
+}
+
+/* -------------------------
+BUTTONS
+------------------------- */
+.stButton > button{
+border-radius:12px;
+height:46px;
+font-weight:600;
+border:none;
+padding:0 18px;
+background:#2563EB;
+color:white;
+}
+
+.stButton > button:hover{
+background:#1D4ED8;
+}
+
+/* -------------------------
+SLIDERS
+------------------------- */
+.stSlider{
+padding-top:8px;
+padding-bottom:8px;
+}
+
+/* -------------------------
+DATAFRAME
+------------------------- */
+[data-testid="stDataFrame"]{
+border:none !important;
+border-radius:16px;
+overflow:hidden;
 }
 
 </style>
@@ -126,6 +207,35 @@ def load_model():
     return model, feature_cols
 
 model, feature_columns = load_model()
+
+# ==============================
+# TOP NAVIGATION
+# ==============================
+def render_topbar(active_step=1):
+
+    labels = {
+        1:"Upload Data",
+        2:"Set Costs",
+        3:"Decisions",
+        4:"Insights"
+    }
+
+    html = '<div class="topbar">'
+    html += '<div class="brand">🛡️ Fraud Decision Engine</div>'
+    html += '<div class="steps">'
+
+    for i in range(1,5):
+        dot_class = "dot active-dot" if i == active_step else "dot"
+        html += f'''
+        <div class="step">
+            <div class="{dot_class}">{i}</div>
+            <div>{labels[i]}</div>
+        </div>
+        '''
+
+    html += '</div></div>'
+
+    st.markdown(html, unsafe_allow_html=True)
 
 # ==============================
 # SESSION STATE
@@ -279,6 +389,7 @@ def format_money(x):
 # OVERVIEW PAGE
 # ==============================
 if st.session_state.step == 1:
+        render_topbar(1)
 # ==============================
 # STEP 1 — LOAD DATA
 # ==============================
@@ -486,6 +597,7 @@ if st.session_state.step == 1:
 # CONFIG
 # ==============================
 elif st.session_state.step == 2:
+        render_topbar(2)
 
     st.button("← Back", on_click=lambda: st.session_state.update(step=1))
 
@@ -553,8 +665,9 @@ elif st.session_state.step == 2:
 # DECISIONS
 # ==============================
 elif st.session_state.step == 4:
+        render_topbar(3)
 
-    st.button("← Back", on_click=lambda: st.session_state.update(step=3))
+    st.button("← Back", on_click=lambda: st.session_state.update(step=2))
 
     if st.session_state.results is None:
         st.warning("Generate decisions first")
@@ -782,6 +895,9 @@ elif st.session_state.step == 4:
 # INSIGHTS
 # ==============================
 elif st.session_state.step == 5:
+    render_topbar(1)
+
+
 
     df = st.session_state.get("simulated_results", st.session_state.results)
 
