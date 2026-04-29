@@ -283,10 +283,6 @@ if st.session_state.step == 1:
 # STEP 1 — LOAD DATA
 # ==============================
 
-    st.title("Fraud Decision Engine")
-
-    st.caption("Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs")
-
     st.markdown("""
     <div style="
         background: linear-gradient(135deg, #0B1F1A, #0F2A24);
@@ -328,7 +324,6 @@ if st.session_state.step == 1:
     """, unsafe_allow_html=True)
     
     st.markdown("### Upload Data")
-
 
     # ------------------------------
     # DATA SOURCE
