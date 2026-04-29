@@ -197,6 +197,139 @@ overflow:hidden;
 </style>
 """, unsafe_allow_html=True)
 
+/* -------------------------
+HERO SECTION
+------------------------- */
+.hero-shell{
+background:radial-gradient(circle at top right,#134E4A 0%, #07141F 55%);
+border-radius:22px;
+padding:46px;
+margin-bottom:28px;
+border:1px solid rgba(255,255,255,.05);
+min-height:390px;
+display:flex;
+justify-content:space-between;
+gap:30px;
+align-items:center;
+}
+
+.hero-left{
+flex:1.1;
+}
+
+.hero-right{
+flex:0.9;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.hero-title{
+font-size:52px;
+font-weight:800;
+line-height:1.05;
+color:white;
+margin-bottom:16px;
+}
+
+.hero-sub{
+font-size:18px;
+line-height:1.7;
+color:#A7B4C4;
+max-width:620px;
+margin-bottom:34px;
+}
+
+.hero-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:28px;
+margin-top:10px;
+}
+
+.hero-list-title{
+font-size:18px;
+font-weight:700;
+color:#4ADE80;
+margin-bottom:14px;
+}
+
+.hero-list{
+color:white;
+line-height:2;
+font-size:15px;
+padding-left:18px;
+margin:0;
+}
+
+/* -------------------------
+SHIELD VISUAL
+------------------------- */
+.shield-wrap{
+width:280px;
+height:280px;
+border-radius:50%;
+background:radial-gradient(circle,#0E2F2B,#07141F);
+display:flex;
+justify-content:center;
+align-items:center;
+position:relative;
+}
+
+.shield{
+font-size:110px;
+}
+
+/* -------------------------
+UPLOAD AREA
+------------------------- */
+.upload-shell{
+margin-top:8px;
+}
+
+.upload-title{
+font-size:38px;
+font-weight:800;
+color:#0F172A;
+margin-bottom:8px;
+}
+
+.upload-sub{
+color:#64748B;
+font-size:16px;
+margin-bottom:26px;
+}
+
+.upload-card{
+background:white;
+border:1px solid #E5E7EB;
+border-radius:22px;
+padding:28px;
+box-shadow:0 10px 24px rgba(0,0,0,.04);
+height:100%;
+}
+
+.upload-zone{
+border:2px dashed #D7DEE7;
+border-radius:18px;
+padding:42px 20px;
+text-align:center;
+margin-top:18px;
+}
+
+.quick-btn{
+margin-top:26px;
+}
+
+/* -------------------------
+HEADINGS DARK SECTION FIX
+------------------------- */
+.dark-small{
+color:#CBD5E1;
+font-size:14px;
+font-weight:600;
+margin-bottom:8px;
+}
 # ==============================
 # LOAD MODEL
 # ==============================
@@ -395,53 +528,92 @@ if st.session_state.step == 1:
 # STEP 1 — LOAD DATA
 # ==============================
         hero_html = """
-        <div style="background:linear-gradient(135deg,#0B1F1A,#0F2A24);padding:40px;border-radius:16px;margin-bottom:30px;color:#E5E7EB;">
-        <div style="display:flex;gap:60px;align-items:flex-start;">
+        <div class="hero-shell">
         
-        <div style="flex:1;">
-        <h3 style="color:#9CA3AF;margin-bottom:14px;">What You Need</h3>
-        <ul style="line-height:1.9;padding-left:20px;margin-top:0;">
+        <div class="hero-left">
+        
+        <div class="hero-title">Fraud Decision Engine</div>
+        
+        <div class="hero-sub">
+        Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
+        </div>
+        
+        <div class="hero-grid">
+        
+        <div>
+        <div class="hero-list-title">What You Need</div>
+        <ul class="hero-list">
         <li>Customer score or rating</li>
-        <li>Behavioral signal (activity/review)</li>
+        <li>Behavioral signal</li>
         <li>Transaction value</li>
         </ul>
+        </div>
         
-        <h3 style="color:#9CA3AF;margin-top:22px;margin-bottom:14px;">System Output</h3>
-        <ul style="line-height:1.9;padding-left:20px;margin-top:0;">
+        <div>
+        <div class="hero-list-title">System Output</div>
+        <ul class="hero-list">
         <li>Detect fraud risk</li>
         <li>Estimate financial impact</li>
         <li>Recommend best action</li>
         </ul>
         </div>
         
-        <div style="flex:1.2;">
-        <h2 style="margin-bottom:10px;color:white;">Fraud Decision Engine</h2>
-        <p style="font-size:16px;color:#9CA3AF;line-height:1.7;">
-        Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
-        </p>
+        </div>
         </div>
         
+        <div class="hero-right">
+        <div class="shield-wrap">
+        <div class="shield">🛡️</div>
         </div>
+        </div>
+        
         </div>
         """
         
         st.markdown(hero_html, unsafe_allow_html=True)
+                
+        st.markdown('<div class="upload-shell">', unsafe_allow_html=True)
+
+        st.markdown('<div class="upload-title">Upload Data</div>', unsafe_allow_html=True)
+        st.markdown('<div class="upload-sub">Upload your dataset to begin decision analysis.</div>', unsafe_allow_html=True)
         
-        st.markdown("### Upload Data")
-    
-        # ------------------------------
-        # DATA SOURCE
-        # ------------------------------
-    
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1.35, 1])
         
         with col1:
-            file = st.file_uploader("Upload CSV")
+            st.markdown('<div class="upload-card">', unsafe_allow_html=True)
+            st.markdown("#### Upload CSV File")
+        
+            file = st.file_uploader(
+                "Upload CSV",
+                label_visibility="collapsed"
+            )
+        
+            st.markdown("""
+            <div class="upload-zone">
+                <div style="font-size:42px;margin-bottom:10px;">☁️</div>
+                <div style="font-weight:700;color:#0F172A;">Drag and drop your CSV file here</div>
+                <div style="color:#64748B;margin-top:6px;">or click browse</div>
+                <div style="color:#94A3B8;margin-top:14px;font-size:13px;">200MB per file</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+            st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
-            sample_clicked = st.button("Use Sample Data")
-            st.caption("Quick start with preloaded dataset")
-
+            st.markdown('<div class="upload-card">', unsafe_allow_html=True)
+            st.markdown("#### Quick Start")
+            st.markdown(
+                '<div style="color:#64748B;line-height:1.7;">Use our sample dataset to explore the tool immediately.</div>',
+                unsafe_allow_html=True
+            )
+        
+            st.markdown('<div class="quick-btn">', unsafe_allow_html=True)
+            sample_clicked = st.button("Use Sample Data", use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         
         # ------------------------------
         # SAMPLE DATA FLOW
