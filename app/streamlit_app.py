@@ -393,8 +393,7 @@ if st.session_state.step == 1:
 # ==============================
 # STEP 1 — LOAD DATA
 # ==============================
-
-    st.markdown("""
+st.markdown("""
     <div style="
         background: linear-gradient(135deg, #0B1F1A, #0F2A24);
         padding: 40px;
