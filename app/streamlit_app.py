@@ -393,47 +393,47 @@ if st.session_state.step == 1:
 # ==============================
 # STEP 1 — LOAD DATA
 # ==============================
-st.markdown("""
-    <div style="
-        background: linear-gradient(135deg, #0B1F1A, #0F2A24);
-        padding: 40px;
-        border-radius: 16px;
-        margin-bottom: 30px;
-        color: #E5E7EB;
-    ">
-    
-    <div style="display: flex; gap: 60px; align-items: flex-start;">
-    
-    <!-- LEFT -->
-    <div style="flex: 1;">
-        <h3 style="color:#9CA3AF;">What You Need</h3>
-        <ul style="line-height:1.8;">
-            <li>Customer score or rating</li>
-            <li>Behavioral signal (activity/review)</li>
-            <li>Transaction value</li>
-        </ul>
-    
-        <h3 style="color:#9CA3AF; margin-top:20px;">System Output</h3>
-        <ul style="line-height:1.8;">
-            <li>Detect fraud risk</li>
-            <li>Estimate financial impact</li>
-            <li>Recommend best action</li>
-        </ul>
-    </div>
-    
-    <!-- RIGHT -->
-    <div style="flex: 1.2;">
-        <h2 style="margin-bottom:10px;">Fraud Decision Engine</h2>
-        <p style="font-size:16px; color:#9CA3AF;">
-            Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
-        </p>
-    </div>
-    
-    </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("### Upload Data")
+        st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #0B1F1A, #0F2A24);
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            color: #E5E7EB;
+        ">
+        
+        <div style="display: flex; gap: 60px; align-items: flex-start;">
+        
+        <!-- LEFT -->
+        <div style="flex: 1;">
+            <h3 style="color:#9CA3AF;">What You Need</h3>
+            <ul style="line-height:1.8;">
+                <li>Customer score or rating</li>
+                <li>Behavioral signal (activity/review)</li>
+                <li>Transaction value</li>
+            </ul>
+        
+            <h3 style="color:#9CA3AF; margin-top:20px;">System Output</h3>
+            <ul style="line-height:1.8;">
+                <li>Detect fraud risk</li>
+                <li>Estimate financial impact</li>
+                <li>Recommend best action</li>
+            </ul>
+        </div>
+        
+        <!-- RIGHT -->
+        <div style="flex: 1.2;">
+            <h2 style="margin-bottom:10px;">Fraud Decision Engine</h2>
+            <p style="font-size:16px; color:#9CA3AF;">
+                Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
+            </p>
+        </div>
+        
+        </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("### Upload Data")
 
     # ------------------------------
     # DATA SOURCE
