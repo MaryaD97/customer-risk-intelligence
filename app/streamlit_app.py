@@ -937,6 +937,9 @@ elif st.session_state.step == 2:
         
                 X = df[feature_columns]
                 df["risk_probability"] = model.predict_proba(X)[:, 1]
+                if "risk_probability" not in df.columns:
+                    st.error("Risk model failed to generate predictions")
+                    st.stop()
         
                 df = simulate_decisions(
                     df,
@@ -1077,8 +1080,6 @@ elif st.session_state.step == 3:
         
             st.markdown('</div>', unsafe_allow_html=True)
 
-        
-        
         # -----------------------------
         # CREATE CONSISTENT ID COLUMN
         # -----------------------------
@@ -1086,25 +1087,18 @@ elif st.session_state.step == 3:
         sim_df["Transaction ID"] = sim_df.index + 1
         id_name = "Transaction ID"
         
-        # Create display_df AFTER fixing sim_df
-        display_df = sim_df.copy()
-
         # -----------------------------
-        # PREP TABLE DATA
-        # ----------------------------- 
-        decision_counts = (
-            display_df["optimal_strategy"]
-            .apply(map_action)
-            .value_counts(normalize=True)
-        )
+        # CREATE WORKING DATAFRAME
+        # -----------------------------
+        display_df = sim_df.copy()
         
-        approve_rate = decision_counts.get("Auto Approve (AI)", 0)
-        review_rate = decision_counts.get("Manual Review", 0)
-                
         if display_df.empty:
             st.warning("No valid transactions to display")
             st.stop()
-    
+        
+        # -----------------------------
+        # SORTING (BEFORE TRANSFORMS)
+        # -----------------------------
         sort_option = st.selectbox(
             "Sort by",
             [
@@ -1115,8 +1109,7 @@ elif st.session_state.step == 3:
             ],
             index=1
         )
-    
-        # Apply sorting BEFORE formatting
+        
         if sort_option == "Highest Risk (Recommended)":
             display_df = display_df.sort_values(by="risk_probability", ascending=False)
         elif sort_option == "Highest Cost":
@@ -1124,28 +1117,54 @@ elif st.session_state.step == 3:
         elif sort_option == "Lowest Cost":
             display_df = display_df.sort_values(by="expected_cost", ascending=True)
         
+        # -----------------------------
+        # VALIDATION
+        # -----------------------------
+        if "optimal_strategy" not in display_df.columns:
+            st.error("Decision logic failed — no strategy found")
+            st.stop()
+        
+        if "risk_probability" not in display_df.columns:
+            st.error("Missing risk scores")
+            st.stop()
+        
+        if "expected_cost" not in display_df.columns:
+            st.error("Missing expected cost data")
+            st.stop()
+        
+        # -----------------------------
+        # DERIVED COLUMNS (ORDER MATTERS)
+        # -----------------------------
+        
+        # Decision
         display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-    
         display_df["Decision"] = display_df["Decision"].replace({
             "Auto Approve (AI)": "✓ Approve",
             "Manual Review": "Review"
         })
-        display_df["Why"] = display_df.apply(generate_reason, axis=1)
+        
+        # Why
+        try:
+            display_df["Why"] = display_df.apply(generate_reason, axis=1)
+        except Exception:
+            st.error("Failed to generate explanations")
+            st.stop()
+        
         display_df["Why"] = display_df["Why"].str.capitalize()
         display_df["Why"] = display_df["Why"].str.replace(",", " •")
         
-        display_df = display_df[
-            [
-                id_name,
-                "Decision",
-                "Risk Level",
-                "risk_probability",
-                "expected_cost",
-                "Why"
-            ]
-        ]
+        # Risk Level
+        display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
+        display_df["Risk Level"] = display_df["Risk Level"].str.upper()
         
-        display_df.columns = [
+        # Formatted fields
+        display_df["Risk Score"] = display_df["risk_probability"].map(lambda x: f"{x:.2f}")
+        display_df["Expected Cost"] = display_df["expected_cost"].map(format_money)
+        
+        # -----------------------------
+        # FINAL COLUMN SELECTION
+        # -----------------------------
+        required_columns = [
             id_name,
             "Decision",
             "Risk Level",
@@ -1154,11 +1173,14 @@ elif st.session_state.step == 3:
             "Why"
         ]
         
-        display_df["Risk Score"] = display_df["Risk Score"].map(lambda x: f"{x:.2f}")
-    
-        display_df["Risk Level"] = display_df["Risk Level"].str.upper()
+        missing_cols = [col for col in required_columns if col not in display_df.columns]
         
-        display_df["Expected Cost"] = display_df["Expected Cost"].map(format_money)
+        if missing_cols:
+            st.error(f"Missing columns: {missing_cols}")
+            st.write("Available columns:", list(display_df.columns))
+            st.stop()
+        
+        display_df = display_df[required_columns]
         
         # ✅ APPLY STYLING LAST (after column rename)
         
