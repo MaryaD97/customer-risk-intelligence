@@ -391,6 +391,64 @@ color:#64748B;
 margin-bottom:18px;
 }
 
+/* -------------------------
+PANEL CARD (for table + side)
+------------------------- */
+.panel-card{
+background:white;
+border-radius:18px;
+padding:22px;
+border:1px solid #E5E7EB;
+box-shadow:0 6px 20px rgba(0,0,0,0.04);
+}
+
+/* -------------------------
+KPI CARDS
+------------------------- */
+.kpi-card{
+background:white;
+border-radius:18px;
+padding:20px;
+border:1px solid #E5E7EB;
+}
+
+.kpi-label{
+font-size:13px;
+color:#64748B;
+margin-bottom:6px;
+}
+
+.kpi-value{
+font-size:26px;
+font-weight:700;
+color:#0F172A;
+}
+
+.kpi-green{
+color:#16A34A;
+}
+
+.kpi-sub{
+font-size:12px;
+color:#94A3B8;
+margin-top:4px;
+}
+
+/* -------------------------
+SECTION HEADERS
+------------------------- */
+.section-title{
+font-size:26px;
+font-weight:700;
+color:white;
+margin-top:10px;
+}
+
+.section-sub{
+color:#94A3B8;
+margin-bottom:18px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -1082,49 +1140,89 @@ elif st.session_state.step == 4:
         st.markdown("### Transaction Decisions")
         
     
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            height=min(600, 40 + 35 * len(display_df)),
-            hide_index=True
-        )
+        # ==============================
+        # TABLE + ANALYST PANEL LAYOUT
+        # ==============================
         
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
+        left, right = st.columns([1.6, 1])
         
-        st.subheader("Decision Rationale")
+        # -----------------------------
+        # PREP DISPLAY DATA (KEEP YOUR EXISTING LOGIC ABOVE THIS)
+        # -----------------------------
         
-        options = display_df[id_name].tolist()
-    
-        selected_id = st.selectbox("Select Transaction", options)
+        # Risk Badge Styling
+        def risk_badge(val):
+            if val == "HIGH":
+                return "🔴 HIGH"
+            elif val == "MEDIUM":
+                return "🟡 MEDIUM"
+            else:
+                return "🟢 LOW"
         
-        row = sim_df.loc[selected_id] if selected_id in sim_df.index else sim_df.iloc[0]
+        display_df["Risk Level"] = display_df["Risk Level"].apply(risk_badge)
         
-        st.caption("Showing detailed reasoning for selected transaction")
+        # Decision styling
+        display_df["Decision"] = display_df["Decision"].replace({
+            "✓ Approve": "✅ Approve",
+            "Review": "🛑 Review"
+        })
         
-        st.markdown("#### Selected Transaction")
-    
-        col1, col2, col3 = st.columns(3)
-    
-        col1.metric("Action", map_action(row['optimal_strategy']))
-        col2.metric("Risk Score", f"{row['risk_probability']:.2f}")
-        col3.metric("Expected Cost", format_money(row['expected_cost']))
-    
-        st.markdown("**Cost Comparison**")
-    
-        st.markdown(f"""
-        - Estimated Loss (AI): {format_money(row['cost_ai'])}
-        - Human Review Cost: {format_money(row['cost_human'])}
-        """)
+        # -----------------------------
+        # LEFT: TABLE
+        # -----------------------------
+        with left:
+            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+            st.markdown("### Transactions")
         
-        st.markdown("**Top Risk Drivers**")
+            st.dataframe(
+                display_df,
+                use_container_width=True,
+                height=520,
+                hide_index=True
+            )
         
-        drivers = get_risk_drivers(row)
+            st.markdown('</div>', unsafe_allow_html=True)
         
-        st.markdown(" • ".join(drivers))
-    
-        st.markdown("<br>", unsafe_allow_html=True)
-    
+        # -----------------------------
+        # RIGHT: ANALYST PANEL
+        # -----------------------------
+        with right:
+            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+            st.markdown("### Analyst View")
+        
+            options = display_df[id_name].tolist()
+        
+            selected_id = st.selectbox(
+                "Select Transaction",
+                options
+            )
+        
+            # FIXED SELECTION (IMPORTANT)
+            row = sim_df[sim_df[id_name] == selected_id].iloc[0]
+        
+            st.markdown("---")
+        
+            st.markdown(f"""
+            **Decision:** {map_action(row['optimal_strategy'])}  
+            **Risk Score:** {row['risk_probability']:.2f}  
+            **Expected Cost:** {format_money(row['expected_cost'])}
+            """)
+        
+            st.markdown("#### Cost Breakdown")
+        
+            st.markdown(f"""
+            • AI Cost: {format_money(row['cost_ai'])}  
+            • Human Cost: {format_money(row['cost_human'])}  
+            • Hybrid Cost: {format_money(row['cost_hybrid'])}
+            """)
+        
+            st.markdown("#### Risk Drivers")
+        
+            drivers = get_risk_drivers(row)
+            st.markdown(" • ".join(drivers))
+        
+            st.markdown('</div>', unsafe_allow_html=True)
+            
         st.button(
             "View Insights →",
             use_container_width=True,
