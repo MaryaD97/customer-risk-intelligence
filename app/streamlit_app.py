@@ -1053,7 +1053,6 @@ elif st.session_state.step == 4:
         # -----------------------------
         # PREP TABLE DATA
         # -----------------------------
-        display_df = sim_df.copy()
         
         decision_counts = (
             display_df["optimal_strategy"]
@@ -1065,13 +1064,19 @@ elif st.session_state.step == 4:
         review_rate = decision_counts.get("Manual Review", 0)
         
         
-        if "transaction_id" in display_df.columns:
-            display_df = display_df.rename(columns={"transaction_id": "Transaction ID"})
+        # -----------------------------
+        # CREATE CONSISTENT ID COLUMN
+        # -----------------------------
+        if "transaction_id" in sim_df.columns:
+            sim_df = sim_df.rename(columns={"transaction_id": "Transaction ID"})
             id_name = "Transaction ID"
         else:
-            display_df = display_df.reset_index().rename(columns={"index": "Row ID"})
+            sim_df = sim_df.reset_index().rename(columns={"index": "Row ID"})
             id_name = "Row ID"
         
+        # Create display_df AFTER fixing sim_df
+        display_df = sim_df.copy()
+                
         if display_df.empty:
             st.warning("No valid transactions to display")
             st.stop()
