@@ -449,6 +449,55 @@ color:#94A3B8;
 margin-bottom:18px;
 }
 
+/* -------------------------
+BADGES
+------------------------- */
+.badge{
+padding:4px 10px;
+border-radius:999px;
+font-size:12px;
+font-weight:600;
+}
+
+.badge.high{
+background:#FEE2E2;
+color:#991B1B;
+}
+
+.badge.medium{
+background:#FEF3C7;
+color:#92400E;
+}
+
+.badge.low{
+background:#DCFCE7;
+color:#166534;
+}
+
+table {
+width: 100%;
+border-collapse: collapse;
+}
+
+th {
+text-align: left;
+padding: 10px;
+font-size: 13px;
+color: #64748B;
+border-bottom: 1px solid #E5E7EB;
+}
+
+td {
+padding: 12px 10px;
+border-bottom: 1px solid #F1F5F9;
+font-size: 14px;
+color: #0F172A;
+}
+
+tr:hover {
+background-color: #F9FAFB;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -1041,12 +1090,34 @@ elif st.session_state.step == 4:
         
             auto_rate = automation_rate
             review_rate = 1 - automation_rate
+
+            st.markdown("#### Take Action")
+
+            c1, c2 = st.columns(2)
+            
+            with c1:
+                st.button("✅ Approve", use_container_width=True)
+            
+            with c2:
+                st.button("🛑 Send to Review", use_container_width=True)
         
-            st.progress(auto_rate)
-            st.caption(f"Auto Approved: {auto_rate:.1%}")
-        
-            st.progress(review_rate)
-            st.caption(f"Manual Review: {review_rate:.1%}")
+            import matplotlib.pyplot as plt
+
+            fig, ax = plt.subplots()
+            
+            sizes = [auto_rate, review_rate]
+            labels = ["Auto Approved", "Manual Review"]
+            
+            ax.pie(
+                sizes,
+                labels=labels,
+                autopct="%1.0f%%",
+                startangle=90
+            )
+            
+            ax.axis("equal")
+            
+            st.pyplot(fig)
         
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1156,15 +1227,15 @@ elif st.session_state.step == 4:
         # -----------------------------
         
         # Risk Badge Styling
-        def risk_badge(val):
+        def risk_badge_html(val):
             if val == "HIGH":
-                return "🔴 HIGH"
+                return '<span class="badge high">HIGH</span>'
             elif val == "MEDIUM":
-                return "🟡 MEDIUM"
+                return '<span class="badge medium">MEDIUM</span>'
             else:
-                return "🟢 LOW"
-        
-        display_df["Risk Level"] = display_df["Risk Level"].apply(risk_badge)
+                return '<span class="badge low">LOW</span>'
+                
+        display_df["Risk Level"] = display_df["Risk Level"].apply(risk_badge_html)
         
         # Decision styling
         display_df["Decision"] = display_df["Decision"].replace({
@@ -1179,11 +1250,9 @@ elif st.session_state.step == 4:
             st.markdown('<div class="panel-card">', unsafe_allow_html=True)
             st.markdown("### Transactions")
         
-            st.dataframe(
-                display_df,
-                use_container_width=True,
-                height=520,
-                hide_index=True
+            st.markdown(
+                display_df.to_html(escape=False, index=False),
+                unsafe_allow_html=True
             )
         
             st.markdown('</div>', unsafe_allow_html=True)
