@@ -391,63 +391,6 @@ color:#64748B;
 margin-bottom:18px;
 }
 
-/* -------------------------
-PANEL CARD (for table + side)
-------------------------- */
-.panel-card{
-background:white;
-border-radius:18px;
-padding:22px;
-border:1px solid #E5E7EB;
-box-shadow:0 6px 20px rgba(0,0,0,0.04);
-}
-
-/* -------------------------
-KPI CARDS
-------------------------- */
-.kpi-card{
-background:white;
-border-radius:18px;
-padding:20px;
-border:1px solid #E5E7EB;
-}
-
-.kpi-label{
-font-size:13px;
-color:#64748B;
-margin-bottom:6px;
-}
-
-.kpi-value{
-font-size:26px;
-font-weight:700;
-color:#0F172A;
-}
-
-.kpi-green{
-color:#16A34A;
-}
-
-.kpi-sub{
-font-size:12px;
-color:#94A3B8;
-margin-top:4px;
-}
-
-/* -------------------------
-SECTION HEADERS
-------------------------- */
-.section-title{
-font-size:26px;
-font-weight:700;
-color:white;
-margin-top:10px;
-}
-
-.section-sub{
-color:#94A3B8;
-margin-bottom:18px;
-}
 
 /* -------------------------
 BADGES
@@ -557,7 +500,7 @@ if "config" not in st.session_state:
 if "step" not in st.session_state:
     st.session_state.step = 1
 
-if st.session_state.step not in [1,2,3,4,5]:
+if st.session_state.step not in [1,2,3,4]:
     st.session_state.step = 1
 
 
@@ -632,18 +575,31 @@ def choose_strategy(row):
 def simulate_decisions(df, fraud_cost, review_cost):
     df = df.copy()
 
-    df["cost_ai"] = df.apply(
-        lambda x: cost_ai(x["risk_probability"], x["order_value"], fraud_cost), axis=1
-    )
-    df["cost_human"] = df.apply(
-        lambda x: cost_human(x["risk_probability"], x["order_value"], fraud_cost, review_cost), axis=1
-    )
-    df["cost_hybrid"] = df.apply(
-        lambda x: cost_hybrid(x["risk_probability"], x["order_value"], fraud_cost, review_cost), axis=1
+    p = df["risk_probability"]
+    amt = df["order_value"]
+
+    df["cost_ai"] = (1 - AI_EFFECTIVENESS) * p * amt * fraud_cost
+    df["cost_human"] = review_cost + (1 - REVIEW_EFFECTIVENESS) * p * amt * fraud_cost
+
+    df["cost_hybrid"] = np.where(
+        p < 0.4,
+        df["cost_ai"],
+        df["cost_human"]
     )
 
-    df["optimal_strategy"] = df.apply(choose_strategy, axis=1)
     df["expected_cost"] = df[["cost_ai", "cost_human", "cost_hybrid"]].min(axis=1)
+
+    df["optimal_strategy"] = np.select(
+        [
+            df["cost_ai"] <= df["cost_human"],
+            df["cost_human"] <= df["cost_ai"]
+        ],
+        [
+            "AI Automation",
+            "Human Review"
+        ],
+        default="Hybrid"
+    )
 
     return df
 
@@ -992,13 +948,13 @@ elif st.session_state.step == 2:
         
                 st.session_state.results = df
         
-            st.session_state.step = 4
+            st.session_state.step = 3
             st.rerun()
 
 # ==============================
 # DECISIONS
 # ==============================
-elif st.session_state.step == 4:
+elif st.session_state.step == 3:
         render_topbar(3)
 
         st.button("← Back", on_click=lambda: st.session_state.update(step=2))
@@ -1126,12 +1082,9 @@ elif st.session_state.step == 4:
         # -----------------------------
         # CREATE CONSISTENT ID COLUMN
         # -----------------------------
-        if "transaction_id" in sim_df.columns:
-            sim_df = sim_df.rename(columns={"transaction_id": "Transaction ID"})
-            id_name = "Transaction ID"
-        else:
-            sim_df = sim_df.reset_index().rename(columns={"index": "Row ID"})
-            id_name = "Row ID"
+        sim_df = sim_df.reset_index(drop=True)
+        sim_df["Transaction ID"] = sim_df.index + 1
+        id_name = "Transaction ID"
         
         # Create display_df AFTER fixing sim_df
         display_df = sim_df.copy()
@@ -1180,8 +1133,6 @@ elif st.session_state.step == 4:
         display_df["Why"] = display_df.apply(generate_reason, axis=1)
         display_df["Why"] = display_df["Why"].str.capitalize()
         display_df["Why"] = display_df["Why"].str.replace(",", " •")
-    
-        display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
         
         display_df = display_df[
             [
@@ -1246,14 +1197,11 @@ elif st.session_state.step == 4:
             st.markdown('<div class="panel-card">', unsafe_allow_html=True)
             st.markdown("### Transactions")
         
-            st.markdown(
-                f"""
-                <div style="overflow-x:auto;">
-                    {display_df.to_html(escape=False, index=False)}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            st.dataframe(
+            display_df,
+            use_container_width=True,
+            hide_index=True
+        )
         
             st.markdown('</div>', unsafe_allow_html=True)
         
@@ -1300,17 +1248,15 @@ elif st.session_state.step == 4:
         st.button(
             "View Insights →",
             use_container_width=True,
-            on_click=lambda: st.session_state.update(step=5)
+            on_click=lambda: st.session_state.update(step=4)
         )
 # ==============================
 # INSIGHTS
 # ==============================
-elif st.session_state.step == 5:
+elif st.session_state.step == 4:
     render_topbar(4)
 
-
-
-    df = st.session_state.get("simulated_results", st.session_state.results)
+    df = st.session_state.results
 
     st.button("← Back", on_click=lambda: st.session_state.update(step=4))
 
