@@ -991,7 +991,21 @@ elif st.session_state.step == 4:
             st.caption(f"Manual Review: {review_rate:.1%}")
         
             st.markdown('</div>', unsafe_allow_html=True)
-    
+
+        # -----------------------------
+        # PREP TABLE DATA
+        # -----------------------------
+        display_df = sim_df.copy()
+        
+        decision_counts = (
+            display_df["optimal_strategy"]
+            .apply(map_action)
+            .value_counts(normalize=True)
+        )
+        
+        approve_rate = decision_counts.get("Auto Approve (AI)", 0)
+        review_rate = decision_counts.get("Manual Review", 0)
+        
         
         if "transaction_id" in display_df.columns:
             display_df = display_df.rename(columns={"transaction_id": "Transaction ID"})
