@@ -1050,18 +1050,6 @@ elif st.session_state.step == 4:
         
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # -----------------------------
-        # PREP TABLE DATA
-        # -----------------------------
-        
-        decision_counts = (
-            display_df["optimal_strategy"]
-            .apply(map_action)
-            .value_counts(normalize=True)
-        )
-        
-        approve_rate = decision_counts.get("Auto Approve (AI)", 0)
-        review_rate = decision_counts.get("Manual Review", 0)
         
         
         # -----------------------------
@@ -1076,6 +1064,18 @@ elif st.session_state.step == 4:
         
         # Create display_df AFTER fixing sim_df
         display_df = sim_df.copy()
+
+        # -----------------------------
+        # PREP TABLE DATA
+        # ----------------------------- 
+        decision_counts = (
+            display_df["optimal_strategy"]
+            .apply(map_action)
+            .value_counts(normalize=True)
+        )
+        
+        approve_rate = decision_counts.get("Auto Approve (AI)", 0)
+        review_rate = decision_counts.get("Manual Review", 0)
                 
         if display_df.empty:
             st.warning("No valid transactions to display")
