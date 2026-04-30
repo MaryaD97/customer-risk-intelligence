@@ -41,8 +41,8 @@ background:
 linear-gradient(
 180deg,
 #07141F 0%,
-#0A1B29 34%,
-#F6F8FA 34%,
+#0A1B29 38%,
+#F6F8FA 38%,
 #F6F8FA 100%
 );
 }
@@ -89,14 +89,14 @@ TOP NAVBAR
 .topbar{
 background:rgba(7,20,31,.92);
 border:1px solid rgba(255,255,255,.06);
-padding:16px 24px;
-border-radius:18px;
-margin-top:12px;
-margin-bottom:18px;
+padding:14px 24px;
+border-radius:16px;
+margin-top:8px;
+margin-bottom:24px;
 display:flex;
 justify-content:space-between;
 align-items:center;
-backdrop-filter: blur(8px);
+backdrop-filter: blur(10px);
 }
 
 .brand{
@@ -121,14 +121,14 @@ font-weight:600;
 }
 
 .dot{
-width:28px;
-height:28px;
+width:26px;
+height:26px;
 border-radius:50%;
 background:#1E293B;
 display:flex;
 align-items:center;
 justify-content:center;
-font-size:13px;
+font-size:12px;
 color:white;
 }
 
@@ -136,6 +136,7 @@ color:white;
 background:#22C55E;
 color:#04120B;
 font-weight:700;
+box-shadow:0 0 0 3px rgba(34,197,94,0.2);
 }
 
 /* -------------------------
@@ -198,15 +199,20 @@ overflow:hidden;
 HERO SECTION
 ------------------------- */
 .hero-shell{
-background:radial-gradient(circle at top right,#134E4A 0%, #07141F 55%);
+background: radial-gradient(
+circle at 80% 20%,
+#134E4A 0%,
+#0B1E2B 40%,
+#07141F 75%
+);
 border-radius:22px;
-padding:46px;
-margin-bottom:28px;
+padding:52px;
+margin-bottom:32px;
 border:1px solid rgba(255,255,255,.05);
-min-height:390px;
+min-height:420px;
 display:flex;
 justify-content:space-between;
-gap:30px;
+gap:40px;
 align-items:center;
 }
 
@@ -222,19 +228,18 @@ align-items:center;
 }
 
 .hero-title{
-font-size:52px;
+font-size:56px;
 font-weight:800;
 line-height:1.05;
-color:white;
-margin-bottom:16px;
+letter-spacing:-1px;
 }
 
 .hero-sub{
 font-size:18px;
 line-height:1.7;
 color:#A7B4C4;
-max-width:620px;
-margin-bottom:34px;
+max-width:600px;
+margin-bottom:36px;
 }
 
 .hero-grid{
@@ -334,10 +339,18 @@ DASHBOARD KPI CARDS
 .kpi-card{
 background:white;
 border:1px solid #E5E7EB;
-border-radius:22px;
-padding:24px;
-box-shadow:0 10px 24px rgba(0,0,0,.04);
-height:145px;
+border-radius:20px;
+padding:18px 20px;
+height:120px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+box-shadow:0 6px 18px rgba(0,0,0,.04);
+transition: all .2s ease;
+}
+
+.kpi-card:hover{
+transform: translateY(-2px);
 }
 
 .kpi-label{
@@ -348,8 +361,9 @@ margin-bottom:14px;
 }
 
 .kpi-value{
-font-size:42px;
+font-size:34px;
 font-weight:800;
+margin-top:4px;
 color:#0F172A;
 line-height:1;
 }
@@ -369,11 +383,11 @@ ANALYTICS CARD
 ------------------------- */
 .panel-card{
 background:white;
+border-radius:20px;
+padding:20px;
 border:1px solid #E5E7EB;
-border-radius:22px;
-padding:24px;
-box-shadow:0 10px 24px rgba(0,0,0,.04);
-margin-top:18px;
+box-shadow:0 6px 20px rgba(0,0,0,0.04);
+margin-top:20px;
 }
 
 /* -------------------------
@@ -383,12 +397,13 @@ SECTION TITLE
 font-size:28px;
 font-weight:800;
 color:#0F172A;
-margin-bottom:8px;
+margin-bottom:6px;
 }
 
 .section-sub{
 color:#64748B;
-margin-bottom:18px;
+margin-bottom:20px;
+font-size:15px;
 }
 
 
@@ -439,6 +454,43 @@ color: #0F172A;
 
 tr:hover {
 background-color: #F9FAFB;
+}
+
+.tight-gap{ margin-top:10px; }
+.medium-gap{ margin-top:18px; }
+.large-gap{ margin-top:28px; }
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+[data-testid="stDataFrame"] {
+border-radius: 14px;
+overflow: hidden;
+border: 1px solid #E5E7EB;
+}
+
+[data-testid="stDataFrame"] th {
+background-color: #F8FAFC;
+font-weight: 600;
+font-size: 13px;
+color: #475569;
+}
+
+[data-testid="stDataFrame"] td {
+font-size: 14px;
+color: #0F172A;
+}
+
+[data-testid="stDataFrame"] tr:hover {
+background-color: #F1F5F9;
+}
+
+.white-card:hover,
+.panel-card:hover{
+transform: translateY(-2px);
+transition: all .2s ease;
 }
 
 </style>
@@ -690,7 +742,7 @@ if st.session_state.step == 1:
         
         <div class="hero-right">
         <div class="shield-wrap">
-        <div class="shield">🛡️</div>
+        <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" width="120">
         </div>
         </div>
         
@@ -786,7 +838,7 @@ if st.session_state.step == 1:
             st.markdown("### Data Preview")
             st.dataframe(df.head(), use_container_width=True)
         
-            st.markdown("---")
+            st.markdown('<div class="medium-gap"></div>', unsafe_allow_html=True)
         
             # ------------------------------
             # MAPPING
@@ -1050,35 +1102,31 @@ elif st.session_state.step == 3:
             auto_rate = automation_rate
             review_rate = 1 - automation_rate
 
-            st.markdown("#### Take Action")
+           st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
 
             c1, c2 = st.columns(2)
             
             with c1:
-                st.button("✅ Approve", use_container_width=True)
+                st.button("Approve", use_container_width=True)
             
             with c2:
-                st.button("🛑 Send to Review", use_container_width=True)
+                st.button("Send to Review", use_container_width=True)
         
-            import matplotlib.pyplot as plt
+            import plotly.express as px
 
-            fig, ax = plt.subplots()
-            
-            sizes = [auto_rate, review_rate]
-            labels = ["Auto Approved", "Manual Review"]
-            
-            ax.pie(
-                sizes,
-                labels=labels,
-                autopct="%1.0f%%",
-                startangle=90
+            fig = px.pie(
+                values=[auto_rate, review_rate],
+                names=["Auto Approved", "Manual Review"],
+                hole=0.6
             )
             
-            ax.axis("equal")
+            fig.update_layout(
+                margin=dict(t=10, b=10, l=10, r=10)
+            )
             
-            st.pyplot(fig)
-        
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.plotly_chart(fig, use_container_width=True))
+                    
+                        st.markdown('</div>', unsafe_allow_html=True)
 
         # -----------------------------
         # CREATE CONSISTENT ID COLUMN
@@ -1244,26 +1292,22 @@ elif st.session_state.step == 3:
             # FIXED SELECTION (IMPORTANT)
             row = sim_df.loc[sim_df[id_name] == selected_id].iloc[0] if selected_id in sim_df[id_name].values else sim_df.iloc[0]
         
-            st.markdown("---")
-        
             st.markdown(f"""
             **Decision:** {map_action(row['optimal_strategy'])}  
             **Risk Score:** {row['risk_probability']:.2f}  
             **Expected Cost:** {format_money(row['expected_cost'])}
             """)
-        
-            st.markdown("#### Cost Breakdown")
-        
+            
+            st.markdown("##### Cost Breakdown")
+            
             st.markdown(f"""
-            • AI Cost: {format_money(row['cost_ai'])}  
-            • Human Cost: {format_money(row['cost_human'])}  
-            • Hybrid Cost: {format_money(row['cost_hybrid'])}
+            AI: {format_money(row['cost_ai'])}  
+            Human: {format_money(row['cost_human'])}  
+            Hybrid: {format_money(row['cost_hybrid'])}
             """)
-        
-            st.markdown("#### Risk Drivers")
-        
-            drivers = get_risk_drivers(row)
-            st.markdown(" • ".join(drivers))
+            
+            st.markdown("##### Risk Drivers")
+            st.markdown(" • ".join(get_risk_drivers(row)))
         
             st.markdown('</div>', unsafe_allow_html=True)
             
