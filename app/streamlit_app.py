@@ -1211,10 +1211,6 @@ elif st.session_state.step == 4:
         
         # ✅ APPLY STYLING LAST (after column rename)
         
-        
-        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown("### Transaction Decisions")
-        
     
         # ==============================
         # TABLE + ANALYST PANEL LAYOUT
@@ -1251,7 +1247,11 @@ elif st.session_state.step == 4:
             st.markdown("### Transactions")
         
             st.markdown(
-                display_df.to_html(escape=False, index=False),
+                f"""
+                <div style="overflow-x:auto;">
+                    {display_df.to_html(escape=False, index=False)}
+                </div>
+                """,
                 unsafe_allow_html=True
             )
         
@@ -1272,7 +1272,7 @@ elif st.session_state.step == 4:
             )
         
             # FIXED SELECTION (IMPORTANT)
-            row = sim_df[sim_df[id_name] == selected_id].iloc[0]
+            row = sim_df.loc[sim_df[id_name] == selected_id].iloc[0] if selected_id in sim_df[id_name].values else sim_df.iloc[0]
         
             st.markdown("---")
         
