@@ -87,16 +87,20 @@ color:#CBD5E1;
 TOP NAVBAR
 ------------------------- */
 .topbar{
-background:rgba(7,20,31,.92);
-border:1px solid rgba(255,255,255,.06);
-padding:14px 24px;
-border-radius:16px;
-margin-top:8px;
-margin-bottom:24px;
+position: relative;
+left: -2rem;
+width: calc(100% + 4rem);
+
+background:#07141F;
+border-bottom:1px solid rgba(255,255,255,.08);
+
+padding:18px 40px;
+margin-top:0;
+margin-bottom:30px;
+
 display:flex;
 justify-content:space-between;
 align-items:center;
-backdrop-filter: blur(10px);
 }
 
 .brand{
@@ -107,16 +111,16 @@ color:white;
 
 .steps{
 display:flex;
-gap:14px;
+gap:40px;
 align-items:center;
 }
 
 .step{
 display:flex;
 align-items:center;
-gap:8px;
+gap:10px;
 color:#94A3B8;
-font-size:14px;
+font-size:15px;
 font-weight:600;
 }
 
@@ -199,21 +203,28 @@ overflow:hidden;
 HERO SECTION
 ------------------------- */
 .hero-shell{
-background: radial-gradient(
-circle at 80% 20%,
-#134E4A 0%,
-#0B1E2B 40%,
-#07141F 75%
-);
-border-radius:22px;
-padding:52px;
-margin-bottom:32px;
-border:1px solid rgba(255,255,255,.05);
-min-height:420px;
+position: relative;
+
+background:
+linear-gradient(90deg,#07141F 0%, #0B1E2B 55%, rgba(11,30,43,0.6) 100%);
+
+border-radius:0;
+padding:70px 60px;
+margin-bottom:40px;
+
 display:flex;
 justify-content:space-between;
-gap:40px;
 align-items:center;
+overflow:hidden;
+}
+
+.hero-image{
+position:absolute;
+right:0;
+top:50%;
+transform:translateY(-50%);
+height:420px;
+opacity:0.25;
 }
 
 .hero-left{
@@ -258,29 +269,12 @@ margin-bottom:14px;
 
 .hero-list{
 color:white;
-line-height:2;
-font-size:15px;
-padding-left:18px;
+line-height:2.2;
+font-size:16px;
 margin:0;
 }
 
-/* -------------------------
-SHIELD VISUAL
-------------------------- */
-.shield-wrap{
-width:280px;
-height:280px;
-border-radius:50%;
-background:radial-gradient(circle,#0E2F2B,#07141F);
-display:flex;
-justify-content:center;
-align-items:center;
-position:relative;
-}
 
-.shield{
-font-size:110px;
-}
 
 /* -------------------------
 UPLOAD AREA
@@ -312,11 +306,12 @@ height:100%;
 }
 
 .upload-zone{
-border:2px dashed #D7DEE7;
-border-radius:18px;
-padding:42px 20px;
+border:1.5px dashed #CBD5E1;
+border-radius:12px;
+padding:30px 20px;
 text-align:center;
 margin-top:18px;
+background:white;
 }
 
 .quick-btn{
@@ -709,6 +704,8 @@ if st.session_state.step == 1:
         hero_html = """
         <div class="hero-shell">
         
+        <img class="hero-image" src="https://raw.githubusercontent.com/MaryaD97/customer-risk-intelligence/main/shield_01.jpg"/>
+        
         <div class="hero-left">
         
         <div class="hero-title">Fraud Decision Engine</div>
@@ -721,28 +718,22 @@ if st.session_state.step == 1:
         
         <div>
         <div class="hero-list-title">What You Need</div>
-        <ul class="hero-list">
-        <li>Customer score or rating</li>
-        <li>Behavioral signal</li>
-        <li>Transaction value</li>
-        </ul>
+        <div class="hero-list">
+        👤 Customer score or rating<br>
+        📊 Behavioral signal<br>
+        💳 Transaction value
+        </div>
         </div>
         
         <div>
         <div class="hero-list-title">System Output</div>
-        <ul class="hero-list">
-        <li>Detect fraud risk</li>
-        <li>Estimate financial impact</li>
-        <li>Recommend best action</li>
-        </ul>
-        </div>
-        
+        <div class="hero-list">
+        🛡️ Detect fraud risk<br>
+        📉 Estimate financial impact<br>
+        ✅ Recommend best action
         </div>
         </div>
         
-        <div class="hero-right">
-        <div class="shield-wrap">
-        <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" width="120">
         </div>
         </div>
         
@@ -769,10 +760,12 @@ if st.session_state.step == 1:
         
             st.markdown("""
             <div class="upload-zone">
-                <div style="font-size:42px;margin-bottom:10px;">☁️</div>
-                <div style="font-weight:700;color:#0F172A;">Drag and drop your CSV file here</div>
-                <div style="color:#64748B;margin-top:6px;">or click browse</div>
-                <div style="color:#94A3B8;margin-top:14px;font-size:13px;">200MB per file</div>
+                <div style="font-weight:700;color:#0F172A;font-size:16px;">
+                    Upload your CSV file
+                </div>
+                <div style="color:#64748B;margin-top:8px;font-size:13px;">
+                    Max file size: 200MB
+                </div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -782,7 +775,7 @@ if st.session_state.step == 1:
             st.markdown('<div class="upload-card">', unsafe_allow_html=True)
             st.markdown("#### Quick Start")
             st.markdown(
-                '<div style="color:#64748B;line-height:1.7;">Use our sample dataset to explore the tool immediately.</div>',
+                '<div style="color:#64748B;line-height:1.8;font-size:15px;">Use our sample dataset to explore the tool immediately.</div>',,
                 unsafe_allow_html=True
             )
         
@@ -791,6 +784,20 @@ if st.session_state.step == 1:
             st.markdown('</div>', unsafe_allow_html=True)
         
             st.markdown('</div>', unsafe_allow_html=True)
+
+            st.markdown("""
+            <div style="
+            margin-top:20px;
+            background:#F1F5F9;
+            border:1px solid #E2E8F0;
+            padding:14px 18px;
+            border-radius:12px;
+            color:#475569;
+            font-size:14px;
+            ">
+            🛡️ Your data is secure and used only for analysis. No data is stored permanently.
+            </div>
+            """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
         
