@@ -1124,7 +1124,7 @@ elif st.session_state.step == 3:
             margin=dict(t=10, b=10, l=10, r=10)
         )
             
-        st.plotly_chart(fig, use_container_width=True))
+        st.plotly_chart(fig, use_container_width=True)
                     
         st.markdown('</div>', unsafe_allow_html=True)
 
