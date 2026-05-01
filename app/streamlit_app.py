@@ -1102,31 +1102,31 @@ elif st.session_state.step == 3:
             auto_rate = automation_rate
             review_rate = 1 - automation_rate
 
-           st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
 
-            c1, c2 = st.columns(2)
+        c1, c2 = st.columns(2)
             
-            with c1:
-                st.button("Approve", use_container_width=True)
+        with c1:
+            st.button("Approve", use_container_width=True)
             
-            with c2:
-                st.button("Send to Review", use_container_width=True)
+        with c2:
+            st.button("Send to Review", use_container_width=True)
         
-            import plotly.express as px
+        import plotly.express as px
 
-            fig = px.pie(
-                values=[auto_rate, review_rate],
-                names=["Auto Approved", "Manual Review"],
-                hole=0.6
-            )
+        fig = px.pie(
+            values=[auto_rate, review_rate],
+            names=["Auto Approved", "Manual Review"],
+            hole=0.6
+        )
             
-            fig.update_layout(
-                margin=dict(t=10, b=10, l=10, r=10)
-            )
+        fig.update_layout(
+            margin=dict(t=10, b=10, l=10, r=10)
+        )
             
-            st.plotly_chart(fig, use_container_width=True))
+        st.plotly_chart(fig, use_container_width=True))
                     
-                        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         # -----------------------------
         # CREATE CONSISTENT ID COLUMN
