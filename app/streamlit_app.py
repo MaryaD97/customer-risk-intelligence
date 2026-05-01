@@ -770,37 +770,37 @@ if st.session_state.step == 1:
         
         col1, col2 = st.columns([1.35, 1])
         
-            st.markdown("#### Upload CSV File")
+        st.markdown("#### Upload CSV File")
         
-            file = st.file_uploader(
-                "Upload CSV",
-                label_visibility="collapsed"
-            )
+        file = st.file_uploader(
+            "Upload CSV",
+            label_visibility="collapsed"
+        )
         
             
-            st.markdown("#### Quick Start")
-            st.markdown(
-                '<div style="color:#64748B;line-height:1.8;font-size:15px;">Use our sample dataset to explore the tool immediately.</div>',
-                unsafe_allow_html=True
-            )
+        st.markdown("#### Quick Start")
+        st.markdown(
+            '<div style="color:#64748B;line-height:1.8;font-size:15px;">Use our sample dataset to explore the tool immediately.</div>',
+            unsafe_allow_html=True
+        )
         
-            st.markdown('<div class="quick-btn">', unsafe_allow_html=True)
-            sample_clicked = st.button("Use Sample Data", use_container_width=True)
+        st.markdown('<div class="quick-btn">', unsafe_allow_html=True)
+        sample_clicked = st.button("Use Sample Data", use_container_width=True)
 
-            st.markdown("""
-            <div style="
-            margin-top:20px;
-            background:#F1F5F9;
-            border:1px solid #E2E8F0;
-            padding:14px 18px;
-            border-radius:12px;
-            color:#475569;
-            font-size:14px;
-            ">
-            🛡️ Your data is secure and used only for analysis. No data is stored permanently.
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div style="
+        margin-top:20px;
+        background:#F1F5F9;
+        border:1px solid #E2E8F0;
+        padding:14px 18px;
+        border-radius:12px;
+        color:#475569;
+        font-size:14px;
+        ">
+        🛡️ Your data is secure and used only for analysis. No data is stored permanently.
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
         
         # ------------------------------
         # SAMPLE DATA FLOW
