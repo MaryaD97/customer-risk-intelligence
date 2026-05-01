@@ -108,6 +108,16 @@ font-weight:700;
 color:white;
 }
 
+.brand-wrap{
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.brand img{
+height:28px;
+}
+
 .steps{
 display:flex;
 gap:40px;
@@ -522,13 +532,7 @@ def render_topbar(active_step=1):
 
     html = '<div class="topbar">'
 
-    html += '''
-    <div class="brand-wrap">
-        <img src="https://raw.githubusercontent.com/MaryaD97/customer-risk-intelligence/main/shield_01.jpg">
-        <div class="brand">Fraud Decision Engine</div>
-    </div>
-    '''
-    html += '<div class="steps">'
+    html += '<div class="brand">Fraud Decision Engine</div>'
 
     for i in range(1, 5):
         cls = "dot active-dot" if i == active_step else "dot"
