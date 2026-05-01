@@ -108,16 +108,6 @@ font-weight:700;
 color:white;
 }
 
-.brand-wrap{
-display:flex;
-align-items:center;
-gap:12px;
-}
-
-.brand img{
-height:28px;
-}
-
 .steps{
 display:flex;
 gap:40px;
