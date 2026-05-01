@@ -775,7 +775,7 @@ if st.session_state.step == 1:
             st.markdown('<div class="upload-card">', unsafe_allow_html=True)
             st.markdown("#### Quick Start")
             st.markdown(
-                '<div style="color:#64748B;line-height:1.8;font-size:15px;">Use our sample dataset to explore the tool immediately.</div>',,
+                '<div style="color:#64748B;line-height:1.8;font-size:15px;">Use our sample dataset to explore the tool immediately.</div>',
                 unsafe_allow_html=True
             )
         
