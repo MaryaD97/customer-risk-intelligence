@@ -88,15 +88,14 @@ TOP NAVBAR
 ------------------------- */
 .topbar{
 position: relative;
-left: -2rem;
-width: calc(100% + 4rem);
+left: calc(-1 * (100vw - 100%) / 2);
+width: 100vw;
 
 background:#07141F;
 border-bottom:1px solid rgba(255,255,255,.08);
 
-padding:18px 40px;
-margin-top:0;
-margin-bottom:30px;
+padding:20px 60px;
+margin:0 0 30px 0;
 
 display:flex;
 justify-content:space-between;
@@ -107,6 +106,16 @@ align-items:center;
 font-size:22px;
 font-weight:700;
 color:white;
+}
+
+.brand-wrap{
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.brand img{
+height:28px;
 }
 
 .steps{
@@ -120,19 +129,19 @@ display:flex;
 align-items:center;
 gap:10px;
 color:#94A3B8;
-font-size:15px;
+font-size:17px;
 font-weight:600;
 }
 
 .dot{
-width:26px;
-height:26px;
+width:30px;
+height:30px;
 border-radius:50%;
 background:#1E293B;
 display:flex;
 align-items:center;
 justify-content:center;
-font-size:12px;
+font-size:14px;
 color:white;
 }
 
@@ -142,6 +151,8 @@ color:#04120B;
 font-weight:700;
 box-shadow:0 0 0 3px rgba(34,197,94,0.2);
 }
+
+
 
 /* -------------------------
 GENERIC WHITE CARD
@@ -206,25 +217,25 @@ HERO SECTION
 position: relative;
 
 background:
-linear-gradient(90deg,#07141F 0%, #0B1E2B 55%, rgba(11,30,43,0.6) 100%);
+linear-gradient(90deg,#07141F 0%, #0B1E2B 60%, rgba(11,30,43,0.5) 100%);
 
-border-radius:0;
-padding:70px 60px;
-margin-bottom:40px;
+padding:90px 80px;
+margin-bottom:50px;
 
 display:flex;
 justify-content:space-between;
 align-items:center;
 overflow:hidden;
+min-height:520px;
 }
 
 .hero-image{
 position:absolute;
-right:0;
+right:40px;
 top:50%;
 transform:translateY(-50%);
-height:420px;
-opacity:0.25;
+height:320px;
+opacity:0.22;
 }
 
 .hero-left{
@@ -239,18 +250,18 @@ align-items:center;
 }
 
 .hero-title{
-font-size:56px;
+font-size:64px;
 font-weight:800;
 line-height:1.05;
 letter-spacing:-1px;
 }
 
 .hero-sub{
-font-size:18px;
-line-height:1.7;
+font-size:20px;
+line-height:1.8;
 color:#A7B4C4;
-max-width:600px;
-margin-bottom:36px;
+max-width:650px;
+margin-bottom:42px;
 }
 
 .hero-grid{
@@ -274,7 +285,12 @@ font-size:16px;
 margin:0;
 }
 
-
+.hero-divider{
+width:1px;
+background:rgba(148,163,184,0.25);
+height:140px;
+margin:0 10px;
+}
 
 /* -------------------------
 UPLOAD AREA
@@ -515,7 +531,13 @@ def render_topbar(active_step=1):
     }
 
     html = '<div class="topbar">'
-    html += '<div class="brand">Fraud Decision Engine</div>'
+
+    html += '''
+    <div class="brand-wrap">
+        <img src="https://raw.githubusercontent.com/MaryaD97/customer-risk-intelligence/main/shield_01.jpg">
+        <div class="brand">Fraud Decision Engine</div>
+    </div>
+    '''
     html += '<div class="steps">'
 
     for i in range(1, 5):
@@ -715,7 +737,7 @@ if st.session_state.step == 1:
         </div>
         
         <div class="hero-grid">
-        
+
         <div>
         <div class="hero-list-title">What You Need</div>
         <div class="hero-list">
@@ -725,15 +747,14 @@ if st.session_state.step == 1:
         </div>
         </div>
         
+        <div class="hero-divider"></div>
+        
         <div>
         <div class="hero-list-title">System Output</div>
         <div class="hero-list">
         🛡️ Detect fraud risk<br>
         📉 Estimate financial impact<br>
         ✅ Recommend best action
-        </div>
-        </div>
-        
         </div>
         </div>
         
@@ -749,8 +770,6 @@ if st.session_state.step == 1:
         
         col1, col2 = st.columns([1.35, 1])
         
-        with col1:
-            st.markdown('<div class="upload-card">', unsafe_allow_html=True)
             st.markdown("#### Upload CSV File")
         
             file = st.file_uploader(
@@ -758,21 +777,7 @@ if st.session_state.step == 1:
                 label_visibility="collapsed"
             )
         
-            st.markdown("""
-            <div class="upload-zone">
-                <div style="font-weight:700;color:#0F172A;font-size:16px;">
-                    Upload your CSV file
-                </div>
-                <div style="color:#64748B;margin-top:8px;font-size:13px;">
-                    Max file size: 200MB
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown('<div class="upload-card">', unsafe_allow_html=True)
+            
             st.markdown("#### Quick Start")
             st.markdown(
                 '<div style="color:#64748B;line-height:1.8;font-size:15px;">Use our sample dataset to explore the tool immediately.</div>',
@@ -781,9 +786,6 @@ if st.session_state.step == 1:
         
             st.markdown('<div class="quick-btn">', unsafe_allow_html=True)
             sample_clicked = st.button("Use Sample Data", use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-            st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown("""
             <div style="
@@ -798,8 +800,7 @@ if st.session_state.step == 1:
             🛡️ Your data is secure and used only for analysis. No data is stored permanently.
             </div>
             """, unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
         # ------------------------------
         # SAMPLE DATA FLOW
