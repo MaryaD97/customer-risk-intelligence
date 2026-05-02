@@ -230,6 +230,13 @@ overflow:hidden;
 min-height:520px;
 }
 
+.hero-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:30px;
+}
+
 .hero-image{
 position:absolute;
 right:60px;
@@ -722,102 +729,112 @@ if st.session_state.step == 1:
         hero_html = """
         <div class="hero-shell">
         
-        <img class="hero-image" src="https://raw.githubusercontent.com/MaryaD97/customer-risk-intelligence/main/shield_01.jpg"/>
+            <div class="hero-left">
         
-        <div class="hero-left">
+                <div class="hero-top">
+                    <div>
+                        <div class="hero-title">Fraud Decision Engine</div>
+                        <div class="hero-sub">
+                        Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
+                        </div>
+                    </div>
         
-        <div class="hero-title">Fraud Decision Engine</div>
+                    <img class="hero-image" src="https://raw.githubusercontent.com/MaryaD97/customer-risk-intelligence/main/shield_01.jpg"/>
+                </div>
         
-        <div class="hero-sub">
-        Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
-        </div>
+                <div class="hero-grid">
         
-        <div class="hero-grid">
-
-        <div>
-        <div class="hero-list-title">What You Need</div>
-        <div class="hero-list">
-        👤 Customer score or rating<br>
-        📊 Behavioral signal<br>
-        💳 Transaction value
-        </div>
-        </div>
+                    <div>
+                        <div class="hero-list-title">What You Need</div>
+                        <div class="hero-list">
+                            👤 Customer score or rating<br>
+                            📊 Behavioral signal<br>
+                            💳 Transaction value
+                        </div>
+                    </div>
         
-        <div class="hero-divider"></div>
+                    <div class="hero-divider"></div>
         
-        <div>
-        <div class="hero-list-title">System Output</div>
-        <div class="hero-list">
-        🛡️ Detect fraud risk<br>
-        📉 Estimate financial impact<br>
-        ✅ Recommend best action
-        </div>
-        </div>
+                    <div>
+                        <div class="hero-list-title">System Output</div>
+                        <div class="hero-list">
+                            🛡️ Detect fraud risk<br>
+                            📉 Estimate financial impact<br>
+                            ✅ Recommend best action
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
         
         </div>
         """
         
         st.markdown(hero_html, unsafe_allow_html=True)
-                
+        
+        
+        # ==============================
+        # UPLOAD SECTION (CLEAN LAYOUT)
+        # ==============================
+        
         st.markdown('<div class="upload-shell">', unsafe_allow_html=True)
-
-        colA, colB = st.columns(2)
-
+        
+        # TOP ROW (titles aligned horizontally)
+        colA, colB = st.columns([1,1])
+        
         with colA:
             st.markdown('<div class="upload-title">Upload Data</div>', unsafe_allow_html=True)
             st.markdown('<div class="upload-sub">Upload your dataset to begin decision analysis.</div>', unsafe_allow_html=True)
         
         with colB:
             st.markdown('<div class="upload-title">Quick Start</div>', unsafe_allow_html=True)
-            st.markdown('<div class="upload-sub">Use our sample dataset to explore the tool immediately.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="upload-sub">Use sample data instantly.</div>', unsafe_allow_html=True)
         
-        col1, col2 = st.columns(2)
         
-        st.markdown("#### Upload CSV File")
-
-        file = st.file_uploader(
-            "Upload CSV",
-            label_visibility="collapsed"
-        )
+        # SECOND ROW (upload + button SAME LEVEL)
+        col1, col2 = st.columns([1,1])
         
+        with col1:
+            file = st.file_uploader(
+                "Upload CSV",
+                label_visibility="collapsed"
+            )
+        
+            st.markdown("""
+            <div style="
+            background:#2A2F3A;
+            padding:10px 14px;
+            border-radius:10px;
+            color:#CBD5E1;
+            font-size:13px;
+            margin-top:6px;
+            width:90%;
+            ">
+            ⬆️ Upload &nbsp;&nbsp;&nbsp; 200MB per file
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            sample_clicked = st.button("Use Sample Data", use_container_width=True)
+        
+        
+        # SECURITY BOX (BELOW, NOT SIDEWAYS)
         st.markdown("""
         <div style="
-        background:#2A2F3A;
-        padding:14px 18px;
-        border-radius:10px;
-        color:#CBD5E1;
-        font-size:13px;
-        width:70%;
         margin-top:10px;
-        ">
-        ⬆️ Upload &nbsp;&nbsp;&nbsp; 200MB per file
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div style="
-        margin-top:18px;
         background:#F1F5F9;
         border:1px solid #E2E8F0;
-        padding:12px 16px;
+        padding:10px 14px;
         border-radius:10px;
         color:#475569;
         font-size:13px;
-        width:50%;
+        width:60%;
         ">
         🛡️ Your data is secure and used only for analysis. No data is stored permanently.
         </div>
         """, unsafe_allow_html=True)
         
-            
-        st.markdown("#### Quick Start")
-        st.markdown(
-            '<div style="color:#64748B;line-height:1.8;font-size:15px;">Use our sample dataset to explore the tool immediately.</div>',
-            unsafe_allow_html=True
-        )
-        
-        st.markdown('<div class="quick-btn">', unsafe_allow_html=True)
-        sample_clicked = st.button("Use Sample Data", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         
         # ------------------------------
