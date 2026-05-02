@@ -787,6 +787,7 @@ if st.session_state.step == 1:
         with colB:
             st.markdown('<div class="upload-title">Quick Start</div>', unsafe_allow_html=True)
             st.markdown('<div class="upload-sub">Use sample data instantly.</div>', unsafe_allow_html=True)
+            
         
         
         # SECOND ROW (upload + button SAME LEVEL)
@@ -798,23 +799,10 @@ if st.session_state.step == 1:
                 label_visibility="collapsed"
             )
         
-            st.markdown("""
-            <div style="
-            background:#2A2F3A;
-            padding:10px 14px;
-            border-radius:10px;
-            color:#CBD5E1;
-            font-size:13px;
-            margin-top:6px;
-            width:90%;
-            ">
-            ⬆️ Upload &nbsp;&nbsp;&nbsp; 200MB per file
-            </div>
-            """, unsafe_allow_html=True)
-        
         with col2:
             sample_clicked = st.button("Use Sample Data", use_container_width=True)
         
+        st.markdown('</div>', unsafe_allow_html=True)
         
         # SECURITY BOX (BELOW, NOT SIDEWAYS)
         st.markdown("""
