@@ -722,7 +722,7 @@ def format_money(x):
 # OVERVIEW PAGE
 # ==============================
 if st.session_state.step == 1:
-        render_topbar(1)
+    render_topbar(1)
 # ==============================
 # STEP 1 — LOAD DATA
 # ==============================
