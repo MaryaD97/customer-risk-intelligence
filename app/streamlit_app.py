@@ -775,192 +775,192 @@ if st.session_state.step == 1:
     # ==============================
     st.markdown('<div class="upload-shell">', unsafe_allow_html=True)
 
-        # TOP ROW (titles aligned horizontally)
-        colA, colB = st.columns([1,1])
-        
-        with colA:
-            st.markdown('<div class="upload-title">Upload Data</div>', unsafe_allow_html=True)
-            st.markdown('<div class="upload-sub">Upload your dataset to begin decision analysis.</div>', unsafe_allow_html=True)
-        
-        with colB:
-            st.markdown('<div class="upload-title">Quick Start</div>', unsafe_allow_html=True)
-            st.markdown('<div class="upload-sub">Use sample data instantly.</div>', unsafe_allow_html=True)
-            
-        
-        
-        # SECOND ROW (upload + button SAME LEVEL)
-        col1, col2 = st.columns([1,1])
-        
-        with col1:
-            file = st.file_uploader(
-                "Upload CSV",
-                label_visibility="collapsed"
-            )
-        
-        with col2:
-            sample_clicked = st.button("Use Sample Data", use_container_width=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # SECURITY BOX (BELOW, NOT SIDEWAYS)
-        st.markdown("""
-        <div style="
-        margin-top:10px;
-        background:#F1F5F9;
-        border:1px solid #E2E8F0;
-        padding:10px 14px;
-        border-radius:10px;
-        color:#475569;
-        font-size:13px;
-        width:60%;
-        ">
-        🛡️ Your data is secure and used only for analysis. No data is stored permanently.
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+    # TOP ROW (titles aligned horizontally)
+    colA, colB = st.columns([1,1])
     
+    with colA:
+        st.markdown('<div class="upload-title">Upload Data</div>', unsafe_allow_html=True)
+        st.markdown('<div class="upload-sub">Upload your dataset to begin decision analysis.</div>', unsafe_allow_html=True)
+    
+    with colB:
+        st.markdown('<div class="upload-title">Quick Start</div>', unsafe_allow_html=True)
+        st.markdown('<div class="upload-sub">Use sample data instantly.</div>', unsafe_allow_html=True)
         
+    
+    
+    # SECOND ROW (upload + button SAME LEVEL)
+    col1, col2 = st.columns([1,1])
+    
+    with col1:
+        file = st.file_uploader(
+            "Upload CSV",
+            label_visibility="collapsed"
+        )
+    
+    with col2:
+        sample_clicked = st.button("Use Sample Data", use_container_width=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # SECURITY BOX (BELOW, NOT SIDEWAYS)
+    st.markdown("""
+    <div style="
+    margin-top:10px;
+    background:#F1F5F9;
+    border:1px solid #E2E8F0;
+    padding:10px 14px;
+    border-radius:10px;
+    color:#475569;
+    font-size:13px;
+    width:60%;
+    ">
+    🛡️ Your data is secure and used only for analysis. No data is stored permanently.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    
+    # ------------------------------
+    # SAMPLE DATA FLOW
+    # ------------------------------
+    if sample_clicked:
+        df = pd.read_csv("sample_data.csv")
+    
+        required_cols = feature_columns + ["order_value"]
+        missing_cols = [col for col in required_cols if col not in df.columns]
+    
+        if missing_cols:
+            st.error(f"Missing required fields: {', '.join(missing_cols)}")
+            st.stop()
+    
+        df = df[required_cols]
+        df, _, _ = clean_data(df)
+    
+        st.session_state.mapped_data = df
+        st.session_state.step = 2
+    
+        st.success("Sample data loaded successfully")
+        st.rerun()
+    
+    
+    # ------------------------------
+    # FILE UPLOAD FLOW
+    # ------------------------------
+    if file:
+    
+        df = pd.read_csv(file)
+    
+        if df.empty:
+            st.error("Uploaded file is empty")
+            st.stop()
+    
+        if len(df.columns) < 2:
+            st.error("File does not contain enough usable data")
+            st.stop()
+    
         # ------------------------------
-        # SAMPLE DATA FLOW
+        # PREVIEW
         # ------------------------------
-        if sample_clicked:
-            df = pd.read_csv("sample_data.csv")
-        
-            required_cols = feature_columns + ["order_value"]
-            missing_cols = [col for col in required_cols if col not in df.columns]
-        
-            if missing_cols:
-                st.error(f"Missing required fields: {', '.join(missing_cols)}")
-                st.stop()
-        
-            df = df[required_cols]
-            df, _, _ = clean_data(df)
-        
-            st.session_state.mapped_data = df
-            st.session_state.step = 2
-        
-            st.success("Sample data loaded successfully")
-            st.rerun()
-        
-        
+        st.markdown("### Data Preview")
+        st.dataframe(df.head(), use_container_width=True)
+    
+        st.markdown('<div class="medium-gap"></div>', unsafe_allow_html=True)
+    
         # ------------------------------
-        # FILE UPLOAD FLOW
+        # MAPPING
         # ------------------------------
-        if file:
-        
-            df = pd.read_csv(file)
-        
-            if df.empty:
-                st.error("Uploaded file is empty")
-                st.stop()
-        
-            if len(df.columns) < 2:
-                st.error("File does not contain enough usable data")
-                st.stop()
-        
-            # ------------------------------
-            # PREVIEW
-            # ------------------------------
-            st.markdown("### Data Preview")
-            st.dataframe(df.head(), use_container_width=True)
-        
-            st.markdown('<div class="medium-gap"></div>', unsafe_allow_html=True)
-        
-            # ------------------------------
-            # MAPPING
-            # ------------------------------
-            st.markdown("### Map Required Fields")
-            st.caption("Match your dataset columns to required inputs")
-        
-            schema_signature = tuple(sorted(df.columns))
-        
-            if "saved_mappings" not in st.session_state:
-                st.session_state.saved_mappings = {}
-        
-            previous_mapping = st.session_state.saved_mappings.get(schema_signature, {})
-        
-            def suggest_column(target, columns):
-                target = target.lower()
-                for col in columns:
-                    if target in col.lower():
-                        return col
-                return columns[0]
-        
-            mapping = {}
-        
-            feature_labels = {
-                "rating": "Customer Score",
-                "sentiment_score": "Behavioral Signal",
-                "review_length": "Engagement Depth",
-                "helpfulness_ratio": "Peer Validation",
-                "verified_purchase": "Trust Indicator",
-                "order_value": "Transaction Value"
-            }
-        
-            left, right = st.columns(2)
-        
-            for i, target_col in enumerate(feature_columns + ["order_value"]):
-        
-                default_col = previous_mapping.get(
-                    target_col,
-                    suggest_column(target_col, df.columns)
-                )
-        
-                container = left if i % 2 == 0 else right
-        
-                mapping[target_col] = container.selectbox(
-                    feature_labels.get(target_col, target_col),
-                    df.columns,
-                    index=list(df.columns).index(default_col)
-                )
-        
-            # ------------------------------
-            # VALIDATION
-            # ------------------------------
-            def validate_mapping(mapping, df):
-                errors = []
-        
-                if len(set(mapping.values())) < len(mapping.values()):
-                    errors.append("Duplicate columns selected")
-        
-                for k, v in mapping.items():
-                    if v not in df.columns:
-                        errors.append(f"Missing column: {v}")
-        
-                return errors
-        
-            validation_errors = validate_mapping(mapping, df)
-        
+        st.markdown("### Map Required Fields")
+        st.caption("Match your dataset columns to required inputs")
+    
+        schema_signature = tuple(sorted(df.columns))
+    
+        if "saved_mappings" not in st.session_state:
+            st.session_state.saved_mappings = {}
+    
+        previous_mapping = st.session_state.saved_mappings.get(schema_signature, {})
+    
+        def suggest_column(target, columns):
+            target = target.lower()
+            for col in columns:
+                if target in col.lower():
+                    return col
+            return columns[0]
+    
+        mapping = {}
+    
+        feature_labels = {
+            "rating": "Customer Score",
+            "sentiment_score": "Behavioral Signal",
+            "review_length": "Engagement Depth",
+            "helpfulness_ratio": "Peer Validation",
+            "verified_purchase": "Trust Indicator",
+            "order_value": "Transaction Value"
+        }
+    
+        left, right = st.columns(2)
+    
+        for i, target_col in enumerate(feature_columns + ["order_value"]):
+    
+            default_col = previous_mapping.get(
+                target_col,
+                suggest_column(target_col, df.columns)
+            )
+    
+            container = left if i % 2 == 0 else right
+    
+            mapping[target_col] = container.selectbox(
+                feature_labels.get(target_col, target_col),
+                df.columns,
+                index=list(df.columns).index(default_col)
+            )
+    
+        # ------------------------------
+        # VALIDATION
+        # ------------------------------
+        def validate_mapping(mapping, df):
+            errors = []
+    
+            if len(set(mapping.values())) < len(mapping.values()):
+                errors.append("Duplicate columns selected")
+    
+            for k, v in mapping.items():
+                if v not in df.columns:
+                    errors.append(f"Missing column: {v}")
+    
+            return errors
+    
+        validation_errors = validate_mapping(mapping, df)
+    
+        if validation_errors:
+            st.error("Mapping issues detected")
+            for err in validation_errors:
+                st.write(f"- {err}")
+        else:
+            st.success("Mapping complete")
+    
+        # ------------------------------
+        # CONFIRM
+        # ------------------------------
+        if st.button("Confirm & Continue"):
+    
             if validation_errors:
-                st.error("Mapping issues detected")
-                for err in validation_errors:
-                    st.write(f"- {err}")
+                st.error("Fix mapping errors before proceeding")
             else:
-                st.success("Mapping complete")
-        
-            # ------------------------------
-            # CONFIRM
-            # ------------------------------
-            if st.button("Confirm & Continue"):
-        
-                if validation_errors:
-                    st.error("Fix mapping errors before proceeding")
-                else:
-                    df = df.rename(columns={v: k for k, v in mapping.items()})
-        
-                    required_cols = feature_columns + ["order_value"]
-                    df = df[required_cols]
-        
-                    df, _, _ = clean_data(df)
-        
-                    st.session_state.saved_mappings[schema_signature] = mapping
-                    st.session_state.mapped_data = df
-        
-                    st.success("Data ready for analysis")
-        
-                    st.session_state.step = 2
-                    st.rerun()
+                df = df.rename(columns={v: k for k, v in mapping.items()})
+    
+                required_cols = feature_columns + ["order_value"]
+                df = df[required_cols]
+    
+                df, _, _ = clean_data(df)
+    
+                st.session_state.saved_mappings[schema_signature] = mapping
+                st.session_state.mapped_data = df
+    
+                st.success("Data ready for analysis")
+    
+                st.session_state.step = 2
+                st.rerun()
         
         
 
