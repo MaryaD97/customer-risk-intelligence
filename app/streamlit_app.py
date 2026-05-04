@@ -769,8 +769,6 @@ if st.session_state.step == 1:
     
     </div>"""
     
-    st.markdown(hero_html, unsafe_allow_html=True)
-        
         
     # ==============================
     # UPLOAD SECTION (CLEAN LAYOUT)
