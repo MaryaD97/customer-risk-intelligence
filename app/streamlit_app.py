@@ -768,7 +768,10 @@ if st.session_state.step == 1:
     </div>
     
     </div>"""
-    
+
+    import streamlit.components.v1 as components
+
+    components.html(hero_html, height=520)
         
     # ==============================
     # UPLOAD SECTION (CLEAN LAYOUT)
