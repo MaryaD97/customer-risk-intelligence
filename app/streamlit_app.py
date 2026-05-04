@@ -42,8 +42,8 @@ linear-gradient(
 180deg,
 #07141F 0%,
 #0A1B29 38%,
-#F6F8FA 38%,
-#F6F8FA 100%
+#07141F 0%,
+#07141F 100%
 );
 }
 
@@ -218,7 +218,8 @@ HERO SECTION
 position: relative;
 
 background:
-linear-gradient(90deg,#07141F 0%, #0B1E2B 60%, rgba(11,30,43,0.5) 100%);
+linear-gradient(90deg, #07141F 0%, #0B1E2B 100%);
+
 
 padding:90px 80px;
 margin-bottom:50px;
@@ -243,7 +244,7 @@ right:60px;
 top:55%;
 transform:translateY(-50%);
 height:300px;
-opacity:0.22;
+opacity:0.9;   /* or 1 for full */
 }
 
 .hero-left{
