@@ -766,6 +766,7 @@ if st.session_state.step == 1:
     
     </div>
     </div>"""
+    st.markdown(hero_html, unsafe_allow_html=True)
 
     
         
