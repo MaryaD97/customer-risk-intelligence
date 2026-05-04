@@ -726,6 +726,10 @@ if st.session_state.step == 1:
 # ==============================
 # STEP 1 — LOAD DATA
 # ==============================
+    st.write("DEBUG START")
+    st.markdown(hero_html, unsafe_allow_html=True)
+    st.write("DEBUG END")
+    
     hero_html = """
     <div class="hero-shell">
     
