@@ -768,7 +768,7 @@ Decide the lowest-cost action for every transaction — reduce fraud loss while 
 </div>
 </div>"""
     
-st.markdown(hero_html, unsafe_allow_html=True)    
+    st.markdown(hero_html, unsafe_allow_html=True)    
             
     # ==============================
     # UPLOAD SECTION (CLEAN LAYOUT)
