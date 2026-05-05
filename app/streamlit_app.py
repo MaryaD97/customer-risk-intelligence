@@ -477,20 +477,6 @@ tr:hover {
 background-color: #F9FAFB;
 }
 
-.tight-gap{ margin-top:10px; }
-.medium-gap{ margin-top:18px; }
-.large-gap{ margin-top:28px; }
-
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-[data-testid="stDataFrame"] {
-border-radius: 14px;
-overflow: hidden;
-border: 1px solid #E5E7EB;
-}
 
 [data-testid="stDataFrame"] th {
 background-color: #F8FAFC;
@@ -499,15 +485,29 @@ font-size: 13px;
 color: #475569;
 }
 
-[data-testid="stDataFrame"] td {
-font-size: 14px;
-color: #0F172A;
-}
-
 [data-testid="stDataFrame"] tr:hover {
 background-color: #F1F5F9;
 }
 
+/* -------------------------
+SPACING UTILITIES
+------------------------- */
+.tight-gap{ margin-top:10px; }
+.medium-gap{ margin-top:18px; }
+.large-gap{ margin-top:28px; }
+
+/* -------------------------
+DATAFRAME POLISH
+------------------------- */
+[data-testid="stDataFrame"] {
+border-radius: 14px;
+overflow: hidden;
+border: 1px solid #E5E7EB;
+}
+
+/* -------------------------
+HOVER EFFECTS
+------------------------- */
 .white-card:hover,
 .panel-card:hover{
 transform: translateY(-2px);
@@ -516,6 +516,7 @@ transition: all .2s ease;
 
 </style>
 """, unsafe_allow_html=True)
+
 
 # ==============================
 # LOAD MODEL
