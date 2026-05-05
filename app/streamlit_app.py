@@ -1398,9 +1398,10 @@ def render_insights_page():
     - Manual review focused on highest-risk cases  
     """)
 
+if st.session_state.step == 1:
+    render_upload_page()
 
-
-if st.session_state.step == 2:
+elif st.session_state.step == 2:
     render_costs_page()
 
 elif st.session_state.step == 3:
