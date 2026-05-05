@@ -729,7 +729,7 @@ if st.session_state.step == 1:
 # ==============================
 # STEP 1 — LOAD DATA
 # ==============================
-hero_html = """<div class="hero-shell">
+    hero_html = """<div class="hero-shell">
 <div class="hero-left">
 
 <div class="hero-top">
