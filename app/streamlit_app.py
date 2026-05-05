@@ -728,50 +728,47 @@ def render_upload_page():
     render_topbar(1)
     
     hero_html = """<div class="hero-shell">
-    <div class="hero-left">
+<div class="hero-left">
+
+<div class="hero-top">
+<div>
+<div class="hero-title">Fraud Decision Engine</div>
+<div class="hero-sub">
+Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
+</div>
+</div>
+
+<img class="hero-image" src="https://raw.githubusercontent.com/MaryaD97/customer-risk-intelligence/main/shield_01.jpg"/>
+</div>
+
+<div class="hero-grid">
+
+<div>
+<div class="hero-list-title">What You Need</div>
+<div class="hero-list">
+👤 Customer score or rating<br>
+📊 Behavioral signal<br>
+💳 Transaction value
+</div>
+</div>
+
+<div class="hero-divider"></div>
+
+<div>
+<div class="hero-list-title">System Output</div>
+<div class="hero-list">
+🛡️ Detect fraud risk<br>
+📉 Estimate financial impact<br>
+✅ Recommend best action
+</div>
+</div>
+
+</div>
+
+</div>
+</div>"""
     
-    <div class="hero-top">
-    <div>
-    <div class="hero-title">Fraud Decision Engine</div>
-    <div class="hero-sub">
-    Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
-    </div>
-    </div>
-    
-    <img class="hero-image" src="https://raw.githubusercontent.com/MaryaD97/customer-risk-intelligence/main/shield_01.jpg"/>
-    </div>
-    
-    <div class="hero-grid">
-    
-    <div>
-    <div class="hero-list-title">What You Need</div>
-    <div class="hero-list">
-    👤 Customer score or rating<br>
-    📊 Behavioral signal<br>
-    💳 Transaction value
-    </div>
-    </div>
-    
-    <div class="hero-divider"></div>
-    
-    <div>
-    <div class="hero-list-title">System Output</div>
-    <div class="hero-list">
-    🛡️ Detect fraud risk<br>
-    📉 Estimate financial impact<br>
-    ✅ Recommend best action
-    </div>
-    </div>
-    
-    </div>
-    
-    </div>
-    </div>"""
-      
-    st.markdown(hero_html, unsafe_allow_html=True)
-    st.write("FUNCTION IS RUNNING")
-    
-        
+st.markdown(hero_html, unsafe_allow_html=True)    
             
     # ==============================
     # UPLOAD SECTION (CLEAN LAYOUT)
