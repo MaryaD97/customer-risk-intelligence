@@ -964,7 +964,7 @@ def render_upload_page():
 # ==============================
 # CONFIG
 # ==============================
-elif st.session_state.step == 2:
+def render_costs_page():
     render_topbar(2)
 
     if st.button("← Back"):
@@ -1037,8 +1037,8 @@ elif st.session_state.step == 2:
 # ==============================
 # DECISIONS
 # ==============================
-elif st.session_state.step == 3:
-        render_topbar(3)
+def render_decision_page():
+    render_topbar(3)
 
         if st.button("← Back"):
             st.session_state.step = 2
@@ -1349,7 +1349,7 @@ elif st.session_state.step == 3:
 # ==============================
 # INSIGHTS
 # ==============================
-elif st.session_state.step == 4:
+def render_decision_page():
     render_topbar(4)
 
     df = st.session_state.results
@@ -1396,3 +1396,15 @@ elif st.session_state.step == 4:
     - {automation_rate:.1%} of transactions automated  
     - Manual review focused on highest-risk cases  
     """)
+
+if st.session_state.step == 1:
+    render_upload_page()
+
+elif st.session_state.step == 2:
+    render_costs_page()
+
+elif st.session_state.step == 3:
+    render_decision_page()
+
+elif st.session_state.step == 4:
+    render_insights_page()
