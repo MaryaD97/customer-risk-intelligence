@@ -805,21 +805,13 @@ def render_upload_page():
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # SECURITY BOX (BELOW, NOT SIDEWAYS)
-    st.markdown("""
-    <div style="
-    margin-top:10px;
-    background:#F1F5F9;
-    border:1px solid #E2E8F0;
-    padding:10px 14px;
-    border-radius:10px;
-    color:#475569;
-    font-size:13px;
-    width:60%;
-    ">
-    🛡️ Your data is secure and used only for analysis. No data is stored permanently.
-    </div>
-    """, unsafe_allow_html=True)
+    # SECURITY BOX (FIXED)
+    st.markdown(
+        '<div style="margin-top:10px;background:#F1F5F9;border:1px solid #E2E8F0;padding:10px 14px;border-radius:10px;color:#475569;font-size:13px;width:60%;">'
+        '🛡️ Your data is secure and used only for analysis. No data is stored permanently.'
+        '</div>',
+        unsafe_allow_html=True
+    )
     # ------------------------------
     # SAMPLE DATA FLOW
     # ------------------------------
