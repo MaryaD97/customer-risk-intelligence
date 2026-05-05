@@ -726,9 +726,7 @@ def format_money(x):
 # ==============================
 def render_upload_page():
     render_topbar(1)
-# ==============================
-# STEP 1 — LOAD DATA
-# ==============================
+    
     hero_html = """<div class="hero-shell">
     <div class="hero-left">
     
@@ -771,6 +769,7 @@ def render_upload_page():
     </div>"""
       
     st.markdown(hero_html, unsafe_allow_html=True)
+    st.write("FUNCTION IS RUNNING")
     
         
             
