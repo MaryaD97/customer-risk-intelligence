@@ -1039,313 +1039,313 @@ def render_costs_page():
 # ==============================
 def render_decision_page():
     render_topbar(3)
+ 
+    if st.button("← Back"):
+        st.session_state.step = 2
+        st.rerun()
 
-        if st.button("← Back"):
-            st.session_state.step = 2
-            st.rerun()
+    if st.session_state.results is None:
+        st.warning("Generate decisions first")
+        st.stop()
+
+    st.markdown('<div class="section-title">Decision Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Lowest-cost actions for every transaction based on current assumptions.</div>', unsafe_allow_html=True)
     
-        if st.session_state.results is None:
-            st.warning("Generate decisions first")
-            st.stop()
+    col1, col2 = st.columns(2)
     
-        st.markdown('<div class="section-title">Decision Dashboard</div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-sub">Lowest-cost actions for every transaction based on current assumptions.</div>', unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
-        
-        sim_fraud = col1.slider(
-            "Fraud Loss Multiplier",
-            1.0, 5.0,
-            st.session_state.config["fraud_cost"]
-        )
-        
-        sim_review = col2.slider(
-            "Manual Review Cost",
-            1.0, 20.0,
-            st.session_state.config["review_cost"]
-        )
-        
-        base_df = st.session_state.results
-        sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
-        
-        total_cost = sim_df["expected_cost"].sum()
-        baseline = estimate_baseline_cost(sim_df)
-        savings = baseline - total_cost
-        automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
-        
-        k1, k2, k3 = st.columns(3)
-        
-        with k1:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Total Expected Cost</div>
-                <div class="kpi-value">{format_money(total_cost)}</div>
-                <div class="kpi-sub">Optimized strategy output</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with k2:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Savings vs Baseline</div>
-                <div class="kpi-value kpi-green">{format_money(savings)}</div>
-                <div class="kpi-sub">Compared to reviewing all orders</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with k3:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Automation Rate</div>
-                <div class="kpi-value">{automation_rate:.1%}</div>
-                <div class="kpi-sub">Orders auto-approved</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        left, right = st.columns([1.4, 1])
+    sim_fraud = col1.slider(
+        "Fraud Loss Multiplier",
+        1.0, 5.0,
+        st.session_state.config["fraud_cost"]
+    )
+    
+    sim_review = col2.slider(
+        "Manual Review Cost",
+        1.0, 20.0,
+        st.session_state.config["review_cost"]
+    )
+    
+    base_df = st.session_state.results
+    sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
+    
+    total_cost = sim_df["expected_cost"].sum()
+    baseline = estimate_baseline_cost(sim_df)
+    savings = baseline - total_cost
+    automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
+    
+    k1, k2, k3 = st.columns(3)
+    
+    with k1:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Total Expected Cost</div>
+            <div class="kpi-value">{format_money(total_cost)}</div>
+            <div class="kpi-sub">Optimized strategy output</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with k2:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Savings vs Baseline</div>
+            <div class="kpi-value kpi-green">{format_money(savings)}</div>
+            <div class="kpi-sub">Compared to reviewing all orders</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with k3:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Automation Rate</div>
+            <div class="kpi-value">{automation_rate:.1%}</div>
+            <div class="kpi-sub">Orders auto-approved</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    left, right = st.columns([1.4, 1])
 
-        full_auto_cost = (
-            (1 - AI_EFFECTIVENESS)
-            * sim_df["risk_probability"]
-            * sim_df["order_value"]
-            * sim_fraud
-        ).sum()
-        
-        with left:
-            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-            st.markdown("### Cost Comparison")
-        
-            st.progress(min(total_cost / max(baseline,1), 1.0))
-            st.caption(f"Optimized cost is {total_cost / baseline:.1%} of full review cost")
-        
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Human Review", format_money(baseline))
-            c2.metric("AI Only", format_money(full_auto_cost))
-            c3.metric("Optimized", format_money(total_cost))
-        
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with right:
-            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-            st.markdown("### Decision Breakdown")
-        
-            auto_rate = automation_rate
-            review_rate = 1 - automation_rate
-
-        st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
-
-        c1, c2 = st.columns(2)
-            
-        with c1:
-            st.button("Approve", use_container_width=True)
-            
-        with c2:
-            st.button("Send to Review", use_container_width=True)
-        
-        import plotly.express as px
-
-        fig = px.pie(
-            values=[auto_rate, review_rate],
-            names=["Auto Approved", "Manual Review"],
-            hole=0.6
-        )
-            
-        fig.update_layout(
-            margin=dict(t=10, b=10, l=10, r=10)
-        )
-            
-        st.plotly_chart(fig, use_container_width=True)
-                    
+    full_auto_cost = (
+        (1 - AI_EFFECTIVENESS)
+        * sim_df["risk_probability"]
+        * sim_df["order_value"]
+        * sim_fraud
+    ).sum()
+    
+    with left:
+        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        st.markdown("### Cost Comparison")
+    
+        st.progress(min(total_cost / max(baseline,1), 1.0))
+        st.caption(f"Optimized cost is {total_cost / baseline:.1%} of full review cost")
+    
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Human Review", format_money(baseline))
+        c2.metric("AI Only", format_money(full_auto_cost))
+        c3.metric("Optimized", format_money(total_cost))
+    
         st.markdown('</div>', unsafe_allow_html=True)
-
-        # -----------------------------
-        # CREATE CONSISTENT ID COLUMN
-        # -----------------------------
-        sim_df = sim_df.reset_index(drop=True)
-        sim_df["Transaction ID"] = sim_df.index + 1
-        id_name = "Transaction ID"
-        
-        # -----------------------------
-        # CREATE WORKING DATAFRAME
-        # -----------------------------
-        display_df = sim_df.copy()
-        
-        if display_df.empty:
-            st.warning("No valid transactions to display")
-            st.stop()
-        
-        # -----------------------------
-        # SORTING (BEFORE TRANSFORMS)
-        # -----------------------------
-        sort_option = st.selectbox(
-            "Sort by",
-            [
-                "Original Order",
-                "Highest Risk (Recommended)",
-                "Highest Cost",
-                "Lowest Cost"
-            ],
-            index=1
-        )
-        
-        if sort_option == "Highest Risk (Recommended)":
-            display_df = display_df.sort_values(by="risk_probability", ascending=False)
-        elif sort_option == "Highest Cost":
-            display_df = display_df.sort_values(by="expected_cost", ascending=False)
-        elif sort_option == "Lowest Cost":
-            display_df = display_df.sort_values(by="expected_cost", ascending=True)
-        
-        # -----------------------------
-        # VALIDATION
-        # -----------------------------
-        if "optimal_strategy" not in display_df.columns:
-            st.error("Decision logic failed — no strategy found")
-            st.stop()
-        
-        if "risk_probability" not in display_df.columns:
-            st.error("Missing risk scores")
-            st.stop()
-        
-        if "expected_cost" not in display_df.columns:
-            st.error("Missing expected cost data")
-            st.stop()
-        
-        # -----------------------------
-        # DERIVED COLUMNS (ORDER MATTERS)
-        # -----------------------------
-        
-        # Decision
-        display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-        display_df["Decision"] = display_df["Decision"].replace({
-            "Auto Approve (AI)": "✓ Approve",
-            "Manual Review": "Review"
-        })
-        
-        # Why
-        try:
-            display_df["Why"] = display_df.apply(generate_reason, axis=1)
-        except Exception:
-            st.error("Failed to generate explanations")
-            st.stop()
-        
-        display_df["Why"] = display_df["Why"].str.capitalize()
-        display_df["Why"] = display_df["Why"].str.replace(",", " •")
-        
-        # Risk Level
-        display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
-        display_df["Risk Level"] = display_df["Risk Level"].str.upper()
-        
-        # Formatted fields
-        display_df["Risk Score"] = display_df["risk_probability"].map(lambda x: f"{x:.2f}")
-        display_df["Expected Cost"] = display_df["expected_cost"].map(format_money)
-        
-        # -----------------------------
-        # FINAL COLUMN SELECTION
-        # -----------------------------
-        required_columns = [
-            id_name,
-            "Decision",
-            "Risk Level",
-            "Risk Score",
-            "Expected Cost",
-            "Why"
-        ]
-        
-        missing_cols = [col for col in required_columns if col not in display_df.columns]
-        
-        if missing_cols:
-            st.error(f"Missing columns: {missing_cols}")
-            st.write("Available columns:", list(display_df.columns))
-            st.stop()
-        
-        display_df = display_df[required_columns]
-        
-        # ✅ APPLY STYLING LAST (after column rename)
-        
     
-        # ==============================
-        # TABLE + ANALYST PANEL LAYOUT
-        # ==============================
+    with right:
+        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        st.markdown("### Decision Breakdown")
+    
+        auto_rate = automation_rate
+        review_rate = 1 - automation_rate
+
+    st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
+
+    c1, c2 = st.columns(2)
         
-        left, right = st.columns([1.6, 1])
+    with c1:
+        st.button("Approve", use_container_width=True)
         
-        # -----------------------------
-        # PREP DISPLAY DATA (KEEP YOUR EXISTING LOGIC ABOVE THIS)
-        # -----------------------------
+    with c2:
+        st.button("Send to Review", use_container_width=True)
+    
+    import plotly.express as px
+
+    fig = px.pie(
+        values=[auto_rate, review_rate],
+        names=["Auto Approved", "Manual Review"],
+        hole=0.6
+    )
         
-        # Risk Badge Styling
-        def risk_badge_html(val):
-            if val == "HIGH":
-                return '<span class="badge high">HIGH</span>'
-            elif val == "MEDIUM":
-                return '<span class="badge medium">MEDIUM</span>'
-            else:
-                return '<span class="badge low">LOW</span>'
+    fig.update_layout(
+        margin=dict(t=10, b=10, l=10, r=10)
+    )
+        
+    st.plotly_chart(fig, use_container_width=True)
                 
-        display_df["Risk Level"] = display_df["Risk Level"].apply(risk_badge_html)
-        
-        # Decision styling
-        display_df["Decision"] = display_df["Decision"].replace({
-            "✓ Approve": "✅ Approve",
-            "Review": "🛑 Review"
-        })
-        
-        # -----------------------------
-        # LEFT: TABLE
-        # -----------------------------
-        with left:
-            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-            st.markdown("### Transactions")
-        
-            st.dataframe(
-            display_df,
-            use_container_width=True,
-            hide_index=True
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # -----------------------------
+    # CREATE CONSISTENT ID COLUMN
+    # -----------------------------
+    sim_df = sim_df.reset_index(drop=True)
+    sim_df["Transaction ID"] = sim_df.index + 1
+    id_name = "Transaction ID"
+    
+    # -----------------------------
+    # CREATE WORKING DATAFRAME
+    # -----------------------------
+    display_df = sim_df.copy()
+    
+    if display_df.empty:
+        st.warning("No valid transactions to display")
+        st.stop()
+    
+    # -----------------------------
+    # SORTING (BEFORE TRANSFORMS)
+    # -----------------------------
+    sort_option = st.selectbox(
+        "Sort by",
+        [
+            "Original Order",
+            "Highest Risk (Recommended)",
+            "Highest Cost",
+            "Lowest Cost"
+        ],
+        index=1
+    )
+    
+    if sort_option == "Highest Risk (Recommended)":
+        display_df = display_df.sort_values(by="risk_probability", ascending=False)
+    elif sort_option == "Highest Cost":
+        display_df = display_df.sort_values(by="expected_cost", ascending=False)
+    elif sort_option == "Lowest Cost":
+        display_df = display_df.sort_values(by="expected_cost", ascending=True)
+    
+    # -----------------------------
+    # VALIDATION
+    # -----------------------------
+    if "optimal_strategy" not in display_df.columns:
+        st.error("Decision logic failed — no strategy found")
+        st.stop()
+    
+    if "risk_probability" not in display_df.columns:
+        st.error("Missing risk scores")
+        st.stop()
+    
+    if "expected_cost" not in display_df.columns:
+        st.error("Missing expected cost data")
+        st.stop()
+    
+    # -----------------------------
+    # DERIVED COLUMNS (ORDER MATTERS)
+    # -----------------------------
+    
+    # Decision
+    display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+    display_df["Decision"] = display_df["Decision"].replace({
+        "Auto Approve (AI)": "✓ Approve",
+        "Manual Review": "Review"
+    })
+    
+    # Why
+    try:
+        display_df["Why"] = display_df.apply(generate_reason, axis=1)
+    except Exception:
+        st.error("Failed to generate explanations")
+        st.stop()
+    
+    display_df["Why"] = display_df["Why"].str.capitalize()
+    display_df["Why"] = display_df["Why"].str.replace(",", " •")
+    
+    # Risk Level
+    display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
+    display_df["Risk Level"] = display_df["Risk Level"].str.upper()
+    
+    # Formatted fields
+    display_df["Risk Score"] = display_df["risk_probability"].map(lambda x: f"{x:.2f}")
+    display_df["Expected Cost"] = display_df["expected_cost"].map(format_money)
+    
+    # -----------------------------
+    # FINAL COLUMN SELECTION
+    # -----------------------------
+    required_columns = [
+        id_name,
+        "Decision",
+        "Risk Level",
+        "Risk Score",
+        "Expected Cost",
+        "Why"
+    ]
+    
+    missing_cols = [col for col in required_columns if col not in display_df.columns]
+    
+    if missing_cols:
+        st.error(f"Missing columns: {missing_cols}")
+        st.write("Available columns:", list(display_df.columns))
+        st.stop()
+    
+    display_df = display_df[required_columns]
+    
+    # ✅ APPLY STYLING LAST (after column rename)
+    
+
+    # ==============================
+    # TABLE + ANALYST PANEL LAYOUT
+    # ==============================
+    
+    left, right = st.columns([1.6, 1])
+    
+    # -----------------------------
+    # PREP DISPLAY DATA (KEEP YOUR EXISTING LOGIC ABOVE THIS)
+    # -----------------------------
+    
+    # Risk Badge Styling
+    def risk_badge_html(val):
+        if val == "HIGH":
+            return '<span class="badge high">HIGH</span>'
+        elif val == "MEDIUM":
+            return '<span class="badge medium">MEDIUM</span>'
+        else:
+            return '<span class="badge low">LOW</span>'
+            
+    display_df["Risk Level"] = display_df["Risk Level"].apply(risk_badge_html)
+    
+    # Decision styling
+    display_df["Decision"] = display_df["Decision"].replace({
+        "✓ Approve": "✅ Approve",
+        "Review": "🛑 Review"
+    })
+    
+    # -----------------------------
+    # LEFT: TABLE
+    # -----------------------------
+    with left:
+        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        st.markdown("### Transactions")
+    
+        st.dataframe(
+        display_df,
+        use_container_width=True,
+        hide_index=True
+    )
+    
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # -----------------------------
+    # RIGHT: ANALYST PANEL
+    # -----------------------------
+    with right:
+        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        st.markdown("### Analyst View")
+    
+        options = display_df[id_name].tolist()
+    
+        selected_id = st.selectbox(
+            "Select Transaction",
+            options
         )
+    
+        # FIXED SELECTION (IMPORTANT)
+        row = sim_df.loc[sim_df[id_name] == selected_id].iloc[0] if selected_id in sim_df[id_name].values else sim_df.iloc[0]
+    
+        st.markdown(f"""
+        **Decision:** {map_action(row['optimal_strategy'])}  
+        **Risk Score:** {row['risk_probability']:.2f}  
+        **Expected Cost:** {format_money(row['expected_cost'])}
+        """)
         
-            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("##### Cost Breakdown")
         
-        # -----------------------------
-        # RIGHT: ANALYST PANEL
-        # -----------------------------
-        with right:
-            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-            st.markdown("### Analyst View")
+        st.markdown(f"""
+        AI: {format_money(row['cost_ai'])}  
+        Human: {format_money(row['cost_human'])}  
+        Hybrid: {format_money(row['cost_hybrid'])}
+        """)
         
-            options = display_df[id_name].tolist()
+        st.markdown("##### Risk Drivers")
+        st.markdown(" • ".join(get_risk_drivers(row)))
+    
+        st.markdown('</div>', unsafe_allow_html=True)
         
-            selected_id = st.selectbox(
-                "Select Transaction",
-                options
-            )
-        
-            # FIXED SELECTION (IMPORTANT)
-            row = sim_df.loc[sim_df[id_name] == selected_id].iloc[0] if selected_id in sim_df[id_name].values else sim_df.iloc[0]
-        
-            st.markdown(f"""
-            **Decision:** {map_action(row['optimal_strategy'])}  
-            **Risk Score:** {row['risk_probability']:.2f}  
-            **Expected Cost:** {format_money(row['expected_cost'])}
-            """)
-            
-            st.markdown("##### Cost Breakdown")
-            
-            st.markdown(f"""
-            AI: {format_money(row['cost_ai'])}  
-            Human: {format_money(row['cost_human'])}  
-            Hybrid: {format_money(row['cost_hybrid'])}
-            """)
-            
-            st.markdown("##### Risk Drivers")
-            st.markdown(" • ".join(get_risk_drivers(row)))
-        
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        st.button(
-            "View Insights →",
-            use_container_width=True,
-            on_click=lambda: st.session_state.update(step=4)
-        )
+    st.button(
+        "View Insights →",
+        use_container_width=True,
+        on_click=lambda: st.session_state.update(step=4)
+    )
 # ==============================
 # INSIGHTS
 # ==============================
