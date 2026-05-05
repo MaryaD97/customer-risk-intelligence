@@ -231,6 +231,20 @@ overflow:hidden;
 min-height:520px;
 }
 
+.hero-shell.small{
+padding:60px 80px;
+min-height:320px;
+margin-bottom:30px;
+}
+
+.hero-assumptions{
+margin-top:18px;
+color:#94A3B8;
+font-size:15px;
+line-height:1.8;
+max-width:700px;
+}
+
 .hero-top{
 display:flex;
 justify-content:space-between;
@@ -964,17 +978,29 @@ def render_costs_page():
         st.warning("Upload data first to continue")
         st.stop()
 
-    st.title("Set Business Assumptions")
-    st.caption("Define the financial impact of fraud and manual review")
-
-    st.caption("""
-    Assumptions:
+    hero_html = """
+    <div class="hero-shell small">
+        <div class="hero-left">
     
-    - Manual review catches ~90% of fraud  
-    - Automation catches ~60% of fraud  
+            <div class="hero-title">Set Decision Costs</div>
     
-    Automation reduces review cost but allows more fraud loss.
-    """)
+            <div class="hero-sub">
+                Define how costly fraud and manual review are — the system will optimize decisions accordingly.
+            </div>
+    
+            <div class="hero-assumptions">
+                • Manual review catches ~90% of fraud <br>
+                • Automation catches ~60% of fraud <br>
+                • Automation reduces cost but increases risk exposure
+            </div>
+    
+        </div>
+    </div>
+    """
+    
+    st.markdown(hero_html, unsafe_allow_html=True)
+    st.markdown('<div class="white-card">', unsafe_allow_html=True)
+    
 
     col1, col2 = st.columns(2)
 
@@ -995,7 +1021,55 @@ def render_costs_page():
         "fraud_cost": fraud_cost,
         "review_cost": review_cost
     }
+    # --- KPI PREVIEW ---
+    df_preview = st.session_state.mapped_data.copy()
+    cfg = st.session_state.config
+    
+    # quick simulation
+    X = df_preview[feature_columns]
+    df_preview["risk_probability"] = model.predict_proba(X)[:, 1]
+    
+    df_preview = simulate_decisions(
+        df_preview,
+        fraud_cost,
+        review_cost
+    )
+    
+    total_cost = df_preview["expected_cost"].sum()
+    baseline = estimate_baseline_cost(df_preview)
+    savings = baseline - total_cost
+    
+    k1, k2, k3 = st.columns(3)
+    
+    with k1:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Projected Cost</div>
+            <div class="kpi-value">{format_money(total_cost)}</div>
+            <div class="kpi-sub">Based on current inputs</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with k2:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Potential Savings</div>
+            <div class="kpi-value kpi-green">{format_money(savings)}</div>
+            <div class="kpi-sub">vs full manual review</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with k3:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Baseline Cost</div>
+            <div class="kpi-value">{format_money(baseline)}</div>
+            <div class="kpi-sub">Manual-only strategy</div>
+        </div>
+        """, unsafe_allow_html=True)
 
+
+    st.markdown('<div class="large-gap"></div>', unsafe_allow_html=True)
 
     if st.button("Run Decision Engine →", use_container_width=True):
 
@@ -1022,6 +1096,7 @@ def render_costs_page():
     
         st.session_state.step = 3
         st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================
 # DECISIONS
