@@ -968,7 +968,9 @@ if file:
 elif st.session_state.step == 2:
     render_topbar(2)
 
-    st.button("← Back", on_click=lambda: st.session_state.update(step=1))
+    if st.button("← Back"):
+        st.session_state.step = 1
+        st.rerun()
 
     if st.session_state.mapped_data is None:
         st.warning("Upload data first to continue")
@@ -1033,86 +1035,15 @@ elif st.session_state.step == 2:
         st.session_state.step = 3
         st.rerun()
 
-        
-
-# ==============================
-# CONFIG
-# ==============================
-elif st.session_state.step == 2:
-        render_topbar(2)
-
-        st.button("← Back", on_click=lambda: st.session_state.update(step=1))
-    
-        if st.session_state.mapped_data is None:
-            st.warning("Upload data first to continue")
-            st.stop()
-    
-        st.title("Set Business Assumptions")
-        st.caption("Define the financial impact of fraud and manual review")
-    
-        st.caption("""
-        Assumptions:
-        
-        - Manual review catches ~90% of fraud  
-        - Automation catches ~60% of fraud  
-        
-        Automation reduces review cost but allows more fraud loss.
-        """)
-    
-        col1, col2 = st.columns(2)
-    
-        fraud_cost = col1.slider(
-            "Fraud Loss Multiplier (impact of missed fraud)",
-            1.0, 5.0,
-            st.session_state.config["fraud_cost"]
-        )
-        
-        review_cost = col2.slider(
-            "Manual Review Cost (cost per transaction review)",
-            1.0, 20.0,
-            st.session_state.config["review_cost"]
-        )
-    
-    
-        st.session_state.config = {
-            "fraud_cost": fraud_cost,
-            "review_cost": review_cost
-        }
-    
-    
-        if st.button("Run Decision Engine →", use_container_width=True):
-    
-            with st.spinner("Running decision engine..."):
-        
-                df = st.session_state.mapped_data.copy()
-                cfg = st.session_state.config
-        
-                X = df[feature_columns]
-                df["risk_probability"] = model.predict_proba(X)[:, 1]
-                if "risk_probability" not in df.columns:
-                    st.error("Risk model failed to generate predictions")
-                    st.stop()
-        
-                df = simulate_decisions(
-                    df,
-                    cfg["fraud_cost"],
-                    cfg["review_cost"]
-                )
-        
-                df["risk_tier"] = df["risk_probability"].apply(risk_tier)
-        
-                st.session_state.results = df
-        
-            st.session_state.step = 3
-            st.rerun()
-
 # ==============================
 # DECISIONS
 # ==============================
 elif st.session_state.step == 3:
         render_topbar(3)
 
-        st.button("← Back", on_click=lambda: st.session_state.update(step=2))
+        if st.button("← Back"):
+            st.session_state.step = 2
+            st.rerun()
     
         if st.session_state.results is None:
             st.warning("Generate decisions first")
@@ -1424,8 +1355,10 @@ elif st.session_state.step == 4:
 
     df = st.session_state.results
 
-    st.button("← Back", on_click=lambda: st.session_state.update(step=4))
-
+    if st.button("← Back"):
+        st.session_state.step = 3
+        st.rerun()
+    
     if st.session_state.results is None:
         st.warning("Generate decisions first")
         st.stop()
