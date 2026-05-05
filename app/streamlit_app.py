@@ -1102,7 +1102,21 @@ Define how costly fraud and manual review are — the system will optimize decis
 # ==============================
 def render_decision_page():
     render_topbar(3)
- 
+
+    # -----------------------------
+    # HEADER (DARK HERO)
+    # -----------------------------
+    header_html = """<div class="hero-shell small">
+<div class="hero-left">
+<div class="hero-title">Decision Breakdown</div>
+<div class="hero-sub">
+Optimized actions based on fraud risk and cost assumptions.
+</div>
+</div>
+</div>
+"""
+    st.markdown(header_html, unsafe_allow_html=True)
+
     if st.button("← Back"):
         st.session_state.step = 2
         st.rerun()
@@ -1110,11 +1124,7 @@ def render_decision_page():
     if st.session_state.results is None:
         st.warning("Generate decisions first")
         st.stop()
-
-    st.markdown('<div class="section-title">Decision Dashboard</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Lowest-cost actions for every transaction based on current assumptions.</div>', unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
+     col1, col2 = st.columns(2)
     
     sim_fraud = col1.slider(
         "Fraud Loss Multiplier",
@@ -1127,17 +1137,22 @@ def render_decision_page():
         1.0, 20.0,
         st.session_state.config["review_cost"]
     )
-    
-    base_df = st.session_state.results
-    sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
-    
+
+    # -----------------------------
+    # BASE DATA (NO SLIDERS HERE)
+    # -----------------------------
+    sim_df = st.session_state.results.copy()
+
     total_cost = sim_df["expected_cost"].sum()
     baseline = estimate_baseline_cost(sim_df)
     savings = baseline - total_cost
     automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
-    
+
+    # -----------------------------
+    # KPI ROW (RIGHT AFTER HEADER)
+    # -----------------------------
     k1, k2, k3 = st.columns(3)
-    
+
     with k1:
         st.markdown(f"""
         <div class="kpi-card">
@@ -1146,7 +1161,7 @@ def render_decision_page():
             <div class="kpi-sub">Optimized strategy output</div>
         </div>
         """, unsafe_allow_html=True)
-    
+
     with k2:
         st.markdown(f"""
         <div class="kpi-card">
@@ -1155,7 +1170,7 @@ def render_decision_page():
             <div class="kpi-sub">Compared to reviewing all orders</div>
         </div>
         """, unsafe_allow_html=True)
-    
+
     with k3:
         st.markdown(f"""
         <div class="kpi-card">
@@ -1164,63 +1179,121 @@ def render_decision_page():
             <div class="kpi-sub">Orders auto-approved</div>
         </div>
         """, unsafe_allow_html=True)
-    
-    left, right = st.columns([1.4, 1])
 
-    full_auto_cost = (
-        (1 - AI_EFFECTIVENESS)
-        * sim_df["risk_probability"]
-        * sim_df["order_value"]
-        * sim_fraud
-    ).sum()
-    
+    # -----------------------------
+    # MAIN GRID
+    # -----------------------------
+    left, right = st.columns([1.6, 1])
+
+    # =============================
+    # LEFT SIDE (65%)
+    # =============================
     with left:
+
+        # --- COST COMPARISON ---
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
         st.markdown("### Cost Comparison")
-    
-        st.progress(min(total_cost / max(baseline,1), 1.0))
+
+        full_auto_cost = (
+            (1 - AI_EFFECTIVENESS)
+            * sim_df["risk_probability"]
+            * sim_df["order_value"]
+            * st.session_state.config["fraud_cost"]
+        ).sum()
+
+        st.progress(min(total_cost / max(baseline, 1), 1.0))
         st.caption(f"Optimized cost is {total_cost / baseline:.1%} of full review cost")
-    
+
         c1, c2, c3 = st.columns(3)
         c1.metric("Human Review", format_money(baseline))
         c2.metric("AI Only", format_money(full_auto_cost))
         c3.metric("Optimized", format_money(total_cost))
-    
+
         st.markdown('</div>', unsafe_allow_html=True)
-    
-    with right:
+
+        # --- TRANSACTIONS TABLE ---
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown("### Decision Breakdown")
-    
+        st.markdown("### Transactions")
+
+        display_df = sim_df.copy().reset_index(drop=True)
+        display_df["Transaction ID"] = display_df.index + 1
+
+        display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+        display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier).str.upper()
+        display_df["Risk Score"] = display_df["risk_probability"].map(lambda x: f"{x:.2f}")
+        display_df["Expected Cost"] = display_df["expected_cost"].map(format_money)
+        display_df["Why"] = display_df.apply(generate_reason, axis=1)
+
+        display_df = display_df[[
+            "Transaction ID",
+            "Decision",
+            "Risk Level",
+            "Risk Score",
+            "Expected Cost",
+            "Why"
+        ]]
+
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # =============================
+    # RIGHT SIDE (35%)
+    # =============================
+    with right:
+
+        # --- DONUT CHART ---
+        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        st.markdown("### Decision Split")
+
+        import plotly.express as px
+
         auto_rate = automation_rate
         review_rate = 1 - automation_rate
 
-    st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
+        fig = px.pie(
+            values=[auto_rate, review_rate],
+            names=["Auto Approved", "Manual Review"],
+            hole=0.6
+        )
 
-    c1, c2 = st.columns(2)
-        
-    with c1:
-        st.button("Approve", use_container_width=True)
-        
-    with c2:
-        st.button("Send to Review", use_container_width=True)
+        fig.update_layout(margin=dict(t=10, b=10, l=10, r=10))
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # --- ANALYST PANEL ---
+        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+        st.markdown("### Analyst View")
+
+        selected_id = st.selectbox(
+            "Select Transaction",
+            display_df["Transaction ID"]
+        )
+
+        row = sim_df.iloc[selected_id - 1]
+
+        st.markdown(f"""
+        **Decision:** {map_action(row['optimal_strategy'])}  
+        **Risk Score:** {row['risk_probability']:.2f}  
+        **Expected Cost:** {format_money(row['expected_cost'])}
+        """)
+
+        st.markdown("##### Cost Breakdown")
+        st.markdown(f"""
+        AI: {format_money(row['cost_ai'])}  
+        Human: {format_money(row['cost_human'])}  
+        Hybrid: {format_money(row['cost_hybrid'])}
+        """)
+
+        st.markdown("##### Risk Drivers")
+        st.markdown(" • ".join(get_risk_drivers(row)))
+
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    import plotly.express as px
 
-    fig = px.pie(
-        values=[auto_rate, review_rate],
-        names=["Auto Approved", "Manual Review"],
-        hole=0.6
-    )
-        
-    fig.update_layout(
-        margin=dict(t=10, b=10, l=10, r=10)
-    )
-        
-    st.plotly_chart(fig, use_container_width=True)
                 
-    st.markdown('</div>', unsafe_allow_html=True)
-
     # -----------------------------
     # CREATE CONSISTENT ID COLUMN
     # -----------------------------
@@ -1367,42 +1440,7 @@ def render_decision_page():
     )
     
         st.markdown('</div>', unsafe_allow_html=True)
-    
-    # -----------------------------
-    # RIGHT: ANALYST PANEL
-    # -----------------------------
-    with right:
-        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown("### Analyst View")
-    
-        options = display_df[id_name].tolist()
-    
-        selected_id = st.selectbox(
-            "Select Transaction",
-            options
-        )
-    
-        # FIXED SELECTION (IMPORTANT)
-        row = sim_df.loc[sim_df[id_name] == selected_id].iloc[0] if selected_id in sim_df[id_name].values else sim_df.iloc[0]
-    
-        st.markdown(f"""
-        **Decision:** {map_action(row['optimal_strategy'])}  
-        **Risk Score:** {row['risk_probability']:.2f}  
-        **Expected Cost:** {format_money(row['expected_cost'])}
-        """)
-        
-        st.markdown("##### Cost Breakdown")
-        
-        st.markdown(f"""
-        AI: {format_money(row['cost_ai'])}  
-        Human: {format_money(row['cost_human'])}  
-        Hybrid: {format_money(row['cost_hybrid'])}
-        """)
-        
-        st.markdown("##### Risk Drivers")
-        st.markdown(" • ".join(get_risk_drivers(row)))
-    
-        st.markdown('</div>', unsafe_allow_html=True)
+
         
     st.button(
         "View Insights →",
