@@ -770,7 +770,7 @@ def render_upload_page():
     </div>
     </div>"""
       
-        st.markdown(hero_html, unsafe_allow_html=True)
+    st.markdown(hero_html, unsafe_allow_html=True)
     
         
             
