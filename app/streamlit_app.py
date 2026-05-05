@@ -727,10 +727,9 @@ def render_upload_page():
 # ==============================
 # STEP 1 — LOAD DATA
 # ==============================
-
     hero_html = """
     <div class="hero-shell">
-    
+        
         <div class="hero-left">
     
             <div class="hero-top">
