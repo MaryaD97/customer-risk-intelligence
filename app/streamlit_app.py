@@ -978,25 +978,24 @@ def render_costs_page():
         st.warning("Upload data first to continue")
         st.stop()
 
-    hero_html = """
-    <div class="hero-shell small">
-        <div class="hero-left">
-    
-            <div class="hero-title">Set Decision Costs</div>
-    
-            <div class="hero-sub">
-                Define how costly fraud and manual review are — the system will optimize decisions accordingly.
-            </div>
-    
-            <div class="hero-assumptions">
-                • Manual review catches ~90% of fraud <br>
-                • Automation catches ~60% of fraud <br>
-                • Automation reduces cost but increases risk exposure
-            </div>
-    
-        </div>
-    </div>
-    """
+    hero_html = """<div class="hero-shell small">
+<div class="hero-left">
+
+<div class="hero-title">Set Decision Costs</div>
+
+<div class="hero-sub">
+Define how costly fraud and manual review are — the system will optimize decisions accordingly.
+</div>
+
+<div class="hero-assumptions">
+• Manual review catches ~90% of fraud <br>
+• Automation catches ~60% of fraud <br>
+• Automation reduces cost but increases risk exposure
+</div>
+
+</div>
+</div>
+"""
     
     st.markdown(hero_html, unsafe_allow_html=True)
     st.markdown('<div class="white-card">', unsafe_allow_html=True)
