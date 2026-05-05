@@ -1117,14 +1117,7 @@ Optimized actions based on fraud risk and cost assumptions.
 """
     st.markdown(header_html, unsafe_allow_html=True)
 
-    if st.button("← Back"):
-        st.session_state.step = 2
-        st.rerun()
-
-    if st.session_state.results is None:
-        st.warning("Generate decisions first")
-        st.stop()
-     col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
     
     sim_fraud = col1.slider(
         "Fraud Loss Multiplier",
@@ -1137,6 +1130,15 @@ Optimized actions based on fraud risk and cost assumptions.
         1.0, 20.0,
         st.session_state.config["review_cost"]
     )
+
+    if st.button("← Back"):
+        st.session_state.step = 2
+        st.rerun()
+
+    if st.session_state.results is None:
+        st.warning("Generate decisions first")
+        st.stop()
+    
 
     # -----------------------------
     # BASE DATA (NO SLIDERS HERE)
