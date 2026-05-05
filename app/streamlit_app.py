@@ -772,14 +772,17 @@ def render_upload_page():
     </div>
     """
       
-    st.markdown(hero_html, unsafe_allow_html=True)
-    
+    # HERO (isolated)
+    with st.container():
+        st.markdown(hero_html, unsafe_allow_html=True)
+    # SPACING BREAK (important)
+    st.markdown("<div style='height:40px'></div>", unsafe_allow_html=True
         
             
     # ==============================
     # UPLOAD SECTION (CLEAN LAYOUT)
     # ==============================
-    st.markdown('<div class="upload-shell">', unsafe_allow_html=True)
+    
     
     # TOP ROW (titles aligned horizontally)
     colA, colB = st.columns([1,1])
