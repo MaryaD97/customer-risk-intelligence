@@ -1129,9 +1129,6 @@ Optimized actions based on fraud risk and cost assumptions.
 """
     st.markdown(header_html, unsafe_allow_html=True)
 
-    st.markdown('<div class="medium-gap"></div>', unsafe_allow_html=True)
-
-
     if st.button("← Back"):
         st.session_state.step = 2
         st.rerun()
@@ -1141,33 +1138,9 @@ Optimized actions based on fraud risk and cost assumptions.
         st.stop()
 
     # -----------------------------
-    # SIMULATION CONTROLS (ADD HERE)
-    # -----------------------------
-    col1, col2 = st.columns(2)
-    
-    sim_fraud = col1.slider(
-        "Fraud Loss Multiplier",
-        1.0, 5.0,
-        st.session_state.config["fraud_cost"]
-    )
-    
-    sim_review = col2.slider(
-        "Manual Review Cost",
-        1.0, 20.0,
-        st.session_state.config["review_cost"]
-    )
-    
-
-    # -----------------------------
     # BASE DATA (NO SLIDERS HERE)
     # -----------------------------
-    base_df = st.session_state.results.copy()
-
-    sim_df = simulate_decisions(
-        base_df,
-        sim_fraud,
-        sim_review
-    )
+    sim_df = st.session_state.results.copy()
 
     total_cost = sim_df["expected_cost"].sum()
     baseline = estimate_baseline_cost(sim_df)
@@ -1224,7 +1197,7 @@ Optimized actions based on fraud risk and cost assumptions.
             (1 - AI_EFFECTIVENESS)
             * sim_df["risk_probability"]
             * sim_df["order_value"]
-            * sim_fraud
+            * st.session_state.config["fraud_cost"]
         ).sum()
 
         st.progress(min(total_cost / max(baseline, 1), 1.0))
@@ -1317,6 +1290,7 @@ Optimized actions based on fraud risk and cost assumptions.
         st.markdown(" • ".join(get_risk_drivers(row)))
 
         st.markdown('</div>', unsafe_allow_html=True)
+    
     
 
                 
