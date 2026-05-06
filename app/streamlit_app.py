@@ -456,6 +456,41 @@ border:1px solid #E5E7EB;
 box-shadow:0 6px 20px rgba(0,0,0,0.04);
 margin-top:20px;
 }
+.cost-grid{
+display:flex;
+gap:12px;
+margin-top:18px;
+}
+
+.mini-card{
+flex:1;
+background:#F8FAFC;
+border:1px solid #E5E7EB;
+border-radius:14px;
+padding:14px 16px;
+}
+
+.mini-label{
+font-size:12px;
+color:#64748B;
+font-weight:600;
+margin-bottom:6px;
+}
+
+.mini-value{
+font-size:20px;
+font-weight:800;
+color:#0F172A;
+}
+
+.mini-card.highlight{
+background:#ECFDF5;
+border:1px solid #22C55E;
+}
+
+.mini-card.highlight .mini-value{
+color:#16A34A;
+}
 
 /* -------------------------
 SECTION TITLE
@@ -1214,7 +1249,7 @@ Optimized actions based on fraud risk and cost assumptions.
 
         # --- COST COMPARISON ---
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown("### Cost Comparison")
+        st.markdown("#### Cost Comparison")
 
         full_auto_cost = (
             (1 - AI_EFFECTIVENESS)
@@ -1223,13 +1258,31 @@ Optimized actions based on fraud risk and cost assumptions.
             * st.session_state.config["fraud_cost"]
         ).sum()
 
+        st.markdown('<div style="margin-top:10px;"></div>', unsafe_allow_html=True)
+
         st.progress(min(total_cost / max(baseline, 1), 1.0))
         st.caption(f"Optimized cost is {total_cost / baseline:.1%} of full review cost")
 
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Human Review", format_money(baseline))
-        c2.metric("AI Only", format_money(full_auto_cost))
-        c3.metric("Optimized", format_money(total_cost))
+        st.markdown(f"""
+        <div class="cost-grid">
+        
+            <div class="mini-card">
+                <div class="mini-label">Human Review</div>
+                <div class="mini-value">{format_money(baseline)}</div>
+            </div>
+        
+            <div class="mini-card">
+                <div class="mini-label">AI Only</div>
+                <div class="mini-value">{format_money(full_auto_cost)}</div>
+            </div>
+        
+            <div class="mini-card highlight">
+                <div class="mini-label">Optimized</div>
+                <div class="mini-value">{format_money(total_cost)}</div>
+            </div>
+        
+        </div>
+        """, unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
