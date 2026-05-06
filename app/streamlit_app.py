@@ -1165,6 +1165,7 @@ Optimized actions based on fraud risk and cost assumptions.
     total_cost = sim_df["expected_cost"].sum()
     baseline = estimate_baseline_cost(sim_df)
     savings = baseline - total_cost
+    reduction = (savings / baseline) if baseline > 0 else 0
     automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
 
     # -----------------------------
@@ -1199,7 +1200,7 @@ Optimized actions based on fraud risk and cost assumptions.
             <div class="kpi-sub">Auto approved transactions</div>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # -----------------------------
     # MAIN GRID
