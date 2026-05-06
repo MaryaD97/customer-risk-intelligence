@@ -1315,26 +1315,45 @@ Optimized actions based on fraud risk and cost assumptions.
     # RIGHT SIDE (35%)
     # =============================
     with right:
-
-        # --- DONUT CHART ---
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown("### Decision Split")
-
+        st.markdown("#### Decision Split")
+    
         import plotly.express as px
-
+    
         auto_rate = automation_rate
         review_rate = 1 - automation_rate
-
+    
         fig = px.pie(
             values=[auto_rate, review_rate],
-            names=["Auto Approved", "Manual Review"],
-            hole=0.6
+            names=["Approve (AI)", "Review"],
+            hole=0.65
         )
-
-        fig.update_layout(margin=dict(t=10, b=10, l=10, r=10))
-
+    
+        fig.update_traces(
+            textinfo='percent',
+            hoverinfo='label+percent'
+        )
+    
+        fig.update_layout(
+            height=320,   # ✅ controls size
+            margin=dict(t=10, b=10, l=10, r=10),
+            showlegend=True,
+            legend=dict(
+                orientation="horizontal",
+                yanchor="bottom",
+                y=-0.2,
+                xanchor="center",
+                x=0.5
+            )
+        )
+    
+        # ✅ COLORS (critical)
+        fig.update_traces(
+            marker=dict(colors=["#22C55E", "#FACC15"])
+        )
+    
         st.plotly_chart(fig, use_container_width=True)
-
+    
         st.markdown('</div>', unsafe_allow_html=True)
 
         # --- ANALYST PANEL ---
@@ -1478,7 +1497,7 @@ Optimized actions based on fraud risk and cost assumptions.
     # TABLE + ANALYST PANEL LAYOUT
     # ==============================
     
-    left, right = st.columns([1.6, 1])
+    left, right = st.columns([1.8, 0.8])
     
     # -----------------------------
     # PREP DISPLAY DATA (KEEP YOUR EXISTING LOGIC ABOVE THIS)
