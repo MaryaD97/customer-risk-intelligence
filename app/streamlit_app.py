@@ -1117,6 +1117,17 @@ Optimized actions based on fraud risk and cost assumptions.
 """
     st.markdown(header_html, unsafe_allow_html=True)
 
+    if st.button("← Back"):
+        st.session_state.step = 2
+        st.rerun()
+
+    if st.session_state.results is None:
+        st.warning("Generate decisions first")
+        st.stop()
+
+    # -----------------------------
+    # SIMULATION CONTROLS (ADD HERE)
+    # -----------------------------
     col1, col2 = st.columns(2)
     
     sim_fraud = col1.slider(
@@ -1130,20 +1141,18 @@ Optimized actions based on fraud risk and cost assumptions.
         1.0, 20.0,
         st.session_state.config["review_cost"]
     )
-
-    if st.button("← Back"):
-        st.session_state.step = 2
-        st.rerun()
-
-    if st.session_state.results is None:
-        st.warning("Generate decisions first")
-        st.stop()
     
 
     # -----------------------------
     # BASE DATA (NO SLIDERS HERE)
     # -----------------------------
-    sim_df = st.session_state.results.copy()
+    base_df = st.session_state.results.copy()
+
+    sim_df = simulate_decisions(
+        base_df,
+        sim_fraud,
+        sim_review
+    )
 
     total_cost = sim_df["expected_cost"].sum()
     baseline = estimate_baseline_cost(sim_df)
@@ -1200,7 +1209,7 @@ Optimized actions based on fraud risk and cost assumptions.
             (1 - AI_EFFECTIVENESS)
             * sim_df["risk_probability"]
             * sim_df["order_value"]
-            * st.session_state.config["fraud_cost"]
+            * sim_fraud
         ).sum()
 
         st.progress(min(total_cost / max(baseline, 1), 1.0))
