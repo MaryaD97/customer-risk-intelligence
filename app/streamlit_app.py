@@ -41,8 +41,8 @@ background:
 linear-gradient(
 180deg,
 #07141F 0%,
-#0A1B29 38%,
-#F6F8FA 38%,
+#0A1B29 22%,
+#F6F8FA 22%,
 #F6F8FA 100%
 );
 }
