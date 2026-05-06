@@ -232,9 +232,21 @@ min-height:520px;
 }
 
 .hero-shell.small{
-padding:60px 80px;
-min-height:320px;
-margin-bottom:30px;
+padding:40px 60px;
+min-height:180px;
+margin-bottom:20px;
+display:flex;
+align-items:center;
+}
+
+.hero-shell.small .hero-title{
+font-size:36px;
+}
+
+.hero-shell.small .hero-sub{
+font-size:16px;
+margin-bottom:0;
+max-width:600px;
 }
 
 .hero-assumptions{
@@ -1116,6 +1128,9 @@ Optimized actions based on fraud risk and cost assumptions.
 </div>
 """
     st.markdown(header_html, unsafe_allow_html=True)
+
+    st.markdown('<div class="medium-gap"></div>', unsafe_allow_html=True)
+
 
     if st.button("← Back"):
         st.session_state.step = 2
