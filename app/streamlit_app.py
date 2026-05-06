@@ -396,6 +396,26 @@ box-shadow:0 6px 18px rgba(0,0,0,.04);
 transition: all .2s ease;
 }
 
+.kpi-row{
+position: relative;
+margin-top: -60px;   /* pulls cards into hero */
+z-index: 5;
+}
+
+.kpi-card{
+background:white;
+border:1px solid #E5E7EB;
+border-radius:20px;
+padding:20px 22px;
+height:120px;
+
+display:flex;
+flex-direction:column;
+justify-content:center;
+
+box-shadow:0 12px 30px rgba(0,0,0,0.08);  /* stronger shadow */
+}
+
 .kpi-card:hover{
 transform: translateY(-2px);
 }
@@ -1150,23 +1170,24 @@ Optimized actions based on fraud risk and cost assumptions.
     # -----------------------------
     # KPI ROW (RIGHT AFTER HEADER)
     # -----------------------------
+    st.markdown('<div class="kpi-row">', unsafe_allow_html=True)
     k1, k2, k3 = st.columns(3)
 
     with k1:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">Total Expected Cost</div>
+            <div class="kpi-label">Total Cost (Optimized)</div>
             <div class="kpi-value">{format_money(total_cost)}</div>
-            <div class="kpi-sub">Optimized strategy output</div>
+            <div class="kpi-sub">Lowest expected cost</div>
         </div>
         """, unsafe_allow_html=True)
 
     with k2:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">Savings vs Baseline</div>
+            <div class="kpi-label">Savings vs Human Review</div>
             <div class="kpi-value kpi-green">{format_money(savings)}</div>
-            <div class="kpi-sub">Compared to reviewing all orders</div>
+            <div class="kpi-sub">{reduction:.1%} cost reduction</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1175,9 +1196,10 @@ Optimized actions based on fraud risk and cost assumptions.
         <div class="kpi-card">
             <div class="kpi-label">Automation Rate</div>
             <div class="kpi-value">{automation_rate:.1%}</div>
-            <div class="kpi-sub">Orders auto-approved</div>
+            <div class="kpi-sub">Auto approved transactions</div>
         </div>
         """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # -----------------------------
     # MAIN GRID
