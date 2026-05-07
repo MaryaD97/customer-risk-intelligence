@@ -1335,18 +1335,21 @@ Optimized actions based on fraud risk and cost assumptions.
         )
     
         fig.update_layout(
-            height=320,   # ✅ controls size
+            height=320,
             margin=dict(t=10, b=10, l=10, r=10),
-            showlegend=True,
+            showlegend=True
+        )
+            
+            
+        fig.update_layout(
             legend=dict(
-                orientation="horizontal",
-                yanchor="bottom",
+                orientation="h",
                 y=-0.2,
-                xanchor="center",
-                x=0.5
+                x=0.5,
+                xanchor="center"
             )
         )
-    
+            
         # ✅ COLORS (critical)
         fig.update_traces(
             marker=dict(colors=["#22C55E", "#FACC15"])
