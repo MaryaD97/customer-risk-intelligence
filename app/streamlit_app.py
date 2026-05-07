@@ -383,18 +383,6 @@ margin-bottom:8px;
 /* -------------------------
 DASHBOARD KPI CARDS
 ------------------------- */
-.kpi-card{
-background:white;
-border:1px solid #E5E7EB;
-border-radius:20px;
-padding:18px 20px;
-height:120px;
-display:flex;
-flex-direction:column;
-justify-content:center;
-box-shadow:0 6px 18px rgba(0,0,0,.04);
-transition: all .2s ease;
-}
 
 .kpi-row{
 position: relative;
@@ -622,21 +610,32 @@ def render_topbar(active_step=1):
         4: "Insights"
     }
 
-    html = '<div class="topbar">'
+    html = """
+    <div class="topbar">
 
-    html += '<div class="brand">Fraud Decision Engine</div>'
+        <div class="brand">
+            Fraud Decision Engine
+        </div>
+
+        <div class="steps">
+    """
 
     for i in range(1, 5):
+
         cls = "dot active-dot" if i == active_step else "dot"
 
-        html += (
-            f'<div class="step">'
-            f'<div class="{cls}">{i}</div>'
-            f'<div>{labels[i]}</div>'
-            f'</div>'
-        )
+        html += f"""
+            <div class="step">
+                <div class="{cls}">{i}</div>
+                <div>{labels[i]}</div>
+            </div>
+        """
 
-    html += '</div>'
+    html += """
+        </div>
+
+    </div>
+    """
 
     st.markdown(html, unsafe_allow_html=True)
 
@@ -1065,8 +1064,6 @@ Define how costly fraud and manual review are — the system will optimize decis
 """
     
     st.markdown(hero_html, unsafe_allow_html=True)
-    st.markdown('<div class="white-card">', unsafe_allow_html=True)
-    
 
     col1, col2 = st.columns(2)
 
@@ -1134,9 +1131,6 @@ Define how costly fraud and manual review are — the system will optimize decis
         </div>
         """, unsafe_allow_html=True)
 
-
-    st.markdown('<div class="large-gap"></div>', unsafe_allow_html=True)
-
     if st.button("Run Decision Engine →", use_container_width=True):
 
         with st.spinner("Running decision engine..."):
@@ -1161,8 +1155,8 @@ Define how costly fraud and manual review are — the system will optimize decis
             st.session_state.results = df
     
         st.session_state.step = 3
-        st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
+        st.rerun()
 
 # ==============================
 # DECISIONS
@@ -1257,8 +1251,6 @@ Optimized actions based on fraud risk and cost assumptions.
             * sim_df["order_value"]
             * st.session_state.config["fraud_cost"]
         ).sum()
-
-        st.markdown('<div style="margin-top:10px;"></div>', unsafe_allow_html=True)
 
         st.progress(min(total_cost / max(baseline, 1), 1.0))
         st.caption(f"Optimized cost is {total_cost / baseline:.1%} of full review cost")
