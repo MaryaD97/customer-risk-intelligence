@@ -232,9 +232,9 @@ min-height:520px;
 }
 
 .hero-shell.small{
-padding:40px 60px;
-min-height:180px;
-margin-bottom:20px;
+padding:38px 60px 92px 60px;
+min-height:185px;
+margin-bottom:0px;
 display:flex;
 align-items:center;
 }
@@ -385,9 +385,11 @@ DASHBOARD KPI CARDS
 ------------------------- */
 
 .kpi-row{
-position: relative;
-margin-top: -60px;   /* pulls cards into hero */
-z-index: 5;
+position:relative;
+margin-top:-72px;
+z-index:10;
+margin-bottom:24px;
+}ndex: 5;
 }
 
 .kpi-card{
@@ -436,13 +438,46 @@ margin-top:12px;
 /* -------------------------
 ANALYTICS CARD
 ------------------------- */
+/* -------------------------
+ANALYTICS CARD
+------------------------- */
 .panel-card{
 background:white;
 border-radius:20px;
 padding:20px;
 border:1px solid #E5E7EB;
 box-shadow:0 6px 20px rgba(0,0,0,0.04);
-margin-top:20px;
+margin-top:0px;
+height:100%;
+}
+
+/* -------------------------
+DASHBOARD GRID SPACING
+------------------------- */
+.dashboard-grid{
+margin-top:22px;
+}
+
+.grid-stack{
+display:flex;
+flex-direction:column;
+gap:20px;
+height:100%;
+}
+
+/* -------------------------
+RIGHT COLUMN STICKY FEEL
+------------------------- */
+.analyst-shell{
+position:sticky;
+top:110px;
+}
+
+/* -------------------------
+TABLE HEIGHT CONTROL
+------------------------- */
+[data-testid="stDataFrame"]{
+min-height:540px;
 }
 .cost-grid{
 display:flex;
@@ -1229,18 +1264,25 @@ Optimized actions based on fraud risk and cost assumptions.
     st.markdown('</div>', unsafe_allow_html=True)
 
     # -----------------------------
-    # MAIN GRID
+    # MAIN DASHBOARD GRID
     # -----------------------------
-    left, right = st.columns([1.6, 1])
+    st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
+
+    left, right = st.columns([1.9, 1], gap="large")
 
     # =============================
-    # LEFT SIDE (65%)
+    # LEFT COLUMN
     # =============================
     with left:
 
-        # --- COST COMPARISON ---
+        st.markdown('<div class="grid-stack">', unsafe_allow_html=True)
+
+        # --------------------------------
+        # COST COMPARISON
+        # --------------------------------
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown("#### Cost Comparison")
+
+        st.markdown("### Cost Comparison")
 
         full_auto_cost = (
             (1 - AI_EFFECTIVENESS)
@@ -1250,42 +1292,66 @@ Optimized actions based on fraud risk and cost assumptions.
         ).sum()
 
         st.progress(min(total_cost / max(baseline, 1), 1.0))
-        st.caption(f"Optimized cost is {total_cost / baseline:.1%} of full review cost")
 
-        st.markdown(f"""<div class="cost-grid">
-        
-<div class="mini-card">
-<div class="mini-label">Human Review</div>
-<div class="mini-value">{format_money(baseline)}</div>
-</div>
-        
-<div class="mini-card">
-<div class="mini-label">AI Only</div>
-<div class="mini-value">{format_money(full_auto_cost)}</div>
-</div>
-        
-<div class="mini-card highlight">
-<div class="mini-label">Optimized</div>
-<div class="mini-value">{format_money(total_cost)}</div>
-</div>
-        
-</div>
-""", unsafe_allow_html=True)
+        st.caption(
+            f"Optimized cost is {total_cost / baseline:.1%} of full review cost"
+        )
+
+        st.markdown(f"""
+        <div class="cost-grid">
+
+            <div class="mini-card">
+                <div class="mini-label">Human Review</div>
+                <div class="mini-value">{format_money(baseline)}</div>
+            </div>
+
+            <div class="mini-card">
+                <div class="mini-label">AI Only</div>
+                <div class="mini-value">{format_money(full_auto_cost)}</div>
+            </div>
+
+            <div class="mini-card highlight">
+                <div class="mini-label">Optimized</div>
+                <div class="mini-value">{format_money(total_cost)}</div>
+            </div>
+
+        </div>
+        """, unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # --- TRANSACTIONS TABLE ---
+        # --------------------------------
+        # TRANSACTIONS TABLE
+        # --------------------------------
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+
         st.markdown("### Transactions")
 
         display_df = sim_df.copy().reset_index(drop=True)
+
         display_df["Transaction ID"] = display_df.index + 1
 
         display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-        display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier).str.upper()
-        display_df["Risk Score"] = display_df["risk_probability"].map(lambda x: f"{x:.2f}")
-        display_df["Expected Cost"] = display_df["expected_cost"].map(format_money)
-        display_df["Why"] = display_df.apply(generate_reason, axis=1)
+
+        display_df["Risk Level"] = (
+            display_df["risk_probability"]
+            .apply(risk_tier)
+            .str.upper()
+        )
+
+        display_df["Risk Score"] = (
+            display_df["risk_probability"]
+            .map(lambda x: f"{x:.2f}")
+        )
+
+        display_df["Expected Cost"] = (
+            display_df["expected_cost"]
+            .map(format_money)
+        )
+
+        display_df["Why"] = (
+            display_df.apply(generate_reason, axis=1)
+        )
 
         display_df = display_df[[
             "Transaction ID",
@@ -1296,60 +1362,68 @@ Optimized actions based on fraud risk and cost assumptions.
             "Why"
         ]]
 
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
     # =============================
-    # RIGHT SIDE (35%)
+    # RIGHT COLUMN
     # =============================
     with right:
+
+        st.markdown('<div class="grid-stack analyst-shell">', unsafe_allow_html=True)
+
+        # --------------------------------
+        # DONUT CHART
+        # --------------------------------
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown("#### Decision Split")
-    
+
+        st.markdown("### Decision Split")
+
         import plotly.express as px
-    
+
         auto_rate = automation_rate
         review_rate = 1 - automation_rate
-    
+
         fig = px.pie(
             values=[auto_rate, review_rate],
             names=["Approve (AI)", "Review"],
-            hole=0.65
+            hole=0.72
         )
-    
+
         fig.update_traces(
             textinfo='percent',
-            hoverinfo='label+percent'
+            hoverinfo='label+percent',
+            marker=dict(colors=["#22C55E", "#FACC15"])
         )
-    
+
         fig.update_layout(
-            height=320,
+            height=300,
             margin=dict(t=10, b=10, l=10, r=10),
-            showlegend=True
-        )
-            
-            
-        fig.update_layout(
+            showlegend=True,
             legend=dict(
                 orientation="h",
-                y=-0.2,
+                y=-0.15,
                 x=0.5,
                 xanchor="center"
             )
         )
-            
-        # ✅ COLORS (critical)
-        fig.update_traces(
-            marker=dict(colors=["#22C55E", "#FACC15"])
-        )
-    
+
         st.plotly_chart(fig, use_container_width=True)
-    
+
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # --- ANALYST PANEL ---
+        # --------------------------------
+        # ANALYST VIEW
+        # --------------------------------
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+
         st.markdown("### Analyst View")
 
         selected_id = st.selectbox(
@@ -1361,178 +1435,43 @@ Optimized actions based on fraud risk and cost assumptions.
 
         st.markdown(f"""
         **Decision:** {map_action(row['optimal_strategy'])}  
+        
         **Risk Score:** {row['risk_probability']:.2f}  
+        
         **Expected Cost:** {format_money(row['expected_cost'])}
         """)
 
         st.markdown("##### Cost Breakdown")
+
         st.markdown(f"""
         AI: {format_money(row['cost_ai'])}  
+        
         Human: {format_money(row['cost_human'])}  
+        
         Hybrid: {format_money(row['cost_hybrid'])}
         """)
 
         st.markdown("##### Risk Drivers")
-        st.markdown(" • ".join(get_risk_drivers(row)))
+
+        st.markdown(
+            " • ".join(get_risk_drivers(row))
+        )
 
         st.markdown('</div>', unsafe_allow_html=True)
-    
-    
 
-                
-    # -----------------------------
-    # CREATE CONSISTENT ID COLUMN
-    # -----------------------------
-    sim_df = sim_df.reset_index(drop=True)
-    sim_df["Transaction ID"] = sim_df.index + 1
-    id_name = "Transaction ID"
-    
-    # -----------------------------
-    # CREATE WORKING DATAFRAME
-    # -----------------------------
-    display_df = sim_df.copy()
-    
-    if display_df.empty:
-        st.warning("No valid transactions to display")
-        st.stop()
-    
-    # -----------------------------
-    # SORTING (BEFORE TRANSFORMS)
-    # -----------------------------
-    sort_option = st.selectbox(
-        "Sort by",
-        [
-            "Original Order",
-            "Highest Risk (Recommended)",
-            "Highest Cost",
-            "Lowest Cost"
-        ],
-        index=1
-    )
-    
-    if sort_option == "Highest Risk (Recommended)":
-        display_df = display_df.sort_values(by="risk_probability", ascending=False)
-    elif sort_option == "Highest Cost":
-        display_df = display_df.sort_values(by="expected_cost", ascending=False)
-    elif sort_option == "Lowest Cost":
-        display_df = display_df.sort_values(by="expected_cost", ascending=True)
-    
-    # -----------------------------
-    # VALIDATION
-    # -----------------------------
-    if "optimal_strategy" not in display_df.columns:
-        st.error("Decision logic failed — no strategy found")
-        st.stop()
-    
-    if "risk_probability" not in display_df.columns:
-        st.error("Missing risk scores")
-        st.stop()
-    
-    if "expected_cost" not in display_df.columns:
-        st.error("Missing expected cost data")
-        st.stop()
-    
-    # -----------------------------
-    # DERIVED COLUMNS (ORDER MATTERS)
-    # -----------------------------
-    
-    # Decision
-    display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-    display_df["Decision"] = display_df["Decision"].replace({
-        "Auto Approve (AI)": "✓ Approve",
-        "Manual Review": "Review"
-    })
-    
-    # Why
-    try:
-        display_df["Why"] = display_df.apply(generate_reason, axis=1)
-    except Exception:
-        st.error("Failed to generate explanations")
-        st.stop()
-    
-    display_df["Why"] = display_df["Why"].str.capitalize()
-    display_df["Why"] = display_df["Why"].str.replace(",", " •")
-    
-    # Risk Level
-    display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
-    display_df["Risk Level"] = display_df["Risk Level"].str.upper()
-    
-    # Formatted fields
-    display_df["Risk Score"] = display_df["risk_probability"].map(lambda x: f"{x:.2f}")
-    display_df["Expected Cost"] = display_df["expected_cost"].map(format_money)
-    
-    # -----------------------------
-    # FINAL COLUMN SELECTION
-    # -----------------------------
-    required_columns = [
-        id_name,
-        "Decision",
-        "Risk Level",
-        "Risk Score",
-        "Expected Cost",
-        "Why"
-    ]
-    
-    missing_cols = [col for col in required_columns if col not in display_df.columns]
-    
-    if missing_cols:
-        st.error(f"Missing columns: {missing_cols}")
-        st.write("Available columns:", list(display_df.columns))
-        st.stop()
-    
-    display_df = display_df[required_columns]
-    
-    # ✅ APPLY STYLING LAST (after column rename)
-    
-
-    # ==============================
-    # TABLE + ANALYST PANEL LAYOUT
-    # ==============================
-    
-    left, right = st.columns([1.8, 0.8])
-    
-    # -----------------------------
-    # PREP DISPLAY DATA (KEEP YOUR EXISTING LOGIC ABOVE THIS)
-    # -----------------------------
-    
-    # Risk Badge Styling
-    def risk_badge_html(val):
-        if val == "HIGH":
-            return '<span class="badge high">HIGH</span>'
-        elif val == "MEDIUM":
-            return '<span class="badge medium">MEDIUM</span>'
-        else:
-            return '<span class="badge low">LOW</span>'
-            
-    display_df["Risk Level"] = display_df["Risk Level"].apply(risk_badge_html)
-    
-    # Decision styling
-    display_df["Decision"] = display_df["Decision"].replace({
-        "✓ Approve": "✅ Approve",
-        "Review": "🛑 Review"
-    })
-    
-    # -----------------------------
-    # LEFT: TABLE
-    # -----------------------------
-    with left:
-        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-        st.markdown("### Transactions")
-    
-        st.dataframe(
-        display_df,
-        use_container_width=True,
-        hide_index=True
-    )
-    
         st.markdown('</div>', unsafe_allow_html=True)
 
-        
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # -----------------------------
+    # INSIGHTS BUTTON
+    # -----------------------------
     st.button(
         "View Insights →",
         use_container_width=True,
         on_click=lambda: st.session_state.update(step=4)
     )
+
 # ==============================
 # INSIGHTS
 # ==============================
