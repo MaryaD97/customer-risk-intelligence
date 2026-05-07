@@ -1297,26 +1297,25 @@ Optimized actions based on fraud risk and cost assumptions.
             f"Optimized cost is {total_cost / baseline:.1%} of full review cost"
         )
 
-        st.markdown(f"""
-        <div class="cost-grid">
+        st.markdown(f"""<div class="cost-grid">
 
-            <div class="mini-card">
-                <div class="mini-label">Human Review</div>
-                <div class="mini-value">{format_money(baseline)}</div>
-            </div>
+<div class="mini-card">
+<div class="mini-label">Human Review</div>
+<div class="mini-value">{format_money(baseline)}</div>
+</div>
 
-            <div class="mini-card">
-                <div class="mini-label">AI Only</div>
-                <div class="mini-value">{format_money(full_auto_cost)}</div>
-            </div>
+<div class="mini-card">
+<div class="mini-label">AI Only</div>
+<div class="mini-value">{format_money(full_auto_cost)}</div>
+</div>
 
-            <div class="mini-card highlight">
-                <div class="mini-label">Optimized</div>
-                <div class="mini-value">{format_money(total_cost)}</div>
-            </div>
+<div class="mini-card highlight">
+<div class="mini-label">Optimized</div>
+<div class="mini-value">{format_money(total_cost)}</div>
+</div>
 
-        </div>
-        """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
