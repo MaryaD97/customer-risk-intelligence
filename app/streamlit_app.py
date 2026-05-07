@@ -610,32 +610,29 @@ def render_topbar(active_step=1):
         4: "Insights"
     }
 
-    html = """
-    <div class="topbar">
+    html = """<div class="topbar">
 
-        <div class="brand">
-            Fraud Decision Engine
-        </div>
+<div class="brand">
+Fraud Decision Engine
+</div>
 
-        <div class="steps">
-    """
+<div class="steps">
+"""
 
     for i in range(1, 5):
 
         cls = "dot active-dot" if i == active_step else "dot"
 
-        html += f"""
-            <div class="step">
-                <div class="{cls}">{i}</div>
-                <div>{labels[i]}</div>
-            </div>
-        """
+        html += f"""<div class="step">
+<div class="{cls}">{i}</div>
+<div>{labels[i]}</div>
+</div>
+"""
 
-    html += """
-        </div>
+    html += """</div>
 
-    </div>
-    """
+</div>
+"""
 
     st.markdown(html, unsafe_allow_html=True)
 
