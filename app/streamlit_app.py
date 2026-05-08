@@ -381,48 +381,81 @@ margin-bottom:8px;
 }
 
 /* -------------------------
-DASHBOARD KPI CARDS
+FLOATING KPI SYSTEM
 ------------------------- */
 
 .kpi-row{
 position:relative;
-margin-top:-72px;
-z-index:10;
-margin-bottom:24px;
-}ndex: 5;
+margin-top:-78px;
+margin-bottom:26px;
+z-index:15;
 }
 
-.kpi-card{
-background:white;
-border:1px solid #E5E7EB;
-border-radius:20px;
-padding:20px 22px;
-height:120px;
-
+.kpi-shell{
 display:flex;
 flex-direction:column;
-justify-content:center;
+justify-content:space-between;
 
-box-shadow:0 12px 30px rgba(0,0,0,0.08);  /* stronger shadow */
+background:white;
+
+border:1px solid #E7ECF2;
+border-radius:22px;
+
+padding:22px 24px;
+
+height:132px;
+
+box-shadow:
+0 10px 30px rgba(15,23,42,.06),
+0 2px 8px rgba(15,23,42,.04);
+
+transition:all .18s ease;
 }
 
-.kpi-card:hover{
-transform: translateY(-2px);
+.kpi-shell:hover{
+transform:translateY(-2px);
+box-shadow:
+0 16px 40px rgba(15,23,42,.10),
+0 4px 12px rgba(15,23,42,.06);
+}
+
+.kpi-top{
+display:flex;
+align-items:center;
+justify-content:space-between;
 }
 
 .kpi-label{
-font-size:14px;
+font-size:13px;
 font-weight:700;
+letter-spacing:.2px;
 color:#64748B;
-margin-bottom:14px;
+line-height:1.2;
+}
+
+.kpi-icon{
+width:30px;
+height:30px;
+border-radius:10px;
+
+background:#F0FDF4;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-size:14px;
 }
 
 .kpi-value{
-font-size:34px;
+font-size:38px;
 font-weight:800;
-margin-top:4px;
-color:#0F172A;
+letter-spacing:-1px;
 line-height:1;
+
+color:#0F172A;
+
+margin-top:8px;
 }
 
 .kpi-green{
@@ -431,8 +464,11 @@ color:#16A34A;
 
 .kpi-sub{
 font-size:13px;
+font-weight:500;
 color:#94A3B8;
-margin-top:12px;
+line-height:1.3;
+
+margin-top:10px;
 }
 
 /* -------------------------
@@ -1230,37 +1266,105 @@ Optimized actions based on fraud risk and cost assumptions.
     automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
 
     # -----------------------------
-    # KPI ROW (RIGHT AFTER HEADER)
+    # FLOATING KPI ROW
     # -----------------------------
     st.markdown('<div class="kpi-row">', unsafe_allow_html=True)
-    k1, k2, k3 = st.columns(3)
 
+    k1, k2, k3 = st.columns(3, gap="large")
+
+    # --------------------------------
+    # KPI 1
+    # --------------------------------
     with k1:
+
         st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Total Cost (Optimized)</div>
-            <div class="kpi-value">{format_money(total_cost)}</div>
-            <div class="kpi-sub">Lowest expected cost</div>
+        <div class="kpi-shell">
+
+            <div class="kpi-top">
+
+                <div class="kpi-label">
+                    Total Cost (Optimized)
+                </div>
+
+                <div class="kpi-icon">
+                    💰
+                </div>
+
+            </div>
+
+            <div class="kpi-value">
+                {format_money(total_cost)}
+            </div>
+
+            <div class="kpi-sub">
+                Lowest expected cost
+            </div>
+
         </div>
         """, unsafe_allow_html=True)
 
+    # --------------------------------
+    # KPI 2
+    # --------------------------------
     with k2:
+
         st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Savings vs Human Review</div>
-            <div class="kpi-value kpi-green">{format_money(savings)}</div>
-            <div class="kpi-sub">{reduction:.1%} cost reduction</div>
+        <div class="kpi-shell">
+
+            <div class="kpi-top">
+
+                <div class="kpi-label">
+                    Savings vs Human Review
+                </div>
+
+                <div class="kpi-icon">
+                    📉
+                </div>
+
+            </div>
+
+            <div class="kpi-value kpi-green">
+                {format_money(savings)}
+            </div>
+
+            <div class="kpi-sub">
+                {reduction:.1%} cost reduction
+            </div>
+
         </div>
         """, unsafe_allow_html=True)
 
+    # --------------------------------
+    # KPI 3
+    # --------------------------------
     with k3:
+
         st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Automation Rate</div>
-            <div class="kpi-value">{automation_rate:.1%}</div>
-            <div class="kpi-sub">Auto approved transactions</div>
+        <div class="kpi-shell">
+
+            <div class="kpi-top">
+
+                <div class="kpi-label">
+                    Automation Rate
+                </div>
+
+                <div class="kpi-icon">
+                    🤖
+                </div>
+
+            </div>
+
+            <div class="kpi-value">
+                {automation_rate:.1%}
+            </div>
+
+            <div class="kpi-sub">
+                Auto approved transactions
+            </div>
+
         </div>
         """, unsafe_allow_html=True)
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     # -----------------------------
