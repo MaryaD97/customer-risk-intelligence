@@ -1494,12 +1494,7 @@ Lowest expected cost
         # --------------------------------
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
 
-        st.markdown("### Transactions")
-
-        st.markdown(
-            table_html,
-            unsafe_allow_html=True
-        )
+        
 
         display_df = sim_df.copy().reset_index(drop=True)
 
@@ -1527,7 +1522,7 @@ Lowest expected cost
             display_df.apply(generate_reason, axis=1)
         )
 
-                # --------------------------------
+        # --------------------------------
         # RISK BADGE HTML
         # --------------------------------
         def risk_badge(level):
@@ -1577,7 +1572,7 @@ Lowest expected cost
             "Why"
         ]]
 
-                # --------------------------------
+        # --------------------------------
         # HTML TABLE RENDER
         # --------------------------------
         table_rows = ""
@@ -1644,7 +1639,12 @@ Lowest expected cost
 
         </div>
         """
+        st.markdown("### Transactions")
 
+        st.markdown(
+            table_html,
+            unsafe_allow_html=True
+        )
 
         st.markdown('</div>', unsafe_allow_html=True)
 
