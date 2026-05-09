@@ -1495,11 +1495,10 @@ Lowest expected cost
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
 
         st.markdown("### Transactions")
-
                 st.markdown(
-            table_html,
-            unsafe_allow_html=True
-        )
+                    table_html,
+                    unsafe_allow_html=True
+                )
 
         display_df = sim_df.copy().reset_index(drop=True)
 
