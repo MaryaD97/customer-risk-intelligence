@@ -574,40 +574,152 @@ background:#DCFCE7;
 color:#166534;
 }
 
-table {
-width: 100%;
-border-collapse: collapse;
+/* -------------------------
+OPERATIONS TABLE
+------------------------- */
+
+.ops-table-wrap{
+border:1px solid #E5E7EB;
+border-radius:18px;
+overflow:hidden;
+background:white;
+margin-top:10px;
 }
 
-th {
-text-align: left;
-padding: 10px;
-font-size: 13px;
-color: #64748B;
-border-bottom: 1px solid #E5E7EB;
+.ops-table-scroll{
+max-height:540px;
+overflow-y:auto;
+overflow-x:hidden;
 }
 
-td {
-padding: 12px 10px;
-border-bottom: 1px solid #F1F5F9;
-font-size: 14px;
-color: #0F172A;
+.ops-table{
+width:100%;
+border-collapse:separate;
+border-spacing:0;
 }
 
-tr:hover {
-background-color: #F9FAFB;
+.ops-table thead th{
+position:sticky;
+top:0;
+z-index:5;
+
+background:#F8FAFC;
+
+padding:14px 18px;
+
+font-size:12px;
+font-weight:700;
+letter-spacing:.3px;
+text-transform:uppercase;
+
+color:#64748B;
+
+border-bottom:1px solid #E2E8F0;
 }
 
-
-[data-testid="stDataFrame"] th {
-background-color: #F8FAFC;
-font-weight: 600;
-font-size: 13px;
-color: #475569;
+.ops-table tbody tr{
+transition:all .15s ease;
 }
 
-[data-testid="stDataFrame"] tr:hover {
-background-color: #F1F5F9;
+.ops-table tbody tr:hover{
+background:#F8FAFC;
+}
+
+.ops-table tbody td{
+padding:16px 18px;
+
+font-size:14px;
+font-weight:500;
+
+color:#0F172A;
+
+border-bottom:1px solid #F1F5F9;
+
+vertical-align:middle;
+}
+
+/* -------------------------
+TABLE TYPOGRAPHY
+------------------------- */
+
+.tx-id{
+font-weight:700;
+color:#0F172A;
+}
+
+.reason-cell{
+color:#64748B;
+font-size:13px;
+line-height:1.45;
+max-width:320px;
+}
+
+/* -------------------------
+RISK BADGES
+------------------------- */
+
+.risk-pill{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+
+padding:6px 12px;
+
+border-radius:999px;
+
+font-size:12px;
+font-weight:700;
+
+letter-spacing:.3px;
+}
+
+.risk-high{
+background:#FEE2E2;
+color:#B91C1C;
+}
+
+.risk-medium{
+background:#FEF3C7;
+color:#B45309;
+}
+
+.risk-low{
+background:#DCFCE7;
+color:#15803D;
+}
+
+/* -------------------------
+DECISION BADGES
+------------------------- */
+
+.decision-pill{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+
+padding:6px 12px;
+
+border-radius:999px;
+
+font-size:12px;
+font-weight:700;
+
+letter-spacing:.2px;
+}
+
+.decision-approve{
+background:#DCFCE7;
+color:#166534;
+}
+
+.decision-review{
+background:#FEF3C7;
+color:#92400E;
+}
+
+.decision-decline{
+background:#FEE2E2;
+color:#991B1B;
 }
 
 /* -------------------------
@@ -1384,6 +1496,11 @@ Lowest expected cost
 
         st.markdown("### Transactions")
 
+                st.markdown(
+            table_html,
+            unsafe_allow_html=True
+        )
+
         display_df = sim_df.copy().reset_index(drop=True)
 
         display_df["Transaction ID"] = display_df.index + 1
@@ -1410,6 +1527,47 @@ Lowest expected cost
             display_df.apply(generate_reason, axis=1)
         )
 
+                # --------------------------------
+        # RISK BADGE HTML
+        # --------------------------------
+        def risk_badge(level):
+
+            if level == "HIGH":
+                return '<span class="risk-pill risk-high">HIGH</span>'
+
+            elif level == "MEDIUM":
+                return '<span class="risk-pill risk-medium">MEDIUM</span>'
+
+            return '<span class="risk-pill risk-low">LOW</span>'
+
+
+        # --------------------------------
+        # DECISION BADGE HTML
+        # --------------------------------
+        def decision_badge(decision):
+
+            if decision == "Auto Approve (AI)":
+
+                return '''
+                <span class="decision-pill decision-approve">
+                    Approve (AI)
+                </span>
+                '''
+
+            elif decision == "Manual Review":
+
+                return '''
+                <span class="decision-pill decision-review">
+                    Manual Review
+                </span>
+                '''
+
+            return '''
+            <span class="decision-pill decision-decline">
+                Decline
+            </span>
+            '''
+
         display_df = display_df[[
             "Transaction ID",
             "Decision",
@@ -1419,13 +1577,74 @@ Lowest expected cost
             "Why"
         ]]
 
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            hide_index=True
-        )
+                # --------------------------------
+        # HTML TABLE RENDER
+        # --------------------------------
+        table_rows = ""
 
-        st.markdown('</div>', unsafe_allow_html=True)
+        for _, row_data in display_df.iterrows():
+
+            table_rows += f"""
+
+            <tr>
+
+                <td class="tx-id">
+                    TX-{int(row_data['Transaction ID']):05d}
+                </td>
+
+                <td>
+                    {decision_badge(row_data['Decision'])}
+                </td>
+
+                <td>
+                    {risk_badge(row_data['Risk Level'])}
+                </td>
+
+                <td>
+                    {row_data['Risk Score']}
+                </td>
+
+                <td>
+                    {row_data['Expected Cost']}
+                </td>
+
+                <td class="reason-cell">
+                    {row_data['Why']}
+                </td>
+
+            </tr>
+            """
+
+        table_html = f"""
+
+        <div class="ops-table-wrap">
+
+            <div class="ops-table-scroll">
+
+                <table class="ops-table">
+
+                    <thead>
+                        <tr>
+                            <th>Transaction</th>
+                            <th>Decision</th>
+                            <th>Risk</th>
+                            <th>Score</th>
+                            <th>Expected Cost</th>
+                            <th>Risk Drivers</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {table_rows}
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+        """
+
 
         st.markdown('</div>', unsafe_allow_html=True)
 
