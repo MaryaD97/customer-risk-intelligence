@@ -1483,6 +1483,7 @@ Lowest expected cost
 
 </div>
 """, unsafe_allow_html=True)
+
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -1728,6 +1729,7 @@ Lowest expected cost
         st.markdown(
             " • ".join(get_risk_drivers(row))
         )
+        
         st.markdown('</div>', unsafe_allow_html=True)
     # -----------------------------
     # INSIGHTS BUTTON
