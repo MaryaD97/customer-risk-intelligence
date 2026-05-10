@@ -206,9 +206,10 @@ padding-bottom:8px;
 DATAFRAME
 ------------------------- */
 [data-testid="stDataFrame"]{
-border:none !important;
-border-radius:16px;
+min-height:540px;
+border-radius:14px;
 overflow:hidden;
+border:1px solid #E5E7EB;
 }
 
 /* -------------------------
@@ -493,9 +494,7 @@ top:110px;
 /* -------------------------
 TABLE HEIGHT CONTROL
 ------------------------- */
-[data-testid="stDataFrame"]{
-min-height:540px;
-}
+
 .cost-grid{
 display:flex;
 gap:12px;
@@ -587,9 +586,10 @@ margin-top:10px;
 }
 
 .ops-table-scroll{
-max-height:540px;
+height:540px;
 overflow-y:auto;
-overflow-x:hidden;
+overflow-x:auto;
+display:block;
 }
 
 .ops-table{
@@ -1436,16 +1436,12 @@ Lowest expected cost
     # -----------------------------
     # MAIN DASHBOARD GRID
     # -----------------------------
-    st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
-
     left, right = st.columns([1.9, 1], gap="large")
 
     # =============================
     # LEFT COLUMN
     # =============================
     with left:
-
-        st.markdown('<div class="grid-stack">', unsafe_allow_html=True)
 
         # --------------------------------
         # COST COMPARISON
@@ -1487,7 +1483,6 @@ Lowest expected cost
 </div>
 """, unsafe_allow_html=True)
 
-        st.markdown('</div>', unsafe_allow_html=True)
 
         # --------------------------------
         # TRANSACTIONS TABLE
@@ -1646,15 +1641,11 @@ Lowest expected cost
             table_html,
             unsafe_allow_html=True
         )
-        
-        st.markdown('</div>', unsafe_allow_html=True)
 
     # =============================
     # RIGHT COLUMN
     # =============================
     with right:
-
-        st.markdown('<div class="grid-stack analyst-shell">', unsafe_allow_html=True)
 
         # --------------------------------
         # DONUT CHART
@@ -1693,8 +1684,6 @@ Lowest expected cost
         )
 
         st.plotly_chart(fig, use_container_width=True)
-
-        st.markdown('</div>', unsafe_allow_html=True)
 
         # --------------------------------
         # ANALYST VIEW
