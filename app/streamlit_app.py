@@ -414,7 +414,6 @@ transition:all .18s ease;
 }
 
 .kpi-shell:hover{
-transform:translateY(-2px);
 
 box-shadow:
 0 16px 40px rgba(15,23,42,.10),
@@ -466,7 +465,6 @@ padding:20px;
 border:1px solid #E5E7EB;
 box-shadow:0 6px 20px rgba(0,0,0,0.04);
 margin-top:0px;
-height:100%;
 }
 
 /* -------------------------
@@ -742,9 +740,12 @@ border: 1px solid #E5E7EB;
 HOVER EFFECTS
 ------------------------- */
 .white-card:hover,
-.panel-card:hover{
-transform: translateY(-2px);
+.panel-card{
 transition: all .2s ease;
+}
+
+.panel-card:hover{
+box-shadow:0 10px 24px rgba(0,0,0,.08);
 }
 
 </style>
@@ -1482,6 +1483,7 @@ Lowest expected cost
 
 </div>
 """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
         # --------------------------------
@@ -1641,6 +1643,8 @@ Lowest expected cost
             table_html,
             unsafe_allow_html=True
         )
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # =============================
     # RIGHT COLUMN
@@ -1685,6 +1689,8 @@ Lowest expected cost
 
         st.plotly_chart(fig, use_container_width=True)
 
+        st.markdown('</div>', unsafe_allow_html=True)
+
         # --------------------------------
         # ANALYST VIEW
         # --------------------------------
@@ -1722,13 +1728,7 @@ Lowest expected cost
         st.markdown(
             " • ".join(get_risk_drivers(row))
         )
-
         st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
     # -----------------------------
     # INSIGHTS BUTTON
     # -----------------------------
