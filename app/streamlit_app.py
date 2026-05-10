@@ -387,7 +387,7 @@ FLOATING KPI SYSTEM
 
 .kpi-row{
 position:relative;
-margin-top:-78px;
+margin-top:20px;
 margin-bottom:26px;
 z-index:15;
 }
@@ -481,13 +481,6 @@ gap:20px;
 height:100%;
 }
 
-/* -------------------------
-RIGHT COLUMN STICKY FEEL
-------------------------- */
-.analyst-shell{
-position:sticky;
-top:110px;
-}
 
 /* -------------------------
 TABLE HEIGHT CONTROL
@@ -740,7 +733,7 @@ border: 1px solid #E5E7EB;
 HOVER EFFECTS
 ------------------------- */
 .white-card:hover,
-.panel-card{
+.panel-card:hover{
 transition: all .2s ease;
 }
 
@@ -1317,7 +1310,6 @@ Define how costly fraud and manual review are — the system will optimize decis
             st.session_state.results = df
     
         st.session_state.step = 3
-        st.markdown('</div>', unsafe_allow_html=True)
         st.rerun()
 
 # ==============================
@@ -1490,7 +1482,6 @@ Lowest expected cost
         # --------------------------------
         # TRANSACTIONS TABLE
         # --------------------------------
-        st.markdown('<div class="panel-card">', unsafe_allow_html=True)
         
         st.markdown("### Transactions")
         
@@ -1644,8 +1635,6 @@ Lowest expected cost
             table_html,
             unsafe_allow_html=True
         )
-        
-        st.markdown('</div>', unsafe_allow_html=True)
 
     # =============================
     # RIGHT COLUMN
