@@ -577,16 +577,18 @@ margin-top:10px;
 }
 
 .ops-table-scroll{
-height:540px;
+max-height:540px;
 overflow-y:auto;
 overflow-x:auto;
-display:block;
+width:100%;
 }
 
 .ops-table{
 width:100%;
+min-width:900px;
 border-collapse:separate;
 border-spacing:0;
+table-layout:auto;
 }
 
 .ops-table thead th{
@@ -1354,8 +1356,6 @@ Optimized actions based on fraud risk and cost assumptions.
     # -----------------------------
     # FLOATING KPI ROW
     # -----------------------------
-    st.markdown('<div class="kpi-row">', unsafe_allow_html=True)
-
     k1, k2, k3 = st.columns(3, gap="large")
 
     # --------------------------------
@@ -1424,17 +1424,15 @@ Lowest expected cost
 </div>
 """, unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
     # -----------------------------
     # MAIN DASHBOARD GRID
     # -----------------------------
-    left, right = st.columns([1.9, 1], gap="large")
+    top_left, top_right = st.columns([1.9, 1], gap="large")
 
     # =============================
     # LEFT COLUMN
     # =============================
-    with left:
+    with top_left:
 
         # --------------------------------
         # COST COMPARISON
@@ -1479,167 +1477,10 @@ Lowest expected cost
         st.markdown('</div>', unsafe_allow_html=True)
 
 
-        # --------------------------------
-        # TRANSACTIONS TABLE
-        # --------------------------------
-        
-        st.markdown("### Transactions")
-        
-        display_df = sim_df.copy().reset_index(drop=True)
-        
-        display_df["Transaction ID"] = display_df.index + 1
-        
-        display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-        
-        display_df["Risk Level"] = (
-            display_df["risk_probability"]
-            .apply(risk_tier)
-            .str.upper()
-        )
-        
-        display_df["Risk Score"] = (
-            display_df["risk_probability"]
-            .map(lambda x: f"{x:.2f}")
-        )
-        
-        display_df["Expected Cost"] = (
-            display_df["expected_cost"]
-            .map(format_money)
-        )
-        
-        display_df["Why"] = (
-            display_df.apply(generate_reason, axis=1)
-        )
-        
-        # --------------------------------
-        # RISK BADGES
-        # --------------------------------
-        def risk_badge(level):
-        
-            if level == "HIGH":
-                return '<span class="risk-pill risk-high">HIGH</span>'
-        
-            elif level == "MEDIUM":
-                return '<span class="risk-pill risk-medium">MEDIUM</span>'
-        
-            return '<span class="risk-pill risk-low">LOW</span>'
-        
-        
-        # --------------------------------
-        # DECISION BADGES
-        # --------------------------------
-        def decision_badge(decision):
-        
-            if decision == "Auto Approve (AI)":
-        
-                return '''
-                <span class="decision-pill decision-approve">
-                    Approve (AI)
-                </span>
-                '''
-        
-            elif decision == "Manual Review":
-        
-                return '''
-                <span class="decision-pill decision-review">
-                    Manual Review
-                </span>
-                '''
-        
-            return '''
-            <span class="decision-pill decision-decline">
-                Decline
-            </span>
-            '''
-        
-        display_df = display_df[[
-            "Transaction ID",
-            "Decision",
-            "Risk Level",
-            "Risk Score",
-            "Expected Cost",
-            "Why"
-        ]]
-        
-        # --------------------------------
-        # TABLE ROWS
-        # --------------------------------
-        table_rows = ""
-        
-        for _, row_data in display_df.iterrows():
-        
-            table_rows += f"""
-            <tr>
-        
-                <td class="tx-id">
-                    TX-{int(row_data['Transaction ID']):05d}
-                </td>
-        
-                <td>
-                    {decision_badge(row_data['Decision'])}
-                </td>
-        
-                <td>
-                    {risk_badge(row_data['Risk Level'])}
-                </td>
-        
-                <td>
-                    {row_data['Risk Score']}
-                </td>
-        
-                <td>
-                    {row_data['Expected Cost']}
-                </td>
-        
-                <td class="reason-cell">
-                    {row_data['Why']}
-                </td>
-        
-            </tr>
-            """
-        
-        # --------------------------------
-        # FINAL TABLE HTML
-        # --------------------------------
-        table_html = f"""
-        
-        <div class="ops-table-wrap">
-        
-            <div class="ops-table-scroll">
-        
-                <table class="ops-table">
-        
-                    <thead>
-                        <tr>
-                            <th>Transaction</th>
-                            <th>Decision</th>
-                            <th>Risk</th>
-                            <th>Score</th>
-                            <th>Expected Cost</th>
-                            <th>Risk Drivers</th>
-                        </tr>
-                    </thead>
-        
-                    <tbody>
-                        {table_rows}
-                    </tbody>
-        
-                </table>
-        
-            </div>
-        
-        </div>
-        """
-        
-        st.markdown(
-            table_html,
-            unsafe_allow_html=True
-        )
-
     # =============================
     # RIGHT COLUMN
     # =============================
-    with right:
+    with top_right:
 
         # --------------------------------
         # DONUT CHART
@@ -1720,6 +1561,163 @@ Lowest expected cost
         )
         
         st.markdown('</div>', unsafe_allow_html=True)
+   
+# --------------------------------
+# TRANSACTIONS TABLE
+# --------------------------------
+
+st.markdown("### Transactions")
+
+display_df = sim_df.copy().reset_index(drop=True)
+
+display_df["Transaction ID"] = display_df.index + 1
+
+display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+
+display_df["Risk Level"] = (
+    display_df["risk_probability"]
+    .apply(risk_tier)
+    .str.upper()
+)
+
+display_df["Risk Score"] = (
+    display_df["risk_probability"]
+    .map(lambda x: f"{x:.2f}")
+)
+
+display_df["Expected Cost"] = (
+    display_df["expected_cost"]
+    .map(format_money)
+)
+
+display_df["Why"] = (
+    display_df.apply(generate_reason, axis=1)
+)
+
+# --------------------------------
+# RISK BADGES
+# --------------------------------
+def risk_badge(level):
+
+    if level == "HIGH":
+        return '<span class="risk-pill risk-high">HIGH</span>'
+
+    elif level == "MEDIUM":
+        return '<span class="risk-pill risk-medium">MEDIUM</span>'
+
+    return '<span class="risk-pill risk-low">LOW</span>'
+
+
+# --------------------------------
+# DECISION BADGES
+# --------------------------------
+def decision_badge(decision):
+
+    if decision == "Auto Approve (AI)":
+
+        return '''
+        <span class="decision-pill decision-approve">
+            Approve (AI)
+        </span>
+        '''
+
+    elif decision == "Manual Review":
+
+        return '''
+        <span class="decision-pill decision-review">
+            Manual Review
+        </span>
+        '''
+
+    return '''
+    <span class="decision-pill decision-decline">
+        Decline
+    </span>
+    '''
+
+display_df = display_df[[
+    "Transaction ID",
+    "Decision",
+    "Risk Level",
+    "Risk Score",
+    "Expected Cost",
+    "Why"
+]]
+
+# --------------------------------
+# TABLE ROWS
+# --------------------------------
+table_rows = ""
+
+for _, row_data in display_df.iterrows():
+
+    table_rows += f"""
+    <tr>
+
+        <td class="tx-id">
+            TX-{int(row_data['Transaction ID']):05d}
+        </td>
+
+        <td>
+            {decision_badge(row_data['Decision'])}
+        </td>
+
+        <td>
+            {risk_badge(row_data['Risk Level'])}
+        </td>
+
+        <td>
+            {row_data['Risk Score']}
+        </td>
+
+        <td>
+            {row_data['Expected Cost']}
+        </td>
+
+        <td class="reason-cell">
+            {row_data['Why']}
+        </td>
+
+    </tr>
+    """
+
+# --------------------------------
+# FINAL TABLE HTML
+# --------------------------------
+table_html = f"""
+
+<div class="ops-table-wrap">
+
+    <div class="ops-table-scroll">
+
+        <table class="ops-table">
+
+            <thead>
+                <tr>
+                    <th>Transaction</th>
+                    <th>Decision</th>
+                    <th>Risk</th>
+                    <th>Score</th>
+                    <th>Expected Cost</th>
+                    <th>Risk Drivers</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {table_rows}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+"""
+
+st.markdown(
+    table_html,
+    unsafe_allow_html=True
+)
     # -----------------------------
     # INSIGHTS BUTTON
     # -----------------------------
