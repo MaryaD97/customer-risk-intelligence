@@ -1718,14 +1718,14 @@ st.markdown(
     table_html,
     unsafe_allow_html=True
 )
-    # -----------------------------
-    # INSIGHTS BUTTON
-    # -----------------------------
-    st.button(
-        "View Insights →",
-        use_container_width=True,
-        on_click=lambda: st.session_state.update(step=4)
-    )
+# -----------------------------
+# INSIGHTS BUTTON
+# -----------------------------
+st.button(
+    "View Insights →",
+    use_container_width=True,
+    on_click=lambda: st.session_state.update(step=4)
+)
 
 # ==============================
 # INSIGHTS
