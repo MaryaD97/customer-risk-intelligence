@@ -1747,9 +1747,8 @@ def render_insights_page():
     automation_rate = (df['optimal_strategy'].str.contains('AI')).mean()
 
     # --------------------------------
-    # PREP TABLE DATA
+    # PREP DISPLAY DATA
     # --------------------------------
-
     display_df = sim_df.copy().reset_index(drop=True)
     
     display_df["Transaction ID"] = display_df.index + 1
