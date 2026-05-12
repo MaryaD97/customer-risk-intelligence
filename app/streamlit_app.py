@@ -1568,32 +1568,6 @@ Lowest expected cost
     
     st.markdown("### Transactions")
     
-    display_df = sim_df.copy().reset_index(drop=True)
-    
-    display_df["Transaction ID"] = display_df.index + 1
-    
-    display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-    
-    display_df["Risk Level"] = (
-        display_df["risk_probability"]
-        .apply(risk_tier)
-        .str.upper()
-    )
-    
-    display_df["Risk Score"] = (
-        display_df["risk_probability"]
-        .map(lambda x: f"{x:.2f}")
-    )
-    
-    display_df["Expected Cost"] = (
-        display_df["expected_cost"]
-        .map(format_money)
-    )
-    
-    display_df["Why"] = (
-        display_df.apply(generate_reason, axis=1)
-    )
-    
     # --------------------------------
     # RISK BADGES
     # --------------------------------
@@ -1771,6 +1745,36 @@ def render_insights_page():
     st.subheader("Key Outcomes")
 
     automation_rate = (df['optimal_strategy'].str.contains('AI')).mean()
+
+    # --------------------------------
+    # PREP TABLE DATA
+    # --------------------------------
+
+    display_df = sim_df.copy().reset_index(drop=True)
+    
+    display_df["Transaction ID"] = display_df.index + 1
+    
+    display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+    
+    display_df["Risk Level"] = (
+        display_df["risk_probability"]
+        .apply(risk_tier)
+        .str.upper()
+    )
+    
+    display_df["Risk Score"] = (
+        display_df["risk_probability"]
+        .map(lambda x: f"{x:.2f}")
+    )
+    
+    display_df["Expected Cost"] = (
+        display_df["expected_cost"]
+        .map(format_money)
+    )
+    
+    display_df["Why"] = (
+        display_df.apply(generate_reason, axis=1)
+    )
 
     st.markdown(f"""
     - {format_money(savings)} saved through optimized decisioning  
