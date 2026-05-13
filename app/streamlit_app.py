@@ -228,7 +228,7 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 
-overflow:visible;
+overflow:hidden;   /* change from visible */
 min-height:auto;
 }
 
@@ -268,11 +268,12 @@ gap:30px;
 
 .hero-image{
 position:absolute;
-right:60px;
-top:55%;
+right:40px;
+top:50%;
 transform:translateY(-50%);
-height:300px;
-opacity:0.9;   /* or 1 for full */
+height:240px;
+opacity:1;
+pointer-events:none;
 }
 
 .hero-left{
@@ -480,10 +481,6 @@ display:flex;
 flex-direction:column;
 gap:20px;
 height:100%;
-}
-
-[data-testid="column"]{
-overflow:visible !important;
 }
 
 /* -------------------------
@@ -1595,7 +1592,10 @@ Lowest expected cost
             " • ".join(get_risk_drivers(row))
         )
         
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(
+            "<div style='clear:both; margin-bottom:10px;'></div>",
+            unsafe_allow_html=True
+        )
    
     # --------------------------------
     # TRANSACTIONS TABLE
