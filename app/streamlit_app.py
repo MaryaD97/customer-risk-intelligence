@@ -1263,7 +1263,7 @@ Define how costly fraud and manual review are — the system will optimize decis
     
     with k1:
         st.markdown(f"""
-        <div class="kpi-card">
+        <div class="kpi-shell">
             <div class="kpi-label">Projected Cost</div>
             <div class="kpi-value">{format_money(total_cost)}</div>
             <div class="kpi-sub">Based on current inputs</div>
@@ -1272,7 +1272,7 @@ Define how costly fraud and manual review are — the system will optimize decis
     
     with k2:
         st.markdown(f"""
-        <div class="kpi-card">
+        <div class="kpi-shell">
             <div class="kpi-label">Potential Savings</div>
             <div class="kpi-value kpi-green">{format_money(savings)}</div>
             <div class="kpi-sub">vs full manual review</div>
@@ -1281,7 +1281,7 @@ Define how costly fraud and manual review are — the system will optimize decis
     
     with k3:
         st.markdown(f"""
-        <div class="kpi-card">
+        <div class="kpi-shell">
             <div class="kpi-label">Baseline Cost</div>
             <div class="kpi-value">{format_money(baseline)}</div>
             <div class="kpi-sub">Manual-only strategy</div>
@@ -1450,8 +1450,10 @@ Lowest expected cost
 
         st.progress(min(total_cost / max(baseline, 1), 1.0))
 
+        ratio = total_cost / baseline if baseline > 0 else 0
+
         st.caption(
-            f"Optimized cost is {total_cost / baseline:.1%} of full review cost"
+            f"Optimized cost is {ratio:.1%} of full review cost"
         )
 
         st.markdown(f"""<div class="cost-grid">
@@ -1474,7 +1476,7 @@ Lowest expected cost
 </div>
 """, unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
     # =============================
@@ -1526,16 +1528,45 @@ Lowest expected cost
         # ANALYST VIEW
         # --------------------------------
         st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-
+        
         st.markdown("### Analyst View")
-
+        
+        # PREP DISPLAY DATA FIRST
+        display_df = sim_df.copy().reset_index(drop=True)
+        
+        display_df["Transaction ID"] = display_df.index + 1
+        
+        display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
+        
+        display_df["Risk Level"] = (
+            display_df["risk_probability"]
+            .apply(risk_tier)
+            .str.upper()
+        )
+        
+        display_df["Risk Score"] = (
+            display_df["risk_probability"]
+            .map(lambda x: f"{x:.2f}")
+        )
+        
+        display_df["Expected Cost"] = (
+            display_df["expected_cost"]
+            .map(format_money)
+        )
+        
+        display_df["Why"] = (
+            display_df.apply(generate_reason, axis=1)
+        )
+        
         selected_id = st.selectbox(
             "Select Transaction",
             display_df["Transaction ID"]
         )
-
-        row = sim_df.iloc[selected_id - 1]
-
+        
+        row = display_df.loc[
+            display_df["Transaction ID"] == selected_id
+        ].iloc[0]
+        
         st.markdown(f"""
         **Decision:** {map_action(row['optimal_strategy'])}  
         
@@ -1543,9 +1574,9 @@ Lowest expected cost
         
         **Expected Cost:** {format_money(row['expected_cost'])}
         """)
-
+        
         st.markdown("##### Cost Breakdown")
-
+        
         st.markdown(f"""
         AI: {format_money(row['cost_ai'])}  
         
@@ -1553,9 +1584,9 @@ Lowest expected cost
         
         Hybrid: {format_money(row['cost_hybrid'])}
         """)
-
+        
         st.markdown("##### Risk Drivers")
-
+        
         st.markdown(
             " • ".join(get_risk_drivers(row))
         )
@@ -1608,7 +1639,6 @@ Lowest expected cost
             Decline
         </span>
         '''
-    
     display_df = display_df[[
         "Transaction ID",
         "Decision",
@@ -1692,14 +1722,15 @@ Lowest expected cost
         table_html,
         unsafe_allow_html=True
     )
-# -----------------------------
-# INSIGHTS BUTTON
-# -----------------------------
-st.button(
-    "View Insights →",
-    use_container_width=True,
-    on_click=lambda: st.session_state.update(step=4)
-)
+
+    st.markdown("<div style='margin-top:20px'></div>", unsafe_allow_html=True)
+    
+    if st.button(
+        "View Insights →",
+        use_container_width=True
+    ):
+        st.session_state.step = 4
+        st.rerun()
 
 # ==============================
 # INSIGHTS
@@ -1749,7 +1780,7 @@ def render_insights_page():
     # --------------------------------
     # PREP DISPLAY DATA
     # --------------------------------
-    display_df = sim_df.copy().reset_index(drop=True)
+    display_df = df.copy().reset_index(drop=True)
     
     display_df["Transaction ID"] = display_df.index + 1
     
