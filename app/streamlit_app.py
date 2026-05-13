@@ -221,21 +221,22 @@ position: relative;
 background:
 linear-gradient(90deg, #07141F 0%, #0B1E2B 100%);
 
-
-padding:90px 80px;
-margin-bottom:50px;
+padding:70px 80px;
+margin-bottom:40px;
 
 display:flex;
 justify-content:space-between;
 align-items:center;
-overflow:hidden;
-min-height:520px;
+
+overflow:visible;
+min-height:auto;
 }
 
 .hero-shell.small{
-padding:38px 60px 92px 60px;
-min-height:185px;
-margin-bottom:0px;
+padding:32px 60px;
+min-height:auto;
+margin-bottom:30px;
+
 display:flex;
 align-items:center;
 }
@@ -481,6 +482,9 @@ gap:20px;
 height:100%;
 }
 
+[data-testid="column"]{
+overflow:visible !important;
+}
 
 /* -------------------------
 TABLE HEIGHT CONTROL
