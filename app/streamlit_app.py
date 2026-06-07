@@ -1,6 +1,6 @@
-import streamlit as st 
-import pandas as pd 
-import numpy as np 
+import streamlit as st
+import pandas as pd
+import numpy as np
 import joblib
 
 # ==============================
@@ -13,505 +13,106 @@ st.set_page_config(
 )
 
 # ==============================
-# GLOBAL UI FOUNDATION
+# GLOBAL STYLING (PREMIUM UI)
 # ==============================
 st.markdown("""
 <style>
 
-/* -------------------------
-ROOT COLORS
-------------------------- */
-:root{
---bg-dark:#07141F;
---bg-dark-2:#0B1E2B;
---green:#22C55E;
---green-soft:#DCFCE7;
---white:#FFFFFF;
---border:#E5E7EB;
---text:#0F172A;
---muted:#64748B;
---radius:18px;
+/* ===== BASE ===== */
+.block-container {
+    padding-top: 3rem;
+    padding-bottom: 2rem;
+    max-width: 1100px;
 }
 
-/* -------------------------
-APP BACKGROUND
-------------------------- */
-[data-testid="stAppViewContainer"]{
-background:
-linear-gradient(
-180deg,
-#07141F 0%,
-#0A1B29 38%,
-#F6F8FA 38%,
-#F6F8FA 100%
-);
+#MainMenu {
+    visibility: hidden;
 }
 
-/* -------------------------
-REMOVE STREAMLIT DEFAULTS
-------------------------- */
-#MainMenu {visibility:hidden;}
-header {visibility:hidden;}
-footer {visibility:hidden;}
-
-.block-container{
-max-width:1450px;
-padding-top:0rem;
-padding-bottom:3rem;
-padding-left:2rem;
-padding-right:2rem;
+header {
+    visibility: hidden;
 }
 
-/* remove empty top gap */
-section.main > div{
-padding-top:0rem;
+footer {
+    visibility: hidden;
 }
 
-/* -------------------------
-TYPOGRAPHY
-------------------------- */
-html, body, [class*="css"]{
-font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+/* ===== TYPOGRAPHY ===== */
+h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: -0.3px;
 }
 
-h1,h2,h3{
-color:white;
-margin:0;
+h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
-p, label{
-color:#CBD5E1;
+h3 {
+    font-size: 1.1rem;
+    color: #9CA3AF;
 }
 
-/* -------------------------
-TOP NAVBAR
-------------------------- */
-.topbar{
-position: relative;
-left: calc(-1 * (100vw - 100%) / 2);
-width: 100vw;
-
-background:#07141F;
-border-bottom:1px solid rgba(255,255,255,.08);
-
-padding:20px 60px;
-margin:0 0 30px 0;
-
-display:flex;
-justify-content:space-between;
-align-items:center;
+/* ===== CARD SYSTEM ===== */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 18px;
 }
 
-.brand{
-font-size:22px;
-font-weight:700;
-color:white;
+/* ===== COLOR SYSTEM ===== */
+:root {
+    --bg-main: #0B0F17;
+    --bg-card: #0F172A;
+    --border: #1F2937;
+    --text-primary: #E5E7EB;
+    --text-secondary: #9CA3AF;
+    --green: #22C55E; /* Approve */
+    --amber: #F59E0B; /* Review */
+    --red: #EF4444; /* High Risk */
+    --blue: #3B82F6; /* Cost */
 }
 
-.brand-wrap{
-display:flex;
-align-items:center;
-gap:12px;
+/* ===== METRICS ===== */
+[data-testid="metric-container"] {
+    background-color: #0F172A;
+    border: 1px solid #1F2937;
+    padding: 14px;
+    border-radius: 10px;
 }
 
-.brand img{
-height:28px;
+/* ===== BUTTON ===== */
+.stButton > button {
+    background-color: #2563EB;
+    color: white;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    border: none;
 }
 
-.steps{
-display:flex;
-gap:22px;
-align-items:center;
+.stButton > button:hover {
+    background-color: #1D4ED8;
 }
 
-.step{
-display:flex;
-align-items:center;
-gap:8px;
-color:#94A3B8;
-font-size:17px;
-font-weight:600;
-line-height:1;
-}
-
-.dot{
-width:30px;
-height:30px;
-border-radius:50%;
-background:#1E293B;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:14px;
-color:white;
-}
-
-.active-dot{
-background:#22C55E;
-color:#04120B;
-font-weight:700;
-box-shadow:0 0 0 3px rgba(34,197,94,0.2);
-}
-
-
-
-/* -------------------------
-GENERIC WHITE CARD
-------------------------- */
-.white-card{
-background:white;
-border:1px solid #E5E7EB;
-border-radius:18px;
-padding:24px;
-box-shadow:0 10px 30px rgba(0,0,0,.04);
-}
-
-/* -------------------------
-SECTION SPACING
-------------------------- */
-.tight-gap{
-margin-top:12px;
-}
-
-.big-gap{
-margin-top:26px;
-}
-
-/* -------------------------
-BUTTONS
-------------------------- */
-.stButton > button{
-border-radius:12px;
-height:46px;
-font-weight:600;
-border:none;
-padding:0 18px;
-background:#2563EB;
-color:white;
-}
-
-.stButton > button:hover{
-background:#1D4ED8;
-}
-
-/* -------------------------
-SLIDERS
-------------------------- */
-.stSlider{
-padding-top:8px;
-padding-bottom:8px;
-}
-
-/* -------------------------
-DATAFRAME
-------------------------- */
-[data-testid="stDataFrame"]{
-border:none !important;
-border-radius:16px;
-overflow:hidden;
-}
-
-/* -------------------------
-HERO SECTION
-------------------------- */
-.hero-shell{
-position: relative;
-
-background:
-linear-gradient(90deg, #07141F 0%, #0B1E2B 100%);
-
-
-padding:90px 80px;
-margin-bottom:50px;
-
-display:flex;
-justify-content:space-between;
-align-items:center;
-overflow:hidden;
-min-height:520px;
-}
-
-.hero-top{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:30px;
-}
-
-.hero-image{
-position:absolute;
-right:60px;
-top:55%;
-transform:translateY(-50%);
-height:300px;
-opacity:0.9;   /* or 1 for full */
-}
-
-.hero-left{
-flex:1.2;
-z-index:2;
-}
-
-.hero-right{
-flex:0.9;
-display:flex;
-justify-content:center;
-align-items:center;
-}
-
-.hero-title{
-font-size:64px;
-font-weight:800;
-line-height:1.05;
-letter-spacing:-1px;
-}
-
-.hero-sub{
-font-size:20px;
-line-height:1.8;
-color:#A7B4C4;
-max-width:650px;
-margin-bottom:42px;
-}
-
-.hero-grid{
-display:flex;
-align-items:flex-start;
-gap:40px;
-margin-top:20px;
-}
-
-.hero-list-title{
-font-size:18px;
-font-weight:700;
-color:#4ADE80;
-margin-bottom:14px;
-}
-
-.hero-list{
-color:white;
-line-height:2.2;
-font-size:16px;
-margin:0;
-}
-
-.hero-divider{
-width:1px;
-background:rgba(148,163,184,0.25);
-height:140px;
-margin:0 10px;
-}
-
-/* -------------------------
-UPLOAD AREA
-------------------------- */
-.upload-shell{
-margin-top:8px;
-}
-
-.upload-title{
-font-size:38px;
-font-weight:800;
-color:#0F172A;
-margin-bottom:8px;
-}
-
-.upload-sub{
-color:#64748B;
-font-size:16px;
-margin-bottom:26px;
-}
-
-.upload-card{
-background:white;
-border:1px solid #E5E7EB;
-border-radius:22px;
-padding:28px;
-box-shadow:0 10px 24px rgba(0,0,0,.04);
-height:100%;
-}
-
-.upload-zone{
-border:1.5px dashed #CBD5E1;
-border-radius:12px;
-padding:30px 20px;
-text-align:center;
-margin-top:18px;
-background:white;
-}
-
-.quick-btn{
-margin-top:26px;
-}
-
-/* -------------------------
-HEADINGS DARK SECTION FIX
-------------------------- */
-.dark-small{
-color:#CBD5E1;
-font-size:14px;
-font-weight:600;
-margin-bottom:8px;
-}
-
-/* -------------------------
-DASHBOARD KPI CARDS
-------------------------- */
-.kpi-card{
-background:white;
-border:1px solid #E5E7EB;
-border-radius:20px;
-padding:18px 20px;
-height:120px;
-display:flex;
-flex-direction:column;
-justify-content:center;
-box-shadow:0 6px 18px rgba(0,0,0,.04);
-transition: all .2s ease;
-}
-
-.kpi-card:hover{
-transform: translateY(-2px);
-}
-
-.kpi-label{
-font-size:14px;
-font-weight:700;
-color:#64748B;
-margin-bottom:14px;
-}
-
-.kpi-value{
-font-size:34px;
-font-weight:800;
-margin-top:4px;
-color:#0F172A;
-line-height:1;
-}
-
-.kpi-green{
-color:#16A34A;
-}
-
-.kpi-sub{
-font-size:13px;
-color:#94A3B8;
-margin-top:12px;
-}
-
-/* -------------------------
-ANALYTICS CARD
-------------------------- */
-.panel-card{
-background:white;
-border-radius:20px;
-padding:20px;
-border:1px solid #E5E7EB;
-box-shadow:0 6px 20px rgba(0,0,0,0.04);
-margin-top:20px;
-}
-
-/* -------------------------
-SECTION TITLE
-------------------------- */
-.section-title{
-font-size:28px;
-font-weight:800;
-color:#0F172A;
-margin-bottom:6px;
-}
-
-.section-sub{
-color:#64748B;
-margin-bottom:20px;
-font-size:15px;
-}
-
-
-/* -------------------------
-BADGES
-------------------------- */
-.badge{
-padding:4px 10px;
-border-radius:999px;
-font-size:12px;
-font-weight:600;
-}
-
-.badge.high{
-background:#FEE2E2;
-color:#991B1B;
-}
-
-.badge.medium{
-background:#FEF3C7;
-color:#92400E;
-}
-
-.badge.low{
-background:#DCFCE7;
-color:#166534;
-}
-
-table {
-width: 100%;
-border-collapse: collapse;
-}
-
-th {
-text-align: left;
-padding: 10px;
-font-size: 13px;
-color: #64748B;
-border-bottom: 1px solid #E5E7EB;
-}
-
-td {
-padding: 12px 10px;
-border-bottom: 1px solid #F1F5F9;
-font-size: 14px;
-color: #0F172A;
-}
-
-tr:hover {
-background-color: #F9FAFB;
-}
-
-.tight-gap{ margin-top:10px; }
-.medium-gap{ margin-top:18px; }
-.large-gap{ margin-top:28px; }
-
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<style>
+/* ===== TABLE ===== */
 [data-testid="stDataFrame"] {
-border-radius: 14px;
-overflow: hidden;
-border: 1px solid #E5E7EB;
+    border: 1px solid #1F2937;
+    border-radius: 10px;
 }
 
-[data-testid="stDataFrame"] th {
-background-color: #F8FAFC;
-font-weight: 600;
-font-size: 13px;
-color: #475569;
+.stDataFrame div[data-testid="stDataFrame"] table {
+    font-size: 0.9rem;
 }
 
-[data-testid="stDataFrame"] td {
-font-size: 14px;
-color: #0F172A;
-}
-
-[data-testid="stDataFrame"] tr:hover {
-background-color: #F1F5F9;
-}
-
-.white-card:hover,
-.panel-card:hover{
-transform: translateY(-2px);
-transition: all .2s ease;
+/* ===== SUBTEXT ===== */
+.caption {
+    color: #6B7280;
+    font-size: 0.85rem;
 }
 
 </style>
@@ -526,37 +127,8 @@ def load_model():
     feature_cols = joblib.load("models/feature_columns.pkl")
     return model, feature_cols
 
+
 model, feature_columns = load_model()
-
-# ==============================
-# TOP NAVIGATION
-# ==============================
-def render_topbar(active_step=1):
-
-    labels = {
-        1: "Upload Data",
-        2: "Set Costs",
-        3: "Decisions",
-        4: "Insights"
-    }
-
-    html = '<div class="topbar">'
-
-    html += '<div class="brand">Fraud Decision Engine</div>'
-
-    for i in range(1, 5):
-        cls = "dot active-dot" if i == active_step else "dot"
-
-        html += (
-            f'<div class="step">'
-            f'<div class="{cls}">{i}</div>'
-            f'<div>{labels[i]}</div>'
-            f'</div>'
-        )
-
-    html += '</div>'
-
-    st.markdown(html, unsafe_allow_html=True)
 
 # ==============================
 # SESSION STATE
@@ -568,19 +140,20 @@ if "results" not in st.session_state:
     st.session_state.results = None
 
 if "config" not in st.session_state:
-    st.session_state.config = {"fraud_cost": 3.0, "review_cost": 4.0}
+    st.session_state.config = {
+        "fraud_cost": 3.0,
+        "review_cost": 4.0
+    }
 
 if "step" not in st.session_state:
     st.session_state.step = 1
 
-if st.session_state.step not in [1,2,3,4]:
+if st.session_state.step not in [1, 2, 3, 4, 5]:
     st.session_state.step = 1
-
 
 # ==============================
 # HELPER FUNCTIONS
 # ==============================
-
 def clean_data(df):
     df = df.copy()
 
@@ -593,12 +166,15 @@ def clean_data(df):
     missing_before = df.isna().mean().mean()
 
     df = df.fillna(0)
+
     df["order_value"] = df["order_value"].clip(lower=1)
+
     df = df.replace([np.inf, -np.inf], 0)
 
     missing_after = df.isna().mean().mean()
 
     return df, missing_before, missing_after
+
 
 def get_risk_drivers(row):
     drivers = []
@@ -620,22 +196,32 @@ def get_risk_drivers(row):
 
     return drivers[:3]
 
-REVIEW_EFFECTIVENESS = 0.9   # humans catch ~90% fraud
-AI_EFFECTIVENESS = 0.6       # automation catches ~60%
+
+REVIEW_EFFECTIVENESS = 0.9  # humans catch ~90% fraud
+AI_EFFECTIVENESS = 0.6      # automation catches ~60%
+
 
 def risk_tier(p):
     return "Low" if p < 0.3 else "Medium" if p < 0.7 else "High"
+
 
 def cost_ai(p, amt, fraud_cost):
     fraud_loss = (1 - AI_EFFECTIVENESS) * p * amt * fraud_cost
     return fraud_loss
 
+
 def cost_human(p, amt, fraud_cost, review_cost):
     fraud_loss = (1 - REVIEW_EFFECTIVENESS) * p * amt * fraud_cost
     return review_cost + fraud_loss
 
+
 def cost_hybrid(p, amt, fraud_cost, review_cost):
-    return cost_ai(p, amt, fraud_cost) if p < 0.4 else cost_human(p, amt, fraud_cost, review_cost)
+    return (
+        cost_ai(p, amt, fraud_cost)
+        if p < 0.4
+        else cost_human(p, amt, fraud_cost, review_cost)
+    )
+
 
 def choose_strategy(row):
     costs = {
@@ -643,38 +229,53 @@ def choose_strategy(row):
         "Human Review": row["cost_human"],
         "Hybrid": row["cost_hybrid"]
     }
+
     return min(costs, key=costs.get)
+
 
 def simulate_decisions(df, fraud_cost, review_cost):
     df = df.copy()
 
-    p = df["risk_probability"]
-    amt = df["order_value"]
-
-    df["cost_ai"] = (1 - AI_EFFECTIVENESS) * p * amt * fraud_cost
-    df["cost_human"] = review_cost + (1 - REVIEW_EFFECTIVENESS) * p * amt * fraud_cost
-
-    df["cost_hybrid"] = np.where(
-        p < 0.4,
-        df["cost_ai"],
-        df["cost_human"]
+    df["cost_ai"] = df.apply(
+        lambda x: cost_ai(
+            x["risk_probability"],
+            x["order_value"],
+            fraud_cost
+        ),
+        axis=1
     )
 
-    df["expected_cost"] = df[["cost_ai", "cost_human", "cost_hybrid"]].min(axis=1)
-
-    df["optimal_strategy"] = np.select(
-        [
-            df["cost_ai"] <= df["cost_human"],
-            df["cost_human"] <= df["cost_ai"]
-        ],
-        [
-            "AI Automation",
-            "Human Review"
-        ],
-        default="Hybrid"
+    df["cost_human"] = df.apply(
+        lambda x: cost_human(
+            x["risk_probability"],
+            x["order_value"],
+            fraud_cost,
+            review_cost
+        ),
+        axis=1
     )
+
+    df["cost_hybrid"] = df.apply(
+        lambda x: cost_hybrid(
+            x["risk_probability"],
+            x["order_value"],
+            fraud_cost,
+            review_cost
+        ),
+        axis=1
+    )
+
+    df["optimal_strategy"] = df.apply(
+        choose_strategy,
+        axis=1
+    )
+
+    df["expected_cost"] = df[
+        ["cost_ai", "cost_human", "cost_hybrid"]
+    ].min(axis=1)
 
     return df
+
 
 def map_action(strategy):
     if strategy == "AI Automation":
@@ -686,7 +287,6 @@ def map_action(strategy):
 
 
 def generate_reason(row):
-
     reasons = []
 
     if row["risk_probability"] > 0.7:
@@ -709,691 +309,813 @@ def generate_reason(row):
 
     return ", ".join(reasons[:2])
 
+
 def estimate_baseline_cost(df):
     return df["cost_human"].sum()
+
 
 def format_money(x):
     if x >= 1_000_000:
         return f"${x/1_000_000:.1f}M"
     elif x >= 1_000:
         return f"${x/1_000:.1f}K"
+
     return f"${x:.0f}"
+
+
+steps = [
+    "Upload Data",
+    "Set Costs",
+    "Generate Decisions",
+    "Decisions",
+    "Insights"
+]
+
+current_step = st.session_state.step
+
+progress_text = " → ".join([
+    f"**{s}**" if i + 1 == current_step else s
+    for i, s in enumerate(steps)
+])
+
+
+
+st.caption(f"Step {current_step} of 5")
+st.markdown("---")
 
 # ==============================
 # OVERVIEW PAGE
 # ==============================
 if st.session_state.step == 1:
-    render_topbar(1)
-# ==============================
-# STEP 1 — LOAD DATA
-# ==============================
-hero_html = """<div class="hero-shell">
-<div class="hero-left">
 
-<div class="hero-top">
-<div>
-<div class="hero-title">Fraud Decision Engine</div>
-<div class="hero-sub">
-Decide the lowest-cost action for every transaction — reduce fraud loss while minimizing manual review costs.
-</div>
-</div>
+    # ==============================
+    # STEP 1 — LOAD DATA
+    # ==============================
+    st.title("Fraud Decision Engine")
 
-<img class="hero-image" src="https://raw.githubusercontent.com/MaryaD97/customer-risk-intelligence/main/shield_01.jpg"/>
-</div>
+    st.markdown("""
+    **Decide the lowest-cost action for every transaction.**
+    """)
 
-<div class="hero-grid">
-
-<div>
-<div class="hero-list-title">What You Need</div>
-<div class="hero-list">
-👤 Customer score or rating<br>
-📊 Behavioral signal<br>
-💳 Transaction value
-</div>
-</div>
-
-<div class="hero-divider"></div>
-
-<div>
-<div class="hero-list-title">System Output</div>
-<div class="hero-list">
-🛡️ Detect fraud risk<br>
-📉 Estimate financial impact<br>
-✅ Recommend best action
-</div>
-</div>
-
-</div>
-
-</div>
-</div>"""
-  
-st.markdown(hero_html, unsafe_allow_html=True)
-
-    
-        
-# ==============================
-# UPLOAD SECTION (CLEAN LAYOUT)
-# ==============================
-st.markdown('<div class="upload-shell">', unsafe_allow_html=True)
-
-# TOP ROW (titles aligned horizontally)
-colA, colB = st.columns([1,1])
-
-with colA:
-    st.markdown('<div class="upload-title">Upload Data</div>', unsafe_allow_html=True)
-    st.markdown('<div class="upload-sub">Upload your dataset to begin decision analysis.</div>', unsafe_allow_html=True)
-
-with colB:
-    st.markdown('<div class="upload-title">Quick Start</div>', unsafe_allow_html=True)
-    st.markdown('<div class="upload-sub">Use sample data instantly.</div>', unsafe_allow_html=True)
-    
-
-
-# SECOND ROW (upload + button SAME LEVEL)
-col1, col2 = st.columns([1,1])
-
-with col1:
-    file = st.file_uploader(
-        "Upload CSV",
-        label_visibility="collapsed"
+    st.caption(
+        "Used to reduce fraud loss while minimizing manual review costs"
     )
 
-with col2:
-    sample_clicked = st.button("Use Sample Data", use_container_width=True)
+    st.markdown("---")
 
-st.markdown('</div>', unsafe_allow_html=True)
+    st.subheader("What You Need")
 
-# SECURITY BOX (BELOW, NOT SIDEWAYS)
-st.markdown("""
-<div style="
-margin-top:10px;
-background:#F1F5F9;
-border:1px solid #E2E8F0;
-padding:10px 14px;
-border-radius:10px;
-color:#475569;
-font-size:13px;
-width:60%;
-">
-🛡️ Your data is secure and used only for analysis. No data is stored permanently.
-</div>
-""", unsafe_allow_html=True)
-# ------------------------------
-# SAMPLE DATA FLOW
-# ------------------------------
-if sample_clicked:
-    df = pd.read_csv("sample_data.csv")
+    st.markdown("""
+    **Required:**
+    - Customer score or rating
+    - Behavioral signal (e.g. review or activity)
+    - Transaction value
 
-    required_cols = feature_columns + ["order_value"]
-    missing_cols = [col for col in required_cols if col not in df.columns]
+    The system will:
+    - Detect fraud risk
+    - Estimate financial impact
+    - Recommend the best action
+    """)
 
-    if missing_cols:
-        st.error(f"Missing required fields: {', '.join(missing_cols)}")
-        st.stop()
+    st.markdown("### Load Data")
 
-    df = df[required_cols]
-    df, _, _ = clean_data(df)
-
-    st.session_state.mapped_data = df
-    st.session_state.step = 2
-
-    st.success("Sample data loaded successfully")
-    st.rerun()
-
-
-# ------------------------------
-# FILE UPLOAD FLOW
-# ------------------------------
-if file:
-
-    df = pd.read_csv(file)
-
-    if df.empty:
-        st.error("Uploaded file is empty")
-        st.stop()
-
-    if len(df.columns) < 2:
-        st.error("File does not contain enough usable data")
-        st.stop()
+    st.caption(
+        "Upload your dataset to begin decision analysis"
+    )
 
     # ------------------------------
-    # PREVIEW
+    # DATA SOURCE
     # ------------------------------
-    st.markdown("### Data Preview")
-    st.dataframe(df.head(), use_container_width=True)
+    col1, col2 = st.columns(2)
 
-    st.markdown('<div class="medium-gap"></div>', unsafe_allow_html=True)
+    with col1:
+        file = st.file_uploader("Upload CSV")
+
+    with col2:
+        sample_clicked = st.button("Use Sample Data")
+
+    st.caption("Quick start with preloaded dataset")
 
     # ------------------------------
-    # MAPPING
+    # SAMPLE DATA FLOW
     # ------------------------------
-    st.markdown("### Map Required Fields")
-    st.caption("Match your dataset columns to required inputs")
+    if sample_clicked:
 
-    schema_signature = tuple(sorted(df.columns))
+        df = pd.read_csv("sample_data.csv")
 
-    if "saved_mappings" not in st.session_state:
-        st.session_state.saved_mappings = {}
+        required_cols = feature_columns + ["order_value"]
 
-    previous_mapping = st.session_state.saved_mappings.get(schema_signature, {})
+        missing_cols = [
+            col
+            for col in required_cols
+            if col not in df.columns
+        ]
 
-    def suggest_column(target, columns):
-        target = target.lower()
-        for col in columns:
-            if target in col.lower():
-                return col
-        return columns[0]
+        if missing_cols:
+            st.error(
+                f"Missing required fields: {', '.join(missing_cols)}"
+            )
+            st.stop()
 
-    mapping = {}
+        df = df[required_cols]
 
-    feature_labels = {
-        "rating": "Customer Score",
-        "sentiment_score": "Behavioral Signal",
-        "review_length": "Engagement Depth",
-        "helpfulness_ratio": "Peer Validation",
-        "verified_purchase": "Trust Indicator",
-        "order_value": "Transaction Value"
-    }
+        df, _, _ = clean_data(df)
 
-    left, right = st.columns(2)
+        st.session_state.mapped_data = df
 
-    for i, target_col in enumerate(feature_columns + ["order_value"]):
+        st.session_state.step = 2
 
-        default_col = previous_mapping.get(
-            target_col,
-            suggest_column(target_col, df.columns)
+        st.success("Sample data loaded successfully")
+
+        st.rerun()
+
+    # ------------------------------
+    # FILE UPLOAD FLOW
+    # ------------------------------
+    if file:
+
+        df = pd.read_csv(file)
+
+        if df.empty:
+            st.error("Uploaded file is empty")
+            st.stop()
+
+        if len(df.columns) < 2:
+            st.error(
+                "File does not contain enough usable data"
+            )
+            st.stop()
+
+        # ------------------------------
+        # PREVIEW
+        # ------------------------------
+        st.markdown("### Data Preview")
+
+        st.dataframe(
+            df.head(),
+            use_container_width=True
         )
 
-        container = left if i % 2 == 0 else right
+        st.markdown("---")
 
-        mapping[target_col] = container.selectbox(
-            feature_labels.get(target_col, target_col),
-            df.columns,
-            index=list(df.columns).index(default_col)
+        # ------------------------------
+        # MAPPING
+        # ------------------------------
+        st.markdown("### Map Required Fields")
+
+        st.caption(
+            "Match your dataset columns to required inputs"
         )
 
-    # ------------------------------
-    # VALIDATION
-    # ------------------------------
-    def validate_mapping(mapping, df):
-        errors = []
+        schema_signature = tuple(sorted(df.columns))
 
-        if len(set(mapping.values())) < len(mapping.values()):
-            errors.append("Duplicate columns selected")
+        if "saved_mappings" not in st.session_state:
+            st.session_state.saved_mappings = {}
 
-        for k, v in mapping.items():
-            if v not in df.columns:
-                errors.append(f"Missing column: {v}")
+        previous_mapping = (
+            st.session_state.saved_mappings.get(
+                schema_signature,
+                {}
+            )
+        )
 
-        return errors
+        def suggest_column(target, columns):
+            target = target.lower()
 
-    validation_errors = validate_mapping(mapping, df)
+            for col in columns:
+                if target in col.lower():
+                    return col
 
-    if validation_errors:
-        st.error("Mapping issues detected")
-        for err in validation_errors:
-            st.write(f"- {err}")
-    else:
-        st.success("Mapping complete")
+            return columns[0]
 
-    # ------------------------------
-    # CONFIRM
-    # ------------------------------
-    if st.button("Confirm & Continue"):
+        mapping = {}
+
+        feature_labels = {
+            "rating": "Customer Score",
+            "sentiment_score": "Behavioral Signal",
+            "review_length": "Engagement Depth",
+            "helpfulness_ratio": "Peer Validation",
+            "verified_purchase": "Trust Indicator",
+            "order_value": "Transaction Value"
+        }
+
+        left, right = st.columns(2)
+
+        for i, target_col in enumerate(
+            feature_columns + ["order_value"]
+        ):
+
+            default_col = previous_mapping.get(
+                target_col,
+                suggest_column(
+                    target_col,
+                    df.columns
+                )
+            )
+
+            container = left if i % 2 == 0 else right
+
+            mapping[target_col] = container.selectbox(
+                feature_labels.get(
+                    target_col,
+                    target_col
+                ),
+                df.columns,
+                index=list(df.columns).index(default_col)
+            )
+
+        # ------------------------------
+        # VALIDATION
+        # ------------------------------
+        def validate_mapping(mapping, df):
+
+            errors = []
+
+            if len(set(mapping.values())) < len(mapping.values()):
+                errors.append(
+                    "Duplicate columns selected"
+                )
+
+            for k, v in mapping.items():
+                if v not in df.columns:
+                    errors.append(
+                        f"Missing column: {v}"
+                    )
+
+            return errors
+
+        validation_errors = validate_mapping(
+            mapping,
+            df
+        )
 
         if validation_errors:
-            st.error("Fix mapping errors before proceeding")
+
+            st.error("Mapping issues detected")
+
+            for err in validation_errors:
+                st.write(f"- {err}")
+
         else:
-            df = df.rename(columns={v: k for k, v in mapping.items()})
+            st.success("Mapping complete")
 
-            required_cols = feature_columns + ["order_value"]
-            df = df[required_cols]
+        # ------------------------------
+        # CONFIRM
+        # ------------------------------
+        if st.button("Confirm & Continue"):
 
-            df, _, _ = clean_data(df)
+            if validation_errors:
 
-            st.session_state.saved_mappings[schema_signature] = mapping
-            st.session_state.mapped_data = df
+                st.error(
+                    "Fix mapping errors before proceeding"
+                )
 
-            st.success("Data ready for analysis")
+            else:
 
-            st.session_state.step = 2
-            st.rerun()
-    
-    
+                df = df.rename(
+                    columns={
+                        v: k
+                        for k, v in mapping.items()
+                    }
+                )
+
+                required_cols = (
+                    feature_columns + ["order_value"]
+                )
+
+                df = df[required_cols]
+
+                df, _, _ = clean_data(df)
+
+                st.session_state.saved_mappings[
+                    schema_signature
+                ] = mapping
+
+                st.session_state.mapped_data = df
+
+                st.success("Data ready for analysis")
+
+                st.session_state.step = 2
+
+                st.rerun()
 
 # ==============================
 # CONFIG
 # ==============================
 elif st.session_state.step == 2:
-    render_topbar(2)
 
-    if st.button("← Back"):
-        st.session_state.step = 1
-        st.rerun()
+    st.button(
+        "← Back",
+        on_click=lambda: st.session_state.update(step=1)
+    )
 
     if st.session_state.mapped_data is None:
         st.warning("Upload data first to continue")
         st.stop()
 
     st.title("Set Business Assumptions")
-    st.caption("Define the financial impact of fraud and manual review")
+
+    st.caption(
+        "Define the financial impact of fraud and manual review"
+    )
 
     st.caption("""
     Assumptions:
-    
-    - Manual review catches ~90% of fraud  
-    - Automation catches ~60% of fraud  
-    
+    - Manual review catches ~90% of fraud
+    - Automation catches ~60% of fraud
+
     Automation reduces review cost but allows more fraud loss.
     """)
 
     col1, col2 = st.columns(2)
 
     fraud_cost = col1.slider(
-        "Fraud Loss Multiplier (impact of missed fraud)",
-        1.0, 5.0,
+        "Fraud Loss Multiplier",
+        1.0,
+        5.0,
         st.session_state.config["fraud_cost"]
     )
-    
+
     review_cost = col2.slider(
-        "Manual Review Cost (cost per transaction review)",
-        1.0, 20.0,
+        "Cost per Manual Review",
+        1.0,
+        20.0,
         st.session_state.config["review_cost"]
     )
 
+    st.caption("""
+    Fraud Loss Multiplier = financial impact when fraud is missed
+    (relative to order value)
+
+    Cost per Manual Review = operational cost to investigate one
+    transaction
+    """)
 
     st.session_state.config = {
         "fraud_cost": fraud_cost,
         "review_cost": review_cost
     }
 
+    st.button(
+        "Run Decision Engine",
+        on_click=lambda: st.session_state.update(step=3)
+    )
 
-    if st.button("Run Decision Engine →", use_container_width=True):
+# ==============================
+# RUN
+# ==============================
+elif st.session_state.step == 3:
 
-        with st.spinner("Running decision engine..."):
-    
-            df = st.session_state.mapped_data.copy()
-            cfg = st.session_state.config
-    
-            X = df[feature_columns]
-            df["risk_probability"] = model.predict_proba(X)[:, 1]
-            if "risk_probability" not in df.columns:
-                st.error("Risk model failed to generate predictions")
-                st.stop()
-    
-            df = simulate_decisions(
-                df,
-                cfg["fraud_cost"],
-                cfg["review_cost"]
-            )
-    
-            df["risk_tier"] = df["risk_probability"].apply(risk_tier)
-    
-            st.session_state.results = df
-    
-        st.session_state.step = 3
-        st.rerun()
+    st.button(
+        "← Back",
+        on_click=lambda: st.session_state.update(step=2)
+    )
+
+    st.title("Run Decision Engine")
+
+    st.caption(
+        "Analyze transactions and compute the lowest-cost action"
+    )
+
+    if st.session_state.mapped_data is None:
+
+        st.warning("Upload your data to continue")
+        st.stop()
+
+    else:
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        generate = st.button("Run Analysis")
+
+        if generate:
+
+            with st.spinner("Running decision engine..."):
+
+                df = st.session_state.mapped_data.copy()
+
+                cfg = st.session_state.config
+
+                X = df[feature_columns]
+
+                try:
+                    df["risk_probability"] = (
+                        model.predict_proba(X)[:, 1]
+                    )
+
+                except Exception:
+
+                    st.error(
+                        "Unable to analyze this dataset. "
+                        "Please check your input format."
+                    )
+                    st.stop()
+
+                df = simulate_decisions(
+                    df,
+                    cfg["fraud_cost"],
+                    cfg["review_cost"]
+                )
+
+                df["risk_tier"] = df[
+                    "risk_probability"
+                ].apply(risk_tier)
+
+                st.session_state.results = df
+
+                # 🚀 FORCE UI UPDATE
+                st.session_state.step = 4
+
+                st.rerun()
 
 # ==============================
 # DECISIONS
 # ==============================
-elif st.session_state.step == 3:
-        render_topbar(3)
+elif st.session_state.step == 4:
 
-        if st.button("← Back"):
-            st.session_state.step = 2
-            st.rerun()
-    
-        if st.session_state.results is None:
-            st.warning("Generate decisions first")
-            st.stop()
-    
-        st.markdown('<div class="section-title">Decision Dashboard</div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-sub">Lowest-cost actions for every transaction based on current assumptions.</div>', unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
-        
-        sim_fraud = col1.slider(
-            "Fraud Loss Multiplier",
-            1.0, 5.0,
-            st.session_state.config["fraud_cost"]
-        )
-        
-        sim_review = col2.slider(
-            "Manual Review Cost",
-            1.0, 20.0,
-            st.session_state.config["review_cost"]
-        )
-        
-        base_df = st.session_state.results
-        sim_df = simulate_decisions(base_df, sim_fraud, sim_review)
-        
-        total_cost = sim_df["expected_cost"].sum()
-        baseline = estimate_baseline_cost(sim_df)
-        savings = baseline - total_cost
-        automation_rate = (sim_df["optimal_strategy"].str.contains("AI")).mean()
-        
-        k1, k2, k3 = st.columns(3)
-        
-        with k1:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Total Expected Cost</div>
-                <div class="kpi-value">{format_money(total_cost)}</div>
-                <div class="kpi-sub">Optimized strategy output</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with k2:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Savings vs Baseline</div>
-                <div class="kpi-value kpi-green">{format_money(savings)}</div>
-                <div class="kpi-sub">Compared to reviewing all orders</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with k3:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Automation Rate</div>
-                <div class="kpi-value">{automation_rate:.1%}</div>
-                <div class="kpi-sub">Orders auto-approved</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        left, right = st.columns([1.4, 1])
+    st.button(
+        "← Back",
+        on_click=lambda: st.session_state.update(step=3)
+    )
 
-        full_auto_cost = (
+    if st.session_state.results is None:
+        st.warning("Generate decisions first")
+        st.stop()
+
+    st.title("Recommended Actions")
+
+    st.caption(
+        "Each action minimizes expected cost per transaction"
+    )
+
+    st.subheader("Adjust Costs")
+
+    col1, col2 = st.columns(2)
+
+    sim_fraud = col1.slider(
+        "Fraud Loss Multiplier",
+        1.0,
+        5.0,
+        st.session_state.config["fraud_cost"]
+    )
+
+    sim_review = col2.slider(
+        "Cost per Manual Review",
+        1.0,
+        20.0,
+        st.session_state.config["review_cost"]
+    )
+
+    if st.session_state.mapped_data is not None:
+
+        st.caption(
+            f"Data Loaded: Yes | "
+            f"Rows: {len(st.session_state.mapped_data)} | "
+            f"Fraud Cost: {st.session_state.config['fraud_cost']} | "
+            f"Review Cost: {st.session_state.config['review_cost']}"
+        )
+
+    # ✅ FIXED INDENTATION STARTS HERE
+
+    base_df = st.session_state.results
+
+    sim_df = simulate_decisions(
+        base_df,
+        sim_fraud,
+        sim_review
+    )
+
+    st.session_state.simulated_results = sim_df
+
+    st.divider()
+
+    total_cost = sim_df["expected_cost"].sum()
+
+    automation_rate = (
+        sim_df["optimal_strategy"]
+        .str.contains("AI")
+        .mean()
+    )
+
+    baseline = estimate_baseline_cost(sim_df)
+
+    savings = baseline - total_cost
+
+    full_auto_cost = (
+        (
             (1 - AI_EFFECTIVENESS)
             * sim_df["risk_probability"]
             * sim_df["order_value"]
             * sim_fraud
-        ).sum()
-        
-        with left:
-            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-            st.markdown("### Cost Comparison")
-        
-            st.progress(min(total_cost / max(baseline,1), 1.0))
-            st.caption(f"Optimized cost is {total_cost / baseline:.1%} of full review cost")
-        
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Human Review", format_money(baseline))
-            c2.metric("AI Only", format_money(full_auto_cost))
-            c3.metric("Optimized", format_money(total_cost))
-        
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with right:
-            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-            st.markdown("### Decision Breakdown")
-        
-            auto_rate = automation_rate
-            review_rate = 1 - automation_rate
-
-        st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
-
-        c1, c2 = st.columns(2)
-            
-        with c1:
-            st.button("Approve", use_container_width=True)
-            
-        with c2:
-            st.button("Send to Review", use_container_width=True)
-        
-        import plotly.express as px
-
-        fig = px.pie(
-            values=[auto_rate, review_rate],
-            names=["Auto Approved", "Manual Review"],
-            hole=0.6
         )
-            
-        fig.update_layout(
-            margin=dict(t=10, b=10, l=10, r=10)
-        )
-            
-        st.plotly_chart(fig, use_container_width=True)
-                    
-        st.markdown('</div>', unsafe_allow_html=True)
+    ).sum()
 
-        # -----------------------------
-        # CREATE CONSISTENT ID COLUMN
-        # -----------------------------
-        sim_df = sim_df.reset_index(drop=True)
-        sim_df["Transaction ID"] = sim_df.index + 1
+    # Card 1
+    
+
+    st.markdown("### Cost Impact")
+
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    
+    st.metric(
+        "You Saved",
+        format_money(savings)
+    )
+    
+    c1, c2 = st.columns(2)
+    
+    c1.metric(
+        "Baseline Cost",
+        format_money(baseline)
+    )
+    
+    c2.metric(
+        "Optimized Cost",
+        format_money(total_cost)
+    )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Card 2
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    
+    st.markdown("#### Decision Breakdown")
+    
+    c1, c2 = st.columns(2)
+    
+    c1.metric(
+        "Approved Automatically",
+        f"{automation_rate:.1%}"
+    )
+    
+    c2.metric(
+        "Requires Review",
+        f"{1 - automation_rate:.1%}"
+    )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    display_df = sim_df.copy()
+    
+    if "transaction_id" in display_df.columns:
+        display_df = display_df.rename(
+            columns={"transaction_id": "Transaction ID"}
+        )
         id_name = "Transaction ID"
-        
-        # -----------------------------
-        # CREATE WORKING DATAFRAME
-        # -----------------------------
-        display_df = sim_df.copy()
-        
-        if display_df.empty:
-            st.warning("No valid transactions to display")
-            st.stop()
-        
-        # -----------------------------
-        # SORTING (BEFORE TRANSFORMS)
-        # -----------------------------
-        sort_option = st.selectbox(
-            "Sort by",
-            [
-                "Original Order",
-                "Highest Risk (Recommended)",
-                "Highest Cost",
-                "Lowest Cost"
-            ],
-            index=1
+    else:
+        display_df = (
+            display_df
+            .reset_index()
+            .rename(columns={"index": "Row ID"})
         )
-        
-        if sort_option == "Highest Risk (Recommended)":
-            display_df = display_df.sort_values(by="risk_probability", ascending=False)
-        elif sort_option == "Highest Cost":
-            display_df = display_df.sort_values(by="expected_cost", ascending=False)
-        elif sort_option == "Lowest Cost":
-            display_df = display_df.sort_values(by="expected_cost", ascending=True)
-        
-        # -----------------------------
-        # VALIDATION
-        # -----------------------------
-        if "optimal_strategy" not in display_df.columns:
-            st.error("Decision logic failed — no strategy found")
-            st.stop()
-        
-        if "risk_probability" not in display_df.columns:
-            st.error("Missing risk scores")
-            st.stop()
-        
-        if "expected_cost" not in display_df.columns:
-            st.error("Missing expected cost data")
-            st.stop()
-        
-        # -----------------------------
-        # DERIVED COLUMNS (ORDER MATTERS)
-        # -----------------------------
-        
-        # Decision
-        display_df["Decision"] = display_df["optimal_strategy"].apply(map_action)
-        display_df["Decision"] = display_df["Decision"].replace({
-            "Auto Approve (AI)": "✓ Approve",
-            "Manual Review": "Review"
-        })
-        
-        # Why
-        try:
-            display_df["Why"] = display_df.apply(generate_reason, axis=1)
-        except Exception:
-            st.error("Failed to generate explanations")
-            st.stop()
-        
-        display_df["Why"] = display_df["Why"].str.capitalize()
-        display_df["Why"] = display_df["Why"].str.replace(",", " •")
-        
-        # Risk Level
-        display_df["Risk Level"] = display_df["risk_probability"].apply(risk_tier)
-        display_df["Risk Level"] = display_df["Risk Level"].str.upper()
-        
-        # Formatted fields
-        display_df["Risk Score"] = display_df["risk_probability"].map(lambda x: f"{x:.2f}")
-        display_df["Expected Cost"] = display_df["expected_cost"].map(format_money)
-        
-        # -----------------------------
-        # FINAL COLUMN SELECTION
-        # -----------------------------
-        required_columns = [
+        id_name = "Row ID"
+    
+    if display_df.empty:
+        st.warning("No valid transactions to display")
+        st.stop()
+    
+    sort_option = st.selectbox(
+        "Sort by",
+        [
+            "Default Order",
+            "Highest Risk (Recommended)",
+            "Highest Cost",
+            "Lowest Cost"
+        ]
+    )
+    
+    show_high_risk = st.checkbox(
+        "Show high-risk transactions only"
+    )
+    
+    # Apply sorting BEFORE formatting
+    
+    if sort_option == "Highest Risk (Recommended)":
+        display_df = display_df.sort_values(
+            by="risk_probability",
+            ascending=False
+        )
+    
+    elif sort_option == "Highest Cost":
+        display_df = display_df.sort_values(
+            by="expected_cost",
+            ascending=False
+        )
+    
+    elif sort_option == "Lowest Cost":
+        display_df = display_df.sort_values(
+            by="expected_cost",
+            ascending=True
+        )
+    
+    if show_high_risk:
+        display_df = display_df[
+            display_df["risk_probability"] >= 0.70
+        ]
+    
+    display_df["Decision"] = (
+        display_df["optimal_strategy"]
+        .apply(map_action)
+    )
+    
+    display_df["Why"] = (
+        display_df
+        .apply(generate_reason, axis=1)
+    )
+    
+    display_df["Why"] = (
+        display_df["Why"]
+        .str.capitalize()
+    )
+    
+    display_df = display_df[
+        [
             id_name,
             "Decision",
-            "Risk Level",
-            "Risk Score",
-            "Expected Cost",
+            "risk_probability",
+            "expected_cost",
             "Why"
         ]
-        
-        missing_cols = [col for col in required_columns if col not in display_df.columns]
-        
-        if missing_cols:
-            st.error(f"Missing columns: {missing_cols}")
-            st.write("Available columns:", list(display_df.columns))
-            st.stop()
-        
-        display_df = display_df[required_columns]
-        
-        # ✅ APPLY STYLING LAST (after column rename)
-        
+    ]
     
-        # ==============================
-        # TABLE + ANALYST PANEL LAYOUT
-        # ==============================
-        
-        left, right = st.columns([1.6, 1])
-        
-        # -----------------------------
-        # PREP DISPLAY DATA (KEEP YOUR EXISTING LOGIC ABOVE THIS)
-        # -----------------------------
-        
-        # Risk Badge Styling
-        def risk_badge_html(val):
-            if val == "HIGH":
-                return '<span class="badge high">HIGH</span>'
-            elif val == "MEDIUM":
-                return '<span class="badge medium">MEDIUM</span>'
-            else:
-                return '<span class="badge low">LOW</span>'
-                
-        display_df["Risk Level"] = display_df["Risk Level"].apply(risk_badge_html)
-        
-        # Decision styling
-        display_df["Decision"] = display_df["Decision"].replace({
-            "✓ Approve": "✅ Approve",
-            "Review": "🛑 Review"
-        })
-        
-        # -----------------------------
-        # LEFT: TABLE
-        # -----------------------------
-        with left:
-            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-            st.markdown("### Transactions")
-        
-            st.dataframe(
-            display_df,
-            use_container_width=True,
-            hide_index=True
-        )
-        
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        # -----------------------------
-        # RIGHT: ANALYST PANEL
-        # -----------------------------
-        with right:
-            st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-            st.markdown("### Analyst View")
-        
-            options = display_df[id_name].tolist()
-        
-            selected_id = st.selectbox(
-                "Select Transaction",
-                options
-            )
-        
-            # FIXED SELECTION (IMPORTANT)
-            row = sim_df.loc[sim_df[id_name] == selected_id].iloc[0] if selected_id in sim_df[id_name].values else sim_df.iloc[0]
-        
-            st.markdown(f"""
-            **Decision:** {map_action(row['optimal_strategy'])}  
-            **Risk Score:** {row['risk_probability']:.2f}  
-            **Expected Cost:** {format_money(row['expected_cost'])}
-            """)
-            
-            st.markdown("##### Cost Breakdown")
-            
-            st.markdown(f"""
-            AI: {format_money(row['cost_ai'])}  
-            Human: {format_money(row['cost_human'])}  
-            Hybrid: {format_money(row['cost_hybrid'])}
-            """)
-            
-            st.markdown("##### Risk Drivers")
-            st.markdown(" • ".join(get_risk_drivers(row)))
-        
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        st.button(
-            "View Insights →",
-            use_container_width=True,
-            on_click=lambda: st.session_state.update(step=4)
-        )
+    display_df.columns = [
+        id_name,
+        "Recommended Action",
+        "Fraud Risk Score",
+        "Expected Cost",
+        "Why"
+    ]
+    
+    display_df["Fraud Risk Score"] = (
+        display_df["Fraud Risk Score"]
+        .map(lambda x: f"{x:.2f} ({risk_tier(x)})")
+    )
+    
+    display_df["Expected Cost"] = (
+        display_df["Expected Cost"]
+        .map(format_money)
+    )
+
+    # ==============================
+    # TRANSACTION TABLE
+    # ==============================
+    
+    def color_decision(val):
+        if "Auto" in val:
+            return "color: #22C55E; font-weight: 600"
+        elif "Review" in val:
+            return "color: #F59E0B; font-weight: 600"
+        return ""
+    
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    
+    st.markdown("#### Transaction Decisions")
+    
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        height=480,
+        hide_index=True
+    )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # ==============================
+    # DECISION EXPLAINER
+    # ==============================
+    
+    st.subheader("Decision Rationale")
+    
+    selected_index = st.selectbox(
+        "Select Transaction",
+        range(len(sim_df))
+    )
+    
+    row = sim_df.iloc[selected_index]
+    
+    st.markdown("### Decision Breakdown")
+    
+    st.markdown(
+        f"""
+    **Recommended Action:** {map_action(row['optimal_strategy'])}
+    
+    **Expected Cost:** {format_money(row['expected_cost'])}
+    
+    **Fraud Risk Score:** {row['risk_probability']:.2f}
+    """
+    )
+    
+    st.markdown("**Top Risk Drivers**")
+    
+    drivers = get_risk_drivers(row)
+    
+    for d in drivers:
+        st.markdown(f"- {d}")
+    
+    st.button(
+        "View Insights",
+        on_click=lambda: st.session_state.update(step=5)
+    )
+
 # ==============================
 # INSIGHTS
 # ==============================
-elif st.session_state.step == 4:
-    render_topbar(4)
 
-    df = st.session_state.results
+elif st.session_state.step == 5:
 
-    if st.button("← Back"):
-        st.session_state.step = 3
-        st.rerun()
-    
+    df = st.session_state.get(
+        "simulated_results",
+        st.session_state.results
+    )
+
+    st.button(
+        "← Back",
+        on_click=lambda: st.session_state.update(step=4)
+    )
+
     if st.session_state.results is None:
         st.warning("Generate decisions first")
         st.stop()
 
     st.title("Value Summary")
-    st.caption("Impact based on your current cost settings")
+
+    st.caption(
+        "Impact based on your current cost settings"
+    )
 
     baseline = estimate_baseline_cost(df)
     optimized = df["expected_cost"].sum()
+
     savings = baseline - optimized
-    reduction = (savings / baseline) if baseline > 0 else 0
-        
-    # HERO VALUE
-    st.markdown(f"## 💰 {format_money(savings)} saved")
-    st.caption("Using optimized decisioning instead of reviewing all transactions manually")
-    
-    st.markdown(f"""
-    Reduced total cost from **{format_money(baseline)}** → **{format_money(optimized)}**
-    """)
-        
+
+    reduction = (
+        savings / baseline
+        if baseline > 0
+        else 0
+    )
+
+    automation_rate = (
+        df["optimal_strategy"]
+        .str.contains("AI")
+        .mean()
+    )
+
+    # ==============================
+    # HERO METRIC
+    # ==============================
+
+    st.metric(
+        "You Saved",
+        format_money(savings)
+    )
+
+    st.caption(
+        "Compared to a human-review-only strategy"
+    )
+
+    # ==============================
+    # BUSINESS IMPACT
+    # ==============================
+
     st.subheader("Business Impact")
-        
+
     c1, c2, c3, c4 = st.columns(4)
 
-    c1.metric("Human Review Strategy", format_money(baseline))
-    c2.metric("Optimized Cost", format_money(optimized))
-    c3.metric("Loss Reduction", f"{reduction:.1%}")
-    c4.metric("Automation Rate", f"{(df['optimal_strategy'].str.contains('AI')).mean():.1%}")
+    c1.metric(
+        "Baseline Cost",
+        format_money(baseline)
+    )
+
+    c2.metric(
+        "Optimized Cost",
+        format_money(optimized)
+    )
+
+    c3.metric(
+        "Loss Reduction",
+        f"{reduction:.1%}"
+    )
+
+    c4.metric(
+        "Automation Rate",
+        f"{automation_rate:.1%}"
+    )
+
+    # ==============================
+    # KEY OUTCOMES
+    # ==============================
 
     st.subheader("Key Outcomes")
 
-    automation_rate = (df['optimal_strategy'].str.contains('AI')).mean()
+    st.markdown(
+        f"""
+- Saved **{format_money(savings)}**
+- Reduced cost by **{reduction:.1%}**
+- Automated **{automation_rate:.1%}** of decisions
+- Focused manual review on high-risk transactions
+"""
+    )
 
-    st.markdown(f"""
-    - {format_money(savings)} saved through optimized decisioning  
-    - {automation_rate:.1%} of transactions automated  
-    - Manual review focused on highest-risk cases  
-    """)
+
+
+
