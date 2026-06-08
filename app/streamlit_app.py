@@ -142,7 +142,7 @@ if "results" not in st.session_state:
 if "config" not in st.session_state:
     st.session_state.config = {
         "fraud_cost": 3.0,
-        "review_cost": 5.0
+        "review_cost": 8.0
     }
 
 if "step" not in st.session_state:
