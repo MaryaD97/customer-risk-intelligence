@@ -142,7 +142,7 @@ if "results" not in st.session_state:
 if "config" not in st.session_state:
     st.session_state.config = {
         "fraud_cost": 3.0,
-        "review_cost": 4.0
+        "review_cost": 5.0
     }
 
 if "step" not in st.session_state:
@@ -464,7 +464,7 @@ if st.session_state.step == 1:
         st.markdown("### Map Required Fields")
 
         st.caption(
-            "Match your dataset columns to required inputs"
+            "Match your dataset columns to required fields below."
         )
 
         schema_signature = tuple(sorted(df.columns))
@@ -811,11 +811,7 @@ elif st.session_state.step == 4:
     ).sum()
 
     # Card 1
-    
-
     st.markdown("### Cost Impact")
-
-    st.markdown('<div class="card">', unsafe_allow_html=True)
     
     st.metric(
         "You Saved",
@@ -833,11 +829,9 @@ elif st.session_state.step == 4:
         "Optimized Cost",
         format_money(total_cost)
     )
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+
     
     # Card 2
-    st.markdown('<div class="card">', unsafe_allow_html=True)
     
     st.markdown("#### Decision Breakdown")
     
@@ -853,7 +847,6 @@ elif st.session_state.step == 4:
         f"{1 - automation_rate:.1%}"
     )
     
-    st.markdown('</div>', unsafe_allow_html=True)
     
     display_df = sim_df.copy()
     
@@ -967,8 +960,6 @@ elif st.session_state.step == 4:
             return "color: #F59E0B; font-weight: 600"
         return ""
     
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    
     st.markdown("#### Transaction Decisions")
     
     st.dataframe(
@@ -978,7 +969,6 @@ elif st.session_state.step == 4:
         hide_index=True
     )
     
-    st.markdown('</div>', unsafe_allow_html=True)
     
     # ==============================
     # DECISION EXPLAINER
