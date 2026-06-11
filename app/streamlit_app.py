@@ -316,11 +316,11 @@ def estimate_baseline_cost(df):
 
 def format_money(x):
     if x >= 1_000_000:
-        return f"${x/1_000_000:.1f}M"
+        return f"${x/1_000_000:.2f}M"
     elif x >= 1_000:
-        return f"${x/1_000:.1f}K"
+        return f"${x/1_000:.2f}K"
 
-    return f"${x:.0f}"
+    return f"${x:.2f}"
 
 
 steps = [
@@ -810,12 +810,21 @@ elif st.session_state.step == 4:
         )
     ).sum()
 
+    automation_savings = full_auto_cost - total_cost
+
     # Card 1
     st.markdown("### Cost Impact")
     
-    st.metric(
-        "You Saved",
+    c1, c2 = st.columns(2)
+
+    c1.metric(
+        "Saved vs Human Review",
         format_money(savings)
+    )
+    
+    c2.metric(
+        "Saved vs AI-Only",
+        format_money(automation_savings)
     )
     
     c1, c2 = st.columns(2)
@@ -1060,7 +1069,7 @@ elif st.session_state.step == 5:
     )
 
     st.caption(
-        "Compared to a human-review-only strategy"
+        "Comparison against human-review-only and fully automated strategies"
     )
 
     # ==============================
