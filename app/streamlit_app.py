@@ -322,6 +322,14 @@ def format_money(x):
 
     return f"${x:.2f}"
 
+def format_money_short(x):
+    if x >= 1_000_000:
+        return f"${x/1_000_000:.1f}M"
+    elif x >= 1_000:
+        return f"${x/1_000:.1f}K"
+
+    return f"${x:.1f}"
+
 
 steps = [
     "Upload Data",
@@ -818,13 +826,13 @@ elif st.session_state.step == 4:
     c1, c2 = st.columns(2)
 
     c1.metric(
-        "Saved vs Human Review",
-        format_money(savings)
+        "Saved vs Manual Review",
+        format_money_short(savings)
     )
     
     c2.metric(
         "Saved vs AI-Only",
-        format_money(automation_savings)
+        format_money_short(automation_savings)
     )
     
     c1, c2 = st.columns(2)
@@ -844,9 +852,7 @@ elif st.session_state.step == 4:
 
     transactions_analyzed = len(sim_df)
     
-    st.markdown(
-        f"#### Decision Breakdown ({transactions_analyzed:,} Transactions)"
-    )
+    st.markdown("#### Decision Breakdown")
     
     c1, c2 = st.columns(2)
     
@@ -1133,7 +1139,7 @@ elif st.session_state.step == 5:
     # OPERATIONAL IMPACT
     # ==============================
     
-    st.subheader("Operational Impact")
+    st.subheader("Operations Summary")
     
     transactions_analyzed = len(df)
     
@@ -1164,6 +1170,22 @@ elif st.session_state.step == 5:
         "Manual Reviews",
         f"{transactions_reviewed:,}"
     )
+
+# ==============================
+# BUSINESS OUTCOME SUMMARY
+# ==============================
+
+st.subheader("Business Outcome Summary")
+
+st.markdown(
+    f"""
+The decision engine analyzed **{transactions_analyzed:,} transactions** and recommended the lowest-cost action for each case.
+
+**{transactions_automated:,} transactions** were approved automatically, while **{transactions_reviewed:,} transactions** were routed for manual review.
+
+Based on the current business assumptions, expected operating cost decreased from **{format_money(baseline)}** to **{format_money(optimized)}**, generating projected savings of **{format_money(savings)}**.
+"""
+)
 
     
     
