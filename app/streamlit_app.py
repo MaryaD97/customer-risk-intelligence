@@ -1122,6 +1122,19 @@ elif st.session_state.step == 5:
         .mean()
     )
 
+    transactions_analyzed = len(df)
+    
+    transactions_reviewed = (
+        df["optimal_strategy"]
+        .eq("Human Review")
+        .sum()
+    )
+    
+    transactions_automated = (
+        transactions_analyzed
+        - transactions_reviewed
+    )
+
     # ==============================
     # HERO METRIC
     # ==============================
@@ -1174,24 +1187,6 @@ elif st.session_state.step == 5:
 # ==============================
 # BUSINESS OUTCOME SUMMARY
 # ==============================
-
-baseline = estimate_baseline_cost(df)
-optimized = df["expected_cost"].sum()
-
-savings = baseline - optimized
-
-transactions_analyzed = len(df)
-
-transactions_reviewed = (
-    df["optimal_strategy"]
-    .eq("Human Review")
-    .sum()
-)
-
-transactions_automated = (
-    transactions_analyzed
-    - transactions_reviewed
-)
 
 st.subheader("Business Outcome Summary")
 
