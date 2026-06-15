@@ -1107,21 +1107,21 @@ elif st.session_state.step == 5:
 
     baseline = estimate_baseline_cost(df)
     optimized = df["expected_cost"].sum()
-
+    
     savings = baseline - optimized
-
+    
     reduction = (
         savings / baseline
         if baseline > 0
         else 0
     )
-
+    
     automation_rate = (
         df["optimal_strategy"]
         .str.contains("AI")
         .mean()
     )
-
+    
     transactions_analyzed = len(df)
     
     transactions_reviewed = (
