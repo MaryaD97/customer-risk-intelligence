@@ -841,8 +841,12 @@ elif st.session_state.step == 4:
 
     
     # Card 2
+
+    transactions_analyzed = len(sim_df)
     
-    st.markdown("#### Decision Breakdown")
+    st.markdown(
+        f"#### Decision Breakdown ({transactions_analyzed:,} Transactions)"
+    )
     
     c1, c2 = st.columns(2)
     
@@ -854,6 +858,29 @@ elif st.session_state.step == 4:
     c2.metric(
         "Requires Review",
         f"{1 - automation_rate:.1%}"
+    )
+
+    # ==============================
+    # STRATEGY DISTRIBUTION
+    # ==============================
+    
+    st.markdown("#### Strategy Distribution")
+    
+    strategy_counts = (
+        sim_df["optimal_strategy"]
+        .value_counts()
+    )
+    
+    dist1, dist2 = st.columns(2)
+    
+    dist1.metric(
+        "AI Automation",
+        f"{strategy_counts.get('AI Automation', 0):,}"
+    )
+    
+    dist2.metric(
+        "Human Review",
+        f"{strategy_counts.get('Human Review', 0):,}"
     )
     
     
@@ -990,13 +1017,15 @@ elif st.session_state.step == 4:
         range(len(sim_df))
     )
     
-    row = sim_df.iloc[selected_index]
-    
     st.markdown("### Decision Breakdown")
+
+    recommended_action = map_action(
+        row["optimal_strategy"]
+    )
     
     st.markdown(
         f"""
-    **Recommended Action:** {map_action(row['optimal_strategy'])}
+    **Recommended Action:** {recommended_action}
     
     **Expected Cost:** {format_money(row['expected_cost'])}
     
@@ -1004,17 +1033,45 @@ elif st.session_state.step == 4:
     """
     )
     
-    st.markdown("**Top Risk Drivers**")
+    st.markdown("#### Why This Action Was Chosen")
+    
+    ai_cost = row["cost_ai"]
+    human_cost = row["cost_human"]
+    hybrid_cost = row["cost_hybrid"]
+    
+    if row["optimal_strategy"] == "AI Automation":
+    
+        explanation = (
+            f"AI Automation was selected because its expected cost "
+            f"({format_money(ai_cost)}) is lower than Human Review "
+            f"({format_money(human_cost)}) and Hybrid "
+            f"({format_money(hybrid_cost)})."
+        )
+    
+    elif row["optimal_strategy"] == "Human Review":
+    
+        explanation = (
+            f"Human Review was selected because its expected cost "
+            f"({format_money(human_cost)}) is lower than AI Automation "
+            f"({format_money(ai_cost)}) and Hybrid "
+            f"({format_money(hybrid_cost)})."
+        )
+    
+    else:
+    
+        explanation = (
+            f"Hybrid was selected because its expected cost "
+            f"({format_money(hybrid_cost)}) is lower than the other strategies."
+        )
+    
+    st.info(explanation)
+    
+    st.markdown("#### Key Risk Signals")
     
     drivers = get_risk_drivers(row)
     
     for d in drivers:
         st.markdown(f"- {d}")
-    
-    st.button(
-        "View Insights",
-        on_click=lambda: st.session_state.update(step=5)
-    )
 
 # ==============================
 # INSIGHTS
@@ -1073,46 +1130,42 @@ elif st.session_state.step == 5:
     )
 
     # ==============================
-    # BUSINESS IMPACT
+    # OPERATIONAL IMPACT
     # ==============================
-
-    st.subheader("Business Impact")
-
-    c1, c2, c3, c4 = st.columns(4)
-
+    
+    st.subheader("Operational Impact")
+    
+    transactions_analyzed = len(df)
+    
+    transactions_reviewed = (
+        df["optimal_strategy"]
+        .eq("Human Review")
+        .sum()
+    )
+    
+    transactions_automated = (
+        transactions_analyzed
+        - transactions_reviewed
+    )
+    
+    c1, c2, c3 = st.columns(3)
+    
     c1.metric(
-        "Baseline Cost",
-        format_money(baseline)
+        "Transactions Analyzed",
+        f"{transactions_analyzed:,}"
     )
-
+    
     c2.metric(
-        "Optimized Cost",
-        format_money(optimized)
+        "Automated Decisions",
+        f"{transactions_automated:,}"
     )
-
+    
     c3.metric(
-        "Loss Reduction",
-        f"{reduction:.1%}"
+        "Manual Reviews",
+        f"{transactions_reviewed:,}"
     )
 
-    c4.metric(
-        "Automation Rate",
-        f"{automation_rate:.1%}"
-    )
-
-    # ==============================
-    # KEY OUTCOMES
-    # ==============================
-
-    st.subheader("Key Outcomes")
-
-    st.markdown(
-        f"""
-- Saved **{format_money(savings)}**
-- Reduced cost by **{reduction:.1%}**
-- Automated **{automation_rate:.1%}** of decisions
-- Focused manual review on high-risk transactions
-"""
+    
     )
 
 
