@@ -1022,6 +1022,8 @@ elif st.session_state.step == 4:
         "Select Transaction",
         range(len(sim_df))
     )
+
+    row = sim_df.iloc[selected_index]
     
     st.markdown("### Decision Breakdown")
 
@@ -1184,21 +1186,21 @@ elif st.session_state.step == 5:
         f"{transactions_reviewed:,}"
     )
 
-# ==============================
-# BUSINESS OUTCOME SUMMARY
-# ==============================
-
-st.subheader("Business Outcome Summary")
-
-st.markdown(
-    f"""
-The decision engine analyzed **{transactions_analyzed:,} transactions** and recommended the lowest-cost action for each case.
-
-**{transactions_automated:,} transactions** were approved automatically, while **{transactions_reviewed:,} transactions** were routed for manual review.
-
-Based on the current business assumptions, expected operating cost decreased from **{format_money(baseline)}** to **{format_money(optimized)}**, generating projected savings of **{format_money(savings)}**.
-"""
-)
+    # ==============================
+    # BUSINESS OUTCOME SUMMARY
+    # ==============================
+    
+    st.subheader("Business Outcome Summary")
+    
+    st.markdown(
+        f"""
+    The decision engine analyzed **{transactions_analyzed:,} transactions** and recommended the lowest-cost action for each case.
+    
+    **{transactions_automated:,} transactions** were approved automatically, while **{transactions_reviewed:,} transactions** were routed for manual review.
+    
+    Based on the current business assumptions, expected operating cost decreased from **{format_money(baseline)}** to **{format_money(optimized)}**, generating projected savings of **{format_money(savings)}**.
+    """
+    )
 
     
     
