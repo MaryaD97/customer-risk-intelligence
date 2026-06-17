@@ -774,8 +774,6 @@ elif st.session_state.step == 4:
         st.session_state.config["review_cost"]
     )
 
-    if st.session_state.mapped_data is not None:
-
     # ✅ FIXED INDENTATION STARTS HERE
 
     base_df = st.session_state.results
