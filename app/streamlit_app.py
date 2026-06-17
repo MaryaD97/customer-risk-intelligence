@@ -776,13 +776,6 @@ elif st.session_state.step == 4:
 
     if st.session_state.mapped_data is not None:
 
-        st.caption(
-            f"Data Loaded: Yes | "
-            f"Rows: {len(st.session_state.mapped_data)} | "
-            f"Fraud Cost: {st.session_state.config['fraud_cost']} | "
-            f"Review Cost: {st.session_state.config['review_cost']}"
-        )
-
     # ✅ FIXED INDENTATION STARTS HERE
 
     base_df = st.session_state.results
@@ -1041,39 +1034,6 @@ elif st.session_state.step == 4:
     """
     )
     
-    st.markdown("#### Why This Action Was Chosen")
-    
-    ai_cost = row["cost_ai"]
-    human_cost = row["cost_human"]
-    hybrid_cost = row["cost_hybrid"]
-    
-    if row["optimal_strategy"] == "AI Automation":
-    
-        explanation = (
-            f"AI Automation was selected because its expected cost "
-            f"({format_money(ai_cost)}) is lower than Human Review "
-            f"({format_money(human_cost)}) and Hybrid "
-            f"({format_money(hybrid_cost)})."
-        )
-    
-    elif row["optimal_strategy"] == "Human Review":
-    
-        explanation = (
-            f"Human Review was selected because its expected cost "
-            f"({format_money(human_cost)}) is lower than AI Automation "
-            f"({format_money(ai_cost)}) and Hybrid "
-            f"({format_money(hybrid_cost)})."
-        )
-    
-    else:
-    
-        explanation = (
-            f"Hybrid was selected because its expected cost "
-            f"({format_money(hybrid_cost)}) is lower than the other strategies."
-        )
-    
-    st.info(explanation)
-    
     st.markdown("#### Key Risk Signals")
     
     drivers = get_risk_drivers(row)
@@ -1101,7 +1061,7 @@ elif st.session_state.step == 5:
         st.warning("Generate decisions first")
         st.stop()
 
-    st.title("Value Summary")
+    st.title("Business Impact Summary")
 
     st.caption(
         "Impact based on your current cost settings"
@@ -1147,7 +1107,7 @@ elif st.session_state.step == 5:
     )
 
     st.caption(
-        "Comparison against human-review-only and fully automated strategies"
+        "Projected savings from optimized decisioning"
     )
 
     # ==============================
