@@ -442,7 +442,13 @@ if st.session_state.step == 1:
     # ------------------------------
     if file:
 
-        df = pd.read_csv(file)
+        if file.name.endswith(".csv"):
+            df = pd.read_csv(file)
+        elif file.name.endswith((".xlsx", ".xls")):
+            df = pd.read_excel(file)
+        else:
+            st.error("Unsupported file format.")
+            st.stop()
 
         if df.empty:
             st.error("Uploaded file is empty")
