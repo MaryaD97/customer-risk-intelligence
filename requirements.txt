@@ -8,3 +8,4 @@ seaborn
 joblib
 shap
 plotly
+openpyxl
