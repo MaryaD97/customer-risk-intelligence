@@ -443,7 +443,7 @@ if st.session_state.step == 1:
     # ------------------------------
     # FILE UPLOAD FLOW
     # ------------------------------
-        if file:
+    if file:
     
         try:
     
