@@ -443,59 +443,59 @@ if st.session_state.step == 1:
     # ------------------------------
     # FILE UPLOAD FLOW
     # ------------------------------
-    if file:
-
-    try:
-
-        if file.name.lower().endswith(".csv"):
-
-            df = pd.read_csv(file)
-
-        elif file.name.lower().endswith((".xlsx", ".xls")):
-
-            df = pd.read_excel(file)
-
-        else:
-
+        if file:
+    
+        try:
+    
+            if file.name.lower().endswith(".csv"):
+    
+                df = pd.read_csv(file)
+    
+            elif file.name.lower().endswith((".xlsx", ".xls")):
+    
+                df = pd.read_excel(file)
+    
+            else:
+    
+                st.error(
+                    "Unsupported file format. Please upload a CSV (.csv) or Excel (.xlsx) file."
+                )
+                st.stop()
+    
+        except ImportError:
+    
             st.error(
-                "Unsupported file format. Please upload a CSV (.csv) or Excel (.xlsx) file."
+                "Excel support is unavailable because the required dependency is not installed. Please upload a CSV file instead."
             )
             st.stop()
-
-    except ImportError:
-
-        st.error(
-            "Excel support is unavailable because the required dependency is not installed. Please upload a CSV file instead."
-        )
-        st.stop()
-
-    except pd.errors.EmptyDataError:
-
-        st.error(
-            "The uploaded file is empty. Please upload a dataset containing records."
-        )
-        st.stop()
-
-    except Exception:
-
-        st.error(
-            "The uploaded file could not be read. Please verify that it is a valid CSV or Excel file."
-        )
-        st.stop()
-
-    if df.empty:
-
-        st.error(
-            "The uploaded dataset contains no records."
-        )
-        st.stop()
-
-    if len(df.columns) < 2:
-
-        st.error(
-            "The uploaded dataset does not contain enough columns for analysis."
-        )
-        st.stop()
+    
+        except pd.errors.EmptyDataError:
+    
+            st.error(
+                "The uploaded file is empty. Please upload a dataset containing records."
+            )
+            st.stop()
+    
+        except Exception:
+    
+            st.error(
+                "The uploaded file could not be read. Please verify that it is a valid CSV or Excel file."
+            )
+            st.stop()
+    
+        if df.empty:
+    
+            st.error(
+                "The uploaded dataset contains no records."
+            )
+            st.stop()
+    
+        if len(df.columns) < 2:
+    
+            st.error(
+                "The uploaded dataset does not contain enough columns for analysis."
+            )
+            st.stop()
 
         # ------------------------------
         # PREVIEW
