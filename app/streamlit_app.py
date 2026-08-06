@@ -623,18 +623,87 @@ if st.session_state.step == 1:
         def validate_mapping(mapping, df):
 
             errors = []
-
-            if len(set(mapping.values())) < len(mapping.values()):
+        
+            # Duplicate selections
+            if len(set(mapping.values())) != len(mapping.values()):
                 errors.append(
-                    "Duplicate columns selected"
+                    "Each required field must be mapped to a different column."
                 )
-
-            for k, v in mapping.items():
-                if v not in df.columns:
+        
+            # Missing columns
+            for feature, column in mapping.items():
+        
+                if column not in df.columns:
+        
                     errors.append(
-                        f"Missing column: {v}"
+                        f"'{column}' does not exist in the uploaded dataset."
                     )
-
+        
+                    continue
+        
+                # Empty column
+                if df[column].isna().all():
+        
+                    errors.append(
+                        f"'{column}' contains no usable values."
+                    )
+        
+            # Numeric fields
+            numeric_fields = [
+                "rating",
+                "sentiment_score",
+                "review_length",
+                "helpfulness_ratio",
+                "order_value"
+            ]
+        
+            for feature in numeric_fields:
+        
+                column = mapping[feature]
+        
+                converted = pd.to_numeric(
+                    df[column],
+                    errors="coerce"
+                )
+        
+                if converted.isna().all():
+        
+                    errors.append(
+                        f"'{column}' is not a numeric column."
+                    )
+        
+            # Verified Purchase
+            verified_col = mapping["verified_purchase"]
+        
+            valid_values = {
+                "yes",
+                "no",
+                "true",
+                "false",
+                "1",
+                "0"
+            }
+        
+            values = (
+                df[verified_col]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+                .unique()
+            )
+        
+            invalid = [
+                value
+                for value in values
+                if value not in valid_values
+            ]
+        
+            if invalid:
+        
+                errors.append(
+                    f"'{verified_col}' does not contain valid Yes/No values."
+                )
+        
             return errors
 
         validation_errors = validate_mapping(
@@ -644,14 +713,19 @@ if st.session_state.step == 1:
 
         if validation_errors:
 
-            st.error("Mapping issues detected")
-
+            st.error(
+                "Please resolve the following issues before continuing:"
+            )
+        
             for err in validation_errors:
-                st.write(f"- {err}")
-
+        
+                st.warning(err)
+        
+            st.stop()
+        
         else:
-            st.success("Mapping complete")
-
+        
+            st.success("✓ Mapping validated successfully")
         # ------------------------------
         # CONFIRM
         # ------------------------------
