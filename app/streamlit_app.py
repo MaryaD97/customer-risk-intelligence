@@ -397,7 +397,10 @@ if st.session_state.step == 1:
     col1, col2 = st.columns(2)
 
     with col1:
-        file = st.file_uploader("Upload CSV")
+        file = st.file_uploader(
+            "Upload Dataset",
+            type=["csv", "xlsx", "xls"]
+        )
 
     with col2:
         sample_clicked = st.button("Use Sample Data")
@@ -442,23 +445,57 @@ if st.session_state.step == 1:
     # ------------------------------
     if file:
 
-        if file.name.endswith(".csv"):
+    try:
+
+        if file.name.lower().endswith(".csv"):
+
             df = pd.read_csv(file)
-        elif file.name.endswith((".xlsx", ".xls")):
+
+        elif file.name.lower().endswith((".xlsx", ".xls")):
+
             df = pd.read_excel(file)
+
         else:
-            st.error("Unsupported file format.")
-            st.stop()
 
-        if df.empty:
-            st.error("Uploaded file is empty")
-            st.stop()
-
-        if len(df.columns) < 2:
             st.error(
-                "File does not contain enough usable data"
+                "Unsupported file format. Please upload a CSV (.csv) or Excel (.xlsx) file."
             )
             st.stop()
+
+    except ImportError:
+
+        st.error(
+            "Excel support is unavailable because the required dependency is not installed. Please upload a CSV file instead."
+        )
+        st.stop()
+
+    except pd.errors.EmptyDataError:
+
+        st.error(
+            "The uploaded file is empty. Please upload a dataset containing records."
+        )
+        st.stop()
+
+    except Exception:
+
+        st.error(
+            "The uploaded file could not be read. Please verify that it is a valid CSV or Excel file."
+        )
+        st.stop()
+
+    if df.empty:
+
+        st.error(
+            "The uploaded dataset contains no records."
+        )
+        st.stop()
+
+    if len(df.columns) < 2:
+
+        st.error(
+            "The uploaded dataset does not contain enough columns for analysis."
+        )
+        st.stop()
 
         # ------------------------------
         # PREVIEW
