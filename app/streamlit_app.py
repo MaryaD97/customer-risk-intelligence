@@ -476,11 +476,9 @@ if st.session_state.step == 1:
             )
             st.stop()
     
-        except Exception:
-    
-            st.error(
-                "The uploaded file could not be read. Please verify that it is a valid CSV or Excel file."
-            )
+        except Exception as e:
+
+            st.exception(e)      # TEMPORARY - for debugging only
             st.stop()
     
         if df.empty:
@@ -530,14 +528,56 @@ if st.session_state.step == 1:
             )
         )
 
+        COLUMN_ALIASES = {
+            "rating": [
+                "customer_rating",
+                "rating",
+                "review_rating",
+                "stars"
+            ],
+            "sentiment_score": [
+                "review_sentiment",
+                "sentiment_score",
+                "sentiment"
+            ],
+            "review_length": [
+                "review_word_count",
+                "review_length",
+                "word_count"
+            ],
+            "helpfulness_ratio": [
+                "helpful_vote_ratio",
+                "helpfulness_ratio",
+                "helpfulness"
+            ],
+            "verified_purchase": [
+                "verified_purchase_flag",
+                "verified_purchase"
+            ],
+            "order_value": [
+                "order_total_usd",
+                "order_value",
+                "transaction_value",
+                "purchase_amount"
+            ]
+        }
+        
+        
         def suggest_column(target, columns):
-            target = target.lower()
-
-            for col in columns:
-                if target in col.lower():
-                    return col
-
-            return columns[0]
+        
+            aliases = COLUMN_ALIASES.get(target, [target])
+        
+            for alias in aliases:
+                for col in columns:
+                    if alias.lower() == col.lower():
+                        return col
+        
+            for alias in aliases:
+                for col in columns:
+                    if alias.lower() in col.lower():
+                        return col
+        
+            return None
 
         mapping = {}
 
@@ -556,13 +596,13 @@ if st.session_state.step == 1:
             feature_columns + ["order_value"]
         ):
 
-            default_col = previous_mapping.get(
-                target_col,
-                suggest_column(
-                    target_col,
-                    df.columns
-                )
-            )
+            default_col = previous_mapping.get(target_col)
+
+            if default_col not in df.columns:
+                default_col = suggest_column(target_col, df.columns)
+            
+            if default_col is None:
+                default_col = df.columns[0]
 
             container = left if i % 2 == 0 else right
 
