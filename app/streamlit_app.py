@@ -476,9 +476,11 @@ if st.session_state.step == 1:
             )
             st.stop()
     
-        except Exception as e:
+       except Exception:
 
-            st.exception(e)      # TEMPORARY - for debugging only
+            st.error(
+                "The uploaded file could not be read. Please verify that it is a valid CSV or Excel file."
+            )
             st.stop()
     
         if df.empty:
