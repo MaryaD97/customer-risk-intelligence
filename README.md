@@ -18,8 +18,6 @@ The project started as a machine learning notebook and was then developed into a
 
 ## Why I Built This
 
-I wanted to build a project that went beyond training a classification model and reporting an accuracy score.
-
 In a real business setting, a risk prediction is usually only the starting point. A model may identify an interaction as risky, but the business still has to decide what to do with it:
 
 - Should it be handled automatically?
@@ -119,6 +117,7 @@ Interactive Streamlit Application
 
 The deployed application adds an additional data-handling layer for user-provided datasets:
 
+```text
 **Upload Dataset**  
 ↓  
 **Data Validation**  
@@ -134,6 +133,7 @@ The deployed application adds an additional data-handling layer for user-provide
 **Recommended Actions**  
 ↓  
 **Business Impact Summary**
+```
 
 This structure was important to the project because the final goal was not simply to produce a model prediction. The prediction needed to become an input to a decision process that a user could actually interact with.
 
@@ -370,9 +370,6 @@ The application then aggregates the decisions to estimate:
 Users can also adjust the cost assumptions after the initial analysis and see how the recommended decisions and projected financial impact change.
 
 This is the part of the project that connects the machine learning model to a practical business problem: the model provides the risk estimate, while the decision engine determines how that estimate can be used under different operational constraints.
-
-
-The details above are grounded in the notebook's actual data, target construction, model comparison, calibration, and SHAP work, and in the current application's upload, mapping, cost, decision, and impact workflow. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1} :contentReference[oaicite:2]{index=2} :contentReference[oaicite:3]{index=3} :contentReference[oaicite:4]{index=4} :contentReference[oaicite:5]{index=5} :contentReference[oaicite:6]{index=6} :contentReference[oaicite:7]{index=7} :contentReference[oaicite:8]{index=8} :contentReference[oaicite:9]{index=9} :contentReference[oaicite:10]{index=10} :contentReference[oaicite:11]{index=11} :contentReference[oaicite:12]{index=12} :contentReference[oaicite:13]{index=13} :contentReference[oaicite:14]{index=14} :contentReference[oaicite:15]{index=15}
 
 ## 10. Streamlit Application
 
@@ -633,8 +630,7 @@ Overall, the project helped me understand the difference between building a mode
 
 ## 16. Author
 
-Marya D
+Maryam Rzwan
 
 Data Science Bootcamp Final Project
 
-GitHub
