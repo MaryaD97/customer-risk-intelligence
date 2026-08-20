@@ -7,7 +7,7 @@ import joblib
 # PAGE CONFIG
 # ==============================
 st.set_page_config(
-    page_title="Fraud Decision Engine",
+    page_title="Customer Risk Intelligence | Decision Support Platform",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -359,7 +359,7 @@ if st.session_state.step == 1:
     # ==============================
     # STEP 1 — LOAD DATA
     # ==============================
-    st.title("Fraud Decision Engine")
+    st.title("Customer Risk Intelligence | Decision Support Platform")
 
     st.markdown("""
     **Decide the lowest-cost action for every transaction.**
